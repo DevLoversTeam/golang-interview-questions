@@ -44,3 +44,49 @@ wartbare und leistungsfähige Dienste entwickelt, bei denen Zuverlässigkeit,
 Entwicklungsgeschwindigkeit und betriebliche Einfachheit entscheidend sind.
 
 </details>
+
+
+<details>
+<summary>2. Was sind die grundlegenden Designprinzipien der Sprache Go?</summary>
+
+#### Go
+
+Das Design von Go basiert nicht auf maximaler „Ausdruckskraft“ um jeden Preis,
+sondern auf technischer Machbarkeit: Der Code muss leicht lesbar, leicht zu
+warten und über den langen Lebenszyklus des Systems zuverlässig sein.
+
+#### Grundlegende Prinzipien des Go-Designs:
+
+1. **Einfachheit statt Komplexität:** Die Sprache vermeidet bewusst übermäßig
+   komplexe Konstruktionen, um die Anzahl der Fehler und die Eintrittsschwelle
+   in die Codebasis zu verringern.
+
+2. **Lesbarkeit und Eindeutigkeit:** Klarer Code, der von jedem Ingenieur im
+   Team, nicht nur vom Autor, schnell verstanden werden kann, wird bevorzugt.
+
+3. **Schnelle Kompilierung und produktive Entwicklung:** Der Zyklus „Schreiben →
+   Erstellen → Testen“ sollte kurz sein, was die Iterationen in realen Projekten
+   beschleunigt.
+
+4. **Integrierte Nebenläufigkeit:** `goroutine` und `channel` sind ein
+   organischer Teil der Sprache, kein externer Patch, daher wird paralleles
+   Rechnen nativ unterstützt.
+
+5. **Komposition statt schwerer Hierarchie:** In Go herrscht der Ansatz vor,
+   „Verhalten aus einfachen Teilen zusammenzusetzen“, anstatt tiefe
+   Vererbungshierarchien aufzubauen.
+
+6. **Minimalismus in den Funktionen, Maximalismus in der Praktikabilität:**
+   weniger „Magie“, vorhersehbareres Verhalten während der Ausführung und beim
+   Debuggen.
+
+7. **Einheitlicher Werkzeugstandard:** `go fmt`, `go test`, `go mod`, `go vet`
+   bilden eine gemeinsame Entwicklungskultur ohne Werkzeugfragmentierung.
+
+#### Verallgemeinerung:
+
+Go ist als Sprache für Teamentwicklung und industrielle Programmierung
+konzipiert: Sie diszipliniert den Stil, fördert die Klarheit des Denkens im Code
+und bietet eine gute Balance zwischen Einfachheit und Effizienz.
+
+</details>

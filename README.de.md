@@ -90,3 +90,55 @@ konzipiert: Sie diszipliniert den Stil, fördert die Klarheit des Denkens im Cod
 und bietet eine gute Balance zwischen Einfachheit und Effizienz.
 
 </details>
+
+
+<details>
+<summary>3. Was sind die Hauptmerkmale von Go im Vergleich zu anderen Sprachen?</summary>
+
+#### Go
+
+Go zeichnet sich dadurch aus, dass es eine prägnante Syntax mit einem sehr
+praktischen Engineering-Ausführungsmodell kombiniert: Die Sprache überlastet den
+Entwickler nicht mit unnötiger Komplexität, sondern stellt Werkzeuge für den
+Aufbau schneller und zuverlässiger Systeme bereit.
+
+#### Hauptmerkmale von Go:
+
+1. **Einfache und strenge Syntax:** Code ist leicht zu lesen und die
+   stilistische Einheitlichkeit wird automatisch über `go fmt` gewahrt.
+
+2. **In eine native Binärdatei kompilieren:** Eine Anwendung wird normalerweise
+   in eine einzelne ausführbare Datei ohne große externe Abhängigkeiten beim
+   Start kompiliert.
+
+3. **Statische Typisierung mit hoher Vorhersagbarkeit:** Ein erheblicher Teil
+   der Fehler wird in der Kompilierungsphase erkannt, was die Zuverlässigkeit in
+   der Produktion erhöht.
+
+4. **Eingebaute Parallelität:** `goroutine` und `channel` machen die parallele
+   Programmierung zu einem natürlichen und nicht zu einem Hilfsmechanismus.
+
+5. **Schneller Entwicklungszyklus:** Relativ schnelle Kompilierung und
+   Standardtools beschleunigen das Testen und die Bereitstellung von Änderungen.
+
+6. **Starke Standardbibliothek:** Netzwerk, HTTP, Kryptografie, Dateiverwaltung,
+   Profilerstellung und Tests sind sofort verfügbar.
+
+7. **Klares Fehlermodell:** In Go werden Fehler explizit über `error` behandelt,
+   wodurch die Zustandskontrolle transparent und kontrollierbar wird.
+
+8. **GC und verwalteter Speicher:** Die Sprache vereinfacht die
+   System-Backend-Entwicklung, ohne dass Sie den Lebenszyklus der meisten
+   Objekte manuell verwalten müssen.
+
+9. **Ein praktischer modularer Ansatz:** `go mod` standardisiert das
+   Abhängigkeitsmanagement und die Build-Reproduzierbarkeit.
+
+#### Fazit:
+
+Im Gegensatz zu vielen Sprachen, die entweder auf maximale Abstraktion oder auf
+niedrige Kontrollierbarkeit ausgerichtet sind, sorgt Go gezielt für ein
+technisches Gleichgewicht aus Einfachheit, Leistung, Skalierbarkeit und Komfort
+bei der Teamentwicklung.
+
+</details>

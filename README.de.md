@@ -142,3 +142,52 @@ technisches Gleichgewicht aus Einfachheit, Leistung, Skalierbarkeit und Komfort
 bei der Teamentwicklung.
 
 </details>
+
+
+<details>
+<summary>4. Was ist der Unterschied zwischen imperativem und deklarativem Programmierparadigma? Nennen Sie Beispiele für Sprachen.</summary>
+
+#### Go
+
+Imperative und deklarative Paradigmen unterscheiden sich hauptsächlich im Fokus
+der Beschreibung: Das erste erklärt, **wie** die Aufgabe Schritt für Schritt
+ausgeführt wird, das zweite – **was genau** als Ergebnis erzielt werden soll.
+
+#### Imperatives Paradigma:
+
+1. **Essenz:** Der Programmierer gibt explizit die Reihenfolge der Anweisungen,
+   Zustandsübergänge, Schleifen, Verzweigungen und die Ausführungsreihenfolge
+   an.
+
+2. **Schwerpunkt:** Algorithmuskontrolle und Ausführungsflusskontrolle.
+
+3. **Typische Merkmale:** Variablen, Zuweisungen, `for`, `if`, Datenmutation.
+
+4. **Beispiele für Sprachen:** Go, C, C++, Rust (in den meisten Praktiken),
+   Java.
+
+#### Deklaratives Paradigma:
+
+1. **Essenz:** beschreibt das gewünschte Ergebnis oder die gewünschten
+   Eigenschaften des Systems, ohne die Implementierungsschritte im Detail zu
+   beschreiben.
+
+2. **Fokus:** Datenmodell, Regeln und Einschränkungen, nicht algorithmische
+   Mechanik.
+
+3. **Typische Merkmale:** Ausdrücke auf höherer Ebene, Minimierung expliziter
+   Mutationen, Abstraktion von der Ausführungsreihenfolge.
+
+4. **Beispiele für Sprachen/Ansätze:** SQL, HCL (Terraform), HTML/CSS,
+   funktionale Stile in Haskell und teilweise in Elixir.
+
+#### Praktisches Fazit:
+
+- In realen Systemen werden Paradigmen häufig kombiniert. - Go ist meist
+  zwingender Natur, einige deklarative Elemente kommen jedoch in
+  Konfigurationen, Schemabeschreibungen, DSLs und Datenabfragen vor. - Für das
+  Interview ist es wichtig zu betonen: Die Wahl eines Paradigmas ist keine Frage
+  von „besser oder schlechter“, sondern eine Frage der Übereinstimmung mit der
+  Aufgabe, dem Team und den Anforderungen an die Codeunterstützung.
+
+</details>

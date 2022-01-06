@@ -245,3 +245,61 @@ mit Leistung und praktischem Komfort kombiniert: vom Schreiben des Codes bis hin
 zu seiner Bereitstellung, Überwachung und langfristigen Unterstützung.
 
 </details>
+
+
+<details>
+<summary>6. Was sind `shadowing`-Variablen und wie können sie Fehler in der Geschäftslogik verursachen?</summary>
+
+#### Go
+
+`Shadowing` (Shadowing) liegt vor, wenn im inneren Bereich eine neue Variable
+mit demselben Namen wie die äußere deklariert wird. Dadurch funktioniert der
+Code nicht mit der „erwarteten“ Variable, sondern mit ihrer namentlich genannten
+lokalen Kopie.
+
+#### Wie es am häufigsten vorkommt:
+
+1. **Kurze Deklaration von `:=` in einem verschachtelten Block:** Der Entwickler
+   erwartet eine Zuweisung, und tatsächlich wird eine neue Variable erstellt.
+
+2. **Fehlerbehandlung (`err`) in `if`/`for`/`switch`:** Das lokale `err`
+   überschattet das externe, was dazu führt, dass die nachfolgende Statusprüfung
+   falsch ist.
+
+3. **Arbeiten mit Zuständen in langen Funktionen:** Das Schattieren von
+   Zwischenvariablen erschwert das Lesen und erhöht das Risiko logischer Fehler.
+
+#### Warum dies für die Geschäftslogik gefährlich ist:
+
+1. **Falsche Bedingungsprüfungen:** Das System geht möglicherweise zum falschen
+   Ausführungszweig, weil die „falsche“ Variable überprüft wird.
+
+2. **Verlorener oder falscher Status:** Das Berechnungsergebnis blieb
+   beispielsweise im lokalen Block und der externe Status wurde nicht
+   aktualisiert.
+
+3. **Komplexes Debugging:** Optisch ist der Name derselbe, aber semantisch
+   handelt es sich um unterschiedliche Objekte. Der Fehler macht sich
+   unauffällig und oft nur in Kampffällen bemerkbar.
+
+4. **Stille Fehler ohne Panik:** Ein Programm kann kompiliert und ausgeführt
+   werden, liefert jedoch ein geschäftsunkorrektes Ergebnis.
+
+#### So verhindern Sie `shadowing`:
+
+- Unterscheiden Sie bewusst zwischen `=` und `:=` in allen verschachtelten
+  Blöcken. - Halten Sie variable Sichtverhältnisse kurz und vermeiden Sie zu
+  lange Funktionen. - Verwenden Sie klare, semantisch korrekte Namen,
+  insbesondere für Zustände und Fehler. - Verbinden Sie die statische Analyse
+  (`go vet`, `golangci-lint`) mit Regeln zur Schattierungserkennung. - Fügen Sie
+  an kritischen Stellen der Logik Tests für negative Szenarien und
+  Randbedingungen hinzu.
+
+#### Fazit:
+
+`Shadowing` ist keine syntaktische Eigenart, sondern eine Quelle heimtückischer
+Logikfehler. Im Produktions-Go-Code wirkt sich die Disziplin der
+Variablendeklaration direkt auf die Korrektheit des Geschäftsverhaltens des
+Systems aus.
+
+</details>

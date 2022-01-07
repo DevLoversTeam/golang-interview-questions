@@ -303,3 +303,56 @@ Variablendeklaration direkt auf die Korrektheit des Geschäftsverhaltens des
 Systems aus.
 
 </details>
+
+
+<details>
+<summary>7. Warum `struct{}` (eine leere Struktur) verwenden und in welchen Szenarien ist es effektiv?</summary>
+
+#### Go
+
+`struct{}` in Go ist eine leere Struktur, also ein feldloser Typ. Seine
+Haupteigenschaft: Es trägt keine Datennutzlast, sondern zeichnet lediglich die
+Tatsache der Existenz eines Werts oder Ereignisses auf.
+
+#### Warum `struct{}` wirksam ist:
+
+1. Der Typ **Null Informationsvolumen:** enthält keine Felder und wird daher als
+   Token und nicht als Datencontainer verwendet.
+
+2. **Klare Absichtssemantik:** Der Code zeigt explizit, dass die Tatsache
+   „ist/ist nicht“ wichtig ist, nicht die Nutzlast.
+
+3. **Redundante Zuordnungen in Servicestrukturen reduzieren:** In vielen Mustern
+   ist dies eine praktischere Wahl als `bool` oder beliebige Werte, wenn Daten
+   nicht benötigt werden.
+
+#### Typische Nutzungsszenarien:
+
+1. **Set über `map[K]struct{}`:** `map` in Go ist ein Schlüsselwert, und für
+   einen Satz benötigen wir nur eindeutige Schlüssel. `struct{}` bedeutet hier
+   idealerweise „Schlüssel vorhanden“.
+
+2. **Signalkanäle `chan struct{}`:** werden für die Benachrichtigung „Ereignis
+   eingetreten“ (Stop/Fertig/Herunterfahren) verwendet, wenn keine
+   Datenübertragung erforderlich ist.
+
+3. **Token-Typen und API-Verträge:** Eine leere Struktur kann als leichtes
+   semantisches Token in den internen Protokollen der Anwendung fungieren.
+
+4. **Einbettung der Verhaltenskomposition:** `struct{}` wird manchmal als
+   technisches Kompositionselement verwendet, wenn eine zustandslose Struktur
+   erforderlich ist.
+
+#### Wann nicht verwendet werden sollte:
+
+– Wenn der tatsächliche Zustand oder die tatsächlichen Attribute einer Entität
+erforderlich sind. - Wenn `bool` eine klarere Geschäftssemantik liefert (z. B.
+ein explizites Bedingungsflag anstelle einer festgelegten Tatsache).
+
+#### Zusammenfassung:
+
+`struct{}` ist ein Werkzeug mit präziser Absicht: Wenn keine Daten benötigt
+werden, aber eine Tatsache, Präsenz oder ein Signal angezeigt werden muss, ist
+eine leere Struktur eine elegante und effiziente Lösung im Go-Code.
+
+</details>

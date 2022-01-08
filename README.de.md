@@ -356,3 +356,90 @@ werden, aber eine Tatsache, Präsenz oder ein Signal angezeigt werden muss, ist
 eine leere Struktur eine elegante und effiziente Lösung im Go-Code.
 
 </details>
+
+
+<details>
+<summary>8. Wie funktioniert die interne Struktur `slice` und was passiert, wenn Sie sie an eine Funktion übergeben?</summary>
+
+#### Go
+
+In Go ist `slice` nicht das Array selbst, sondern ein leichter
+„Add-on“-Deskriptor über einem Abschnitt des Arrays. Aus diesem Grund
+unterscheidet sich das Verhalten von `slice` vom normalen Array-Kopieren und
+führt häufig zu Fehlern in Interviews und echtem Code.
+
+#### Internes Modell `slice`:
+
+`slice` besteht konzeptionell aus drei Teilen:
+
+1. **Zeiger auf Basisarray** (`ptr`)
+
+2. **Länge** (`len`) – wie viele Elemente jetzt verfügbar sind
+
+3. **Kapazität** (`cap`) – wie viele Elemente bis zur Grenze des Basisarrays
+   verfügbar sind
+
+Das heißt, `slice` speichert Metadaten über die Region im Speicher, anstatt alle
+Elemente zu duplizieren.
+
+#### Was passiert, wenn Sie `slice` an eine Funktion übergeben:
+
+1. **Der Header `slice` (ptr/len/cap) wird kopiert, nicht das gesamte Array.**
+
+2. **Beide Parteien (Anrufer und Angerufener) betrachten zunächst dasselbe
+   Basisarray.**
+
+3. **Das Ändern von Elementen über den Index** (`s[i] = ...`) in der Funktion
+   ist normalerweise von außen sichtbar, da die Daten des gemeinsam genutzten
+   Arrays geändert werden.
+
+4. **Das Ändern des Headers selbst** (`s = s[:n]`, `s = append(...)`) in einer
+   Funktion ändert den Header im Aufrufer nicht, es sei denn, Sie geben einen
+   neuen `slice` zurück.
+
+#### Wichtige Nuance mit `append`:
+
+- Wenn `cap` während `append` ausreicht, geht der Eintrag in dasselbe
+  Basisarray.
+
+- Wenn `cap` fehlt, weist die Laufzeit ein neues Array zu, kopiert die Daten
+  dorthin und der lokale `slice` in der Funktion beginnt, auf einen anderen
+  Speicher zu verweisen.
+
+Nach `append` kann die Funktion also bereits mit dem neuen Array arbeiten,
+während das alte `slice` draußen bleibt, wenn der neue Wert nicht zurückgegeben
+wird.
+
+#### Praktisches Fazit:
+
+- Möchten Sie die Elemente ändern? Sie können `slice` unverändert übergeben.
+
+- Möchten Sie die Länge/Kapazität oder das Ergebnis von `append` ändern – geben
+  Sie das aktualisierte `slice` von der Funktion zurück (oder übergeben Sie
+  einen Zeiger auf `slice`, wenn dies architektonisch wirklich gerechtfertigt
+  ist).
+
+#### Beispiel:
+
+```go
+package main
+
+import "fmt"
+
+func grow(s []int) {
+	s = append(s, 99) // змінюємо локальний заголовок slice
+}
+
+func mutate(s []int) {
+	s[0] = 42 // змінюємо спільний базовий масив
+}
+
+func main() {
+	s := []int{1, 2, 3}
+	mutate(s)
+	grow(s)
+	fmt.Println(s) // [42 2 3], append у grow не змінив заголовок у викликачі
+}
+```
+
+</details>

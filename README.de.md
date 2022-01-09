@@ -443,3 +443,62 @@ func main() {
 ```
 
 </details>
+
+
+<details>
+<summary>9. Warum ist `make([]T, 0, n)` angesichts der bekannten Abmessungen besser als `var s []T`?</summary>
+
+#### Go
+
+Wenn Sie die ungefähre oder genaue Anzahl der Elemente im Voraus kennen, ist das
+Konstrukt `make([]T, 0, n)` fast immer praktischer als `var s []T`, da es sofort
+die erforderliche Kapazität reserviert und die Anzahl der Speicherneuzuweisungen
+reduziert.
+
+#### Was diese beiden Ansätze unterscheidet:
+
+1. **`var s []T`**
+
+- erstellt `nil`-Slice aus `len=0`, `cap=0`;
+
+- das erste `append` bewirkt, dass die Laufzeit Speicher zuweist;
+
+- Wenn die Daten wachsen, kommt es zu neuen Neuzuweisungen und Kopien.
+
+2. **`make([]T, 0, n)`**
+
+- erstellt ein Slice aus `len=0`, aber bereits aus `cap=n`;
+
+- Elemente werden über `append` ohne Neuzuweisung hinzugefügt, bis `cap`
+  erschöpft ist;
+
+- weniger Datenkopien und stabilere Leistung.
+
+#### Warum es in der Praxis wichtig ist:
+
+1. **Weniger Zuweisungen im Heap:** reduziert die GC-Last.
+
+2. **Besseres Latenzverhalten:** weniger „Sprünge“ in der Neuzuweisungszeit.
+
+3. **Höherer Durchsatz in Hot Paths:** insbesondere in Schleifen, Parsing,
+   Aggregation, Serialisierung.
+
+4. **Ressourcenvorhersagbarkeit:** einfachere Speicherschätzung für ein
+   bestimmtes Szenario.
+
+#### Wenn der Unterschied besonders auffällig ist:
+
+- Große Anzahl von `append` in Schleifen.
+
+- Verarbeitung von Datenströmen in Backend-Diensten.
+
+- Häufig aufgerufene Funktionen, bei denen selbst kleine Zuweisungen zu
+  erheblichen Kosten führen.
+
+#### Fazit:
+
+Wenn die Größe der Sammlung im Voraus bekannt ist oder gut geschätzt wird, ist
+`make([]T, 0, n)` eine technisch ausgereifte Wahl: Sie bietet weniger
+Zuweisungen, bessere Leistung und ein stabileres Verhalten unter Last.
+
+</details>

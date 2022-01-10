@@ -502,3 +502,74 @@ Wenn die Größe der Sammlung im Voraus bekannt ist oder gut geschätzt wird, is
 Zuweisungen, bessere Leistung und ein stabileres Verhalten unter Last.
 
 </details>
+
+
+<details>
+<summary>10. Wie steuert ein Slice-Ausdruck `a[low:high:max]` `cap` ein neues Slice?</summary>
+
+#### Go
+
+In Go können Sie mit der vollständigen `a[low:high:max]`-Slice-Form nicht nur
+die Länge (`len`), sondern auch die Kapazität (`cap`) des neuen `slice` steuern.
+Dies ist ein wichtiges Instrument zur Kontrolle von Nebenwirkungen während
+`append`.
+
+#### Formeln:
+
+Für `s := a[low:high:max]`:
+
+1. `len(s) = high - low`
+
+2. `cap(s) = max - low`
+
+Unter der Voraussetzung korrekter Grenzwerte:
+
+- `0 <= low <= high <= max <= cap(a)` (für Slice-Basis)
+
+#### Was es praktisch bringt:
+
+1. **Sichtbare Kapazitätsbeschränkungen:** Sie können den Zugriff auf das Ende
+   des zugrunde liegenden Arrays „abschneiden“, selbst wenn es physisch
+   vorhanden ist.
+
+2. **Sicherer `append`:** Wenn `cap` künstlich reduziert wird, weist `append`
+   den Speicher schneller neu zu, anstatt benachbarte Daten im gemeinsam
+   genutzten Array zu überschreiben.
+
+3. **Bessere Isolation zwischen Codeteilen:** Dies ist besonders nützlich, wenn
+   ein Slice an eine andere Funktions- oder Systemebene übergeben wird und Sie
+   nicht möchten, dass er in den Bereich einer anderen Person „hineinwächst“.
+
+#### Konzeptbeispiel:
+
+- `a[2:5]` ergibt `len=3`, `cap` erstreckt sich bis zum Ende des Basisarrays.
+
+- `a[2:5:5]` ergibt `len=3`, `cap=3` – außerdem ist `append` nicht mehr vorrätig
+  und erzwingt ein neues Array.
+
+#### Fazit:
+
+Der dritte Index in `a[low:high:max]` ist der Präzisionssteuerhebel `cap`. Es
+wird benötigt, wenn es wichtig ist, das Wachstum von `slice` zu kontrollieren,
+unerwartetes Überschreiben des gemeinsam genutzten Speichers zu vermeiden und
+das Codeverhalten vorhersehbar zu machen.
+
+#### Beispiel:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	a := []int{0, 1, 2, 3, 4, 5}
+	s := a[2:4:4] // len=2 (2,3), cap=2
+	fmt.Println(len(s), cap(s)) // 2 2
+
+	s = append(s, 99) // новий backing array, а не розширення в a
+	fmt.Println(a)    // [0 1 2 3 4 5]
+	fmt.Println(s)    // [2 3 99]
+}
+```
+
+</details>

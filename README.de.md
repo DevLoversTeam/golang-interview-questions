@@ -573,3 +573,56 @@ func main() {
 ```
 
 </details>
+
+
+<details>
+<summary>11. Ist garantiert, dass ein Zeiger auf ein Slice-Element nach dem Aufruf von `append` gültig bleibt?</summary>
+
+#### Go
+
+Kurze Antwort: **Nein, nicht garantiert**. Nach `append` kann ein Zeiger auf ein
+Element des alten `slice` seine Relevanz für das neue `slice` verlieren, wenn
+das zugrunde liegende Array neu zugewiesen wurde.
+
+#### Warum das passiert:
+
+1. `append` fügt Elemente innerhalb des vorhandenen `cap` hinzu, wenn genügend
+   Platz vorhanden ist.
+
+2. Wenn `cap` erschöpft ist, erstellt die Laufzeit ein neues Array, kopiert die
+   Daten und gibt `slice` zurück, das bereits auf die neue Adresse verweist.
+
+3. Zuvor genommene Zeiger bleiben an das alte Array gebunden, nicht an das
+   aktualisierte `slice`.
+
+#### Praktische Konsequenzen:
+
+1. **Zeiger-Aliasing wird gefährlich:** Logik kann in einen veralteten
+   Speicherbereich „schauen“.
+
+2. **Unerwartete Fehler in Modifikationen:** Änderungen durch den alten Zeiger
+   wirken sich nach der Verschiebung nicht auf den neuen `slice` aus.
+
+3. **Schwieriges Debuggen:** Code lässt sich kompilieren und häufig ausführen,
+   zeigt jedoch unter Last oder auf anderen Datenvolumes unvorhersehbares
+   Verhalten.
+
+#### So schreiben Sie sicher:
+
+- Speichern Sie keine langlebigen Zeiger auf `slice`-Elemente, die
+  möglicherweise durch `append` wachsen.
+
+- Wenn der Zeiger wirklich benötigt wird, stellen Sie die Speicherstabilität
+  sicher: Reservieren Sie vorab Kapazität (`make(..., 0, n)`) oder führen Sie
+  `append` nicht aus, nachdem Sie Adressen übernommen haben.
+
+- Oft ist es sicherer, einen Index zu übergeben oder einen neuen `slice`
+  zurückzugeben und alle abgeleiteten Referenzen zu binden.
+
+#### Fazit:
+
+Nach `append` ist die Gültigkeit von Zeigern auf `slice`-Elemente kein
+Go-Vertrag. Sicherer Code muss davon ausgehen, dass `append` die Basisadresse
+der Daten ändern kann.
+
+</details>

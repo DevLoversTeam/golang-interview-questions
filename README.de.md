@@ -626,3 +626,60 @@ Go-Vertrag. Sicherer Code muss davon ausgehen, dass `append` die Basisadresse
 der Daten ändern kann.
 
 </details>
+
+
+<details>
+<summary>12. Wie werden in Go Elemente effektiv aus einem Slice entfernt, ohne die Reihenfolge beizubehalten?</summary>
+
+#### Go
+
+Wenn die Reihenfolge der Elemente keine Rolle spielt, besteht die effizienteste
+Entfernungsstrategie darin, das zu entfernende Element durch das letzte Element
+von `slice` zu ersetzen und dann `slice` um eins zu kürzen.
+
+#### Die Idee des Ansatzes:
+
+1. Suchen Sie den Index `i` des zu löschenden Elements.
+
+2. Zuweisen `s[i] = s[len(s)-1]`.
+
+3. Länge reduzieren: `s = s[:len(s)-1]`.
+
+#### Warum es effektiv ist:
+
+1. **O(1) in der Zeit** (ohne alle nachfolgenden Elemente zu verschieben).
+
+2. **Mindestanzahl an Kopien** im Vergleich zum Löschen in der richtigen
+   Reihenfolge.
+
+3. **Gut skalierbar** bei großen Sammlungen und Hot Loops.
+
+#### Worauf Sie achten sollten:
+
+- Die Reihenfolge der Elemente ändert sich nach der Operation.
+
+- Die Überprüfung der Richtigkeit des Index ist erforderlich.
+
+- Für `slice` mit Zeigertypen ist es manchmal angebracht, das Endelement vor dem
+  Abschneiden auf Null zu setzen, um zu vermeiden, dass redundante Referenzen im
+  Speicher verbleiben.
+
+#### Fazit:
+
+Wenn eine stabile Reihenfolge keine Geschäftslogikanforderung ist, ist
+„Austauschen mit Letztem + Abschneiden“ die kanonische und schnellste
+Möglichkeit, ein Element von `slice` nach Go zu entfernen.
+
+#### Beispiel:
+
+```go
+func removeUnordered[T any](s []T, i int) []T {
+	last := len(s) - 1
+	s[i] = s[last]
+	var zero T
+	s[last] = zero // опційно: щоб не тримати зайве посилання
+	return s[:last]
+}
+```
+
+</details>

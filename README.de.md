@@ -683,3 +683,70 @@ func removeUnordered[T any](s []T, i int) []T {
 ```
 
 </details>
+
+
+<details>
+<summary>13. Was ist die Schlüsseliterationsreihenfolge in `map` und kann man sich darauf verlassen? Wie wirkt sich dies auf Tests und Serialisierung aus?</summary>
+
+#### Go
+
+In Go ist die Schlüsseliterationsreihenfolge in `map` **nicht deterministisch**.
+Dies bedeutet, dass während `for range` die Tastenfolge zwischen Programmläufen
+und sogar zwischen einzelnen Iterationen innerhalb eines einzelnen Laufs
+variieren kann.
+
+#### Können Sie sich auf die Bestellung verlassen:
+
+1. **Nein, das geht nicht.**
+
+2. Die Bestellung in `map` ist nicht Teil des Sprachvertrags.
+
+3. Jede Logik, die implizit auf einer „stabilen“ Reihenfolge beruht, ist
+   potenziell fehlerhaft.
+
+#### Wie es sich auf die Tests auswirkt:
+
+1. **Flauky-Tests:** Vergleiche von Strings/Arrays, die mit `map` erstellt
+   wurden, können aufgrund unterschiedlicher Reihenfolge der Elemente zufällig
+   fehlschlagen.
+
+2. **Falsche Regressionen:** Es gibt keine Änderungen in der Geschäftslogik,
+   aber der Test schlägt aufgrund einer instabilen Ausgabe fehl.
+
+3. **Richtiger Ansatz:** Tests erfordern entweder:
+
+- Strukturen als Mengen/assoziative Sammlungen vergleichen;
+
+- oder sortieren Sie die Schlüssel vor und erstellen Sie ein deterministisches
+  Ergebnis.
+
+#### Wie sich dies auf die Serialisierung auswirkt:
+
+1. Wenn die Serialisierung auf einer direkten `map`-Umgehung aufbaut, weist das
+   Textergebnis möglicherweise eine andere Reihenfolge der
+   Felder/Schlüssel-Wert-Paare auf.
+
+2. Das macht es schwierig:
+
+- snapshot/golden-tests;
+
+- Hashing von Nutzlasten;
+
+- Artefaktvergleich in CI.
+
+3. Für eine stabile Ausgabe sollten Sie:
+
+- Schlüssel separat erhalten;
+
+- sortiere sie;
+
+- bilden Sie das Ergebnis in einer festen Reihenfolge.
+
+#### Fazit:
+
+`map` in Go ist für den schnellen Zugriff per Schlüssel optimiert, nicht für die
+Beibehaltung der Reihenfolge. Daher müssen bei Tests, Protokollierung,
+Datensignatur und Serialisierung bewusst Determinismus durch Schlüsselsortierung
+oder andere kanonische Regeln eingeführt werden.
+
+</details>

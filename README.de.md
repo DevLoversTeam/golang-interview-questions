@@ -750,3 +750,63 @@ Datensignatur und Serialisierung bewusst Determinismus durch Schlüsselsortierun
 oder andere kanonische Regeln eingeführt werden.
 
 </details>
+
+
+<details>
+<summary>14. Wie kann ich `map` in einer vorhersehbaren Reihenfolge durchlaufen?</summary>
+
+#### Go
+
+Da `map` in Go keine stabile Durchlaufreihenfolge garantiert, muss die
+beabsichtigte Iteration explizit organisiert werden: Zuerst die Schlüssel
+sammeln, dann sortieren und erst dann die Werte in dieser festen Reihenfolge
+lesen.
+
+#### Kanonischer Ansatz (Go 1.23+):
+
+1. Verwenden Sie `maps.Keys`, um einen Schlüsseliterator zu erhalten.
+
+2. Verwenden Sie `slices.Sorted` (`slices.SortedFunc`), um ein sortiertes
+   Schlüsselsegment zu erhalten.
+
+3. Iterieren Sie über das sortierte Segment.
+
+#### Warum es richtig ist:
+
+1. **Determinismus:** Die gleiche Eingabe ergibt die gleiche Ausgabereihenfolge.
+
+2. **Stabile Tests:** Zufällige Abstürze aufgrund unterschiedlicher Reihenfolge
+   verschwinden.
+
+3. **Vorhergesagte Serialisierung:** Einfachere Durchführung von Golden Tests,
+   Signaturen und Vergleich von Artefakten.
+
+#### Wichtige Nuancen:
+
+- Für Strukturschlüssel oder benutzerdefinierte Typen muss ein explizites
+  Sortierkriterium definiert werden.
+
+- Der Schwierigkeitsgrad steigt durch das Sortieren (`O(n log n)`), aber das ist
+  der Preis der Vorhersehbarkeit.
+
+- Wenn die Reihenfolge in einem Hotpath von entscheidender Bedeutung ist, ist es
+  manchmal angebracht, eine andere Datenstruktur in Betracht zu ziehen (z. B.
+  die Pflege einer separaten geordneten Liste von Schlüsseln).
+
+#### Fazit:
+
+Die beabsichtigte Iteration von `map` in Go ist immer eine bewusste
+Drei-Phasen-Strategie: „Schlüssel sammeln → sortieren → umgehen“. Dieses Muster
+gilt als Produktionsstandard für eine stabile Produktion. Eine kompakte Form
+über `slices.Sorted(maps.Keys(m))` ist ab Go 1.23 verfügbar.
+
+#### Beispiel:
+
+```go
+keys := slices.Sorted(maps.Keys(m))
+for _, k := range keys {
+	fmt.Printf("%v=%v\n", k, m[k])
+}
+```
+
+</details>

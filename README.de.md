@@ -810,3 +810,55 @@ for _, k := range keys {
 ```
 
 </details>
+
+
+<details>
+<summary>15. Warum kann ich die Adresse des Kartenelements nicht abrufen?</summary>
+
+#### Go
+
+Go kann die Adresse des Elements `map` nicht annehmen (z. B. `&m[key]`), da der
+Wert in `map` keine stabile Adresse im Speicher hat. Während des Wachstums, der
+Neuausrichtung oder der internen Reorganisation kann die `map`-Laufzeit Elemente
+zwischen Buckets verschieben.
+
+#### Hauptgrund für die Einschränkung:
+
+1. **Platzierungsinstabilität:** `map` ändert dynamisch die interne Struktur.
+
+2. **Gefahr von „baumelnden“ Zeigern:** Die heute erhaltene Adresse kann nach
+   nachfolgenden Operationen mit `map` ungültig werden.
+
+3. **Sprachsicherheitsgarantie:** Der Compiler verbietet einen solchen Vorgang,
+   um versteckte Speicherfehler zu vermeiden.
+
+#### Praktische Konsequenzen:
+
+1. Sie können ein Strukturfeld nicht direkt über `m[key].Field = ...` ändern,
+   wenn der Kartenwert eine Struktur ist.
+
+2. Das Aktualisierungsmuster für „map-value-struct“ sieht folgendermaßen aus:
+
+- Wert in temporäre Variable lesen;
+
+- ändere es;
+
+- zurückschreiben an `map`.
+
+#### Wenn Veränderlichkeit erforderlich ist bei:
+
+- Verwenden Sie `map[K]*T` anstelle von `map[K]T`, wenn Sie mit demselben Objekt
+  über einen Zeiger arbeiten müssen.
+
+- Aber seien Sie sich der Kompromisse bewusst: zusätzliche Zuweisungen, Probleme
+  mit dem Objektlebenszyklus und die Notwendigkeit einer Synchronisierung mit
+  gleichzeitigem Zugriff.
+
+#### Fazit:
+
+Das Verbot, die Adresse des Elements `map` zu übernehmen, ist ein bewusstes
+Go-Design zugunsten der Speichersicherheit. Wenn „In-Place“-Änderungen
+erforderlich sind, wählen Sie entweder eine Lese-, Änderungs- und
+Schreibschleife oder `map` mit Zeigerwerten.
+
+</details>

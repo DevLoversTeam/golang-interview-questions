@@ -862,3 +862,53 @@ erforderlich sind, wählen Sie entweder eine Lese-, Änderungs- und
 Schreibschleife oder `map` mit Zeigerwerten.
 
 </details>
+
+
+<details>
+<summary>16. Warum ist `map` in Go nicht standardmäßig threadsicher?</summary>
+
+#### Go
+
+`map` in Go ist von Natur aus nicht threadsicher: Der gleichzeitige Zugriff von
+mehreren Goroutines ohne Synchronisierung (insbesondere bei Schreibvorgängen)
+führt zu Datenwettläufen und undefiniertem Verhalten.
+
+#### Warum wird das gemacht:
+
+1. **Leistung im Basisszenario:** Die meisten `map` werden lokal in einer
+   einzelnen Goroutine verwendet; Eine integrierte Sperre für jeden Vorgang
+   würde diese Szenarien verlangsamen.
+
+2. **Explizites Nebenläufigkeitsmodell:** Go überlässt dem Entwickler die
+   Synchronisierungskontrolle, um einen Mechanismus für eine bestimmte
+   Arbeitslast auszuwählen.
+
+3. **Architekturflexibilität:** Unterschiedliche Aufgaben erfordern
+   unterschiedliche Strategien (Mutex, Sharding, Actor-Ansatz, `sync.Map`), und
+   eine „one-size-fits-all“-Autolock ist nicht für alle Fälle optimal.
+
+#### Was das in der Praxis bedeutet:
+
+1. **Gleichzeitiges Lesen und Schreiben ohne Schutz ist verboten.**
+
+2. **Schreiben + Schreiben ohne Schutz ist verboten.**
+
+3. **Lesen + schreibgeschützt** kann sicher sein, wenn niemand `map` ändert.
+
+#### So machen Sie es richtig:
+
+- `map` + `sync.Mutex` oder `sync.RWMutex` für verwaltete Synchronisierung.
+
+- `sync.Map` für bestimmte Zugriffsmuster (viele Lesevorgänge, seltene
+  Schreibvorgänge oder unabhängige Schlüssel).
+
+- Architektonische Zustandsisolation durch eine „proprietäre“ Goroutine und
+  Kanäle.
+
+#### Fazit:
+
+Nicht-Flow-Sicherheit `map` „out of the box“ ist kein Mangel, sondern ein
+bewusster Kompromiss Go: minimaler Overhead im allgemeinen Fall und volle
+Kontrolle der Wettbewerbssicherheit in den Händen des Ingenieurs.
+
+</details>

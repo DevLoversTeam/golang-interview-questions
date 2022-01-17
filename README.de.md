@@ -912,3 +912,73 @@ bewusster Kompromiss Go: minimaler Overhead im allgemeinen Fall und volle
 Kontrolle der Wettbewerbssicherheit in den Händen des Ingenieurs.
 
 </details>
+
+
+<details>
+<summary>17. Kann eine Struktur ein Schlüssel in `map` sein und welche Einschränkungen gelten dafür? Inwiefern ist es besser als verschachtelte Karten?</summary>
+
+#### Go
+
+Ja, in Go kann eine Struktur ein Schlüssel in `map` sein, **wenn sie verglichen
+wird** (`comparable`). Das bedeutet, dass auch alle Fachbereiche vergleichbar
+sein müssen.
+
+#### Einschränkungen für den Strukturschlüssel:
+
+1. **Alle Felder der Struktur müssen vergleichbar sein.**
+
+- Erlaubt, insbesondere: Zahlen, Strings, Bool, Zeiger, Arrays (mit
+  vergleichbaren Elementen), andere vergleichbare Strukturen.
+
+- Verbotene Felder der Typen im Schlüssel: `slice`, `map`, `func` (sie sind
+  nicht vergleichbar).
+
+2. **Der Vergleich basiert auf dem Wert aller Felder.**
+
+- Zwei Schlüssel gelten nur dann als gleich, wenn alle entsprechenden Felder
+  gleich sind.
+
+3. **Der Schlüssel muss nach dem Einsetzen stabil sein.**
+
+- Das Ändern des „Sinns“ eines Schlüssels durch einen externen veränderlichen
+  Zustand ist eine schlechte Praxis, da dadurch die Vorhersehbarkeit des
+  Zugriffs zerstört wird.
+
+#### Warum struct-key oft besser ist als verschachtelter `map`:
+
+1. **Ein einfacheres Datenmodell:**
+
+- Anstelle von `map[A]map[B]V` können Sie `map[CompositeKey]V` verwenden, wobei
+  `CompositeKey` eine Struktur mit den Feldern `A`, `B` ist.
+
+2. **Weniger Boilerplate und Kontrollen bei `nil`:**
+
+- In verschachtelten `map` müssen interne Zuordnungen initialisiert und fehlende
+  Zwischenschlüssel behandelt werden.
+
+3. **Bessere Logiklokalität:**
+
+- Alle Schlüsseldimensionen werden in einem Typ gesammelt, was die Lesbarkeit
+  und Wartbarkeit verbessert.
+
+4. **Weniger Spielraum für Fehler:**
+
+- Einfachere Vermeidung teilweise initialisierter Strukturen und inkonsistenter
+  Zugriffspfade.
+
+#### Wenn verschachtelt, kann `map` angemessen sein:
+
+- Wenn eine hierarchische Datensemantik erforderlich ist.
+
+- Bei häufigem Betrieb an Zwischen-Slices auf der Ebene des ersten Schlüssels.
+
+- Wenn verschiedene Ebenen unterschiedliche Lebenszyklusregeln haben.
+
+#### Fazit:
+
+Der Strukturschlüssel in Go ist ein leistungsstarkes und sauberes Tool für die
+zusammengesetzte Adressierung. Wenn der Schlüsseltyp richtig gestaltet ist und
+`comparable` ist, ist diese Lösung oft eleganter und zuverlässiger als
+verschachteltes `map`.
+
+</details>

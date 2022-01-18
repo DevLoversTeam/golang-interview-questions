@@ -982,3 +982,55 @@ zusammengesetzte Adressierung. Wenn der Schlüsseltyp richtig gestaltet ist und
 verschachteltes `map`.
 
 </details>
+
+
+<details>
+<summary>18. Wie vergleiche ich zwei Strukturen – wann kompiliert wird und wann nicht?</summary>
+
+#### Go
+
+In Go können zwei Strukturen nur dann mit dem Operator `==` oder `!=` verglichen
+werden, wenn der Typ der Struktur `comparable` ist. Praktisch bedeutet das:
+**Alle Felder der Struktur müssen verglichen werden**.
+
+#### Wenn der Vergleich kompiliert wird:
+
+1. Die Strukturen haben den gleichen Typ.
+
+2. Jedes Feld in der Struktur ist vom vergleichbaren Typ.
+
+3. Der Vergleich wird für den Wert aller Felder durchgeführt.
+
+#### Wenn der Vergleich nicht kompiliert wird:
+
+1. Wenn mindestens ein Feld einen nicht vergleichbaren Typ hat:
+
+- `slice`
+
+- `map`
+
+- `func`
+
+2. Wenn Sie versuchen, verschiedene Strukturtypen zu vergleichen, auch mit
+   ähnlichen Feldern.
+
+#### Wichtige Klarstellungen:
+
+1. **Arrays werden verglichen**, wenn ihre Elemente verglichen werden.
+
+2. **Zeiger werden verglichen** (Adressen werden verglichen).
+
+3. **Schnittstellen werden verglichen**, wenn der darin enthaltene dynamische
+   Wert ebenfalls verglichen wird; Andernfalls kann es während des Vergleichs zu
+   einer Laufzeitpanik kommen.
+
+#### Praktisches Fazit:
+
+- Wenn die Struktur ausschließlich aus vergleichbaren Feldern besteht, können
+  Sie gerne `==` verwenden.
+
+- Wenn die Struktur `slice/map/func` ist, verwenden Sie explizite Feldvergleiche
+  oder separate Ansätze (z. B. spezielle Vergleichslogik) anstelle eines
+  direkten Gleichheitsoperators.
+
+</details>

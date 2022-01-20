@@ -1104,3 +1104,58 @@ nützliches Werkzeug, aber eine explizite, domänenbasierte Vergleichsmethode
 bleibt die zuverlässigste Engineering-Methode.
 
 </details>
+
+
+<details>
+<summary>20. Was passiert beim Casting zwischen benannten Typen mit derselben Struktur, wenn diese unterschiedliche Methoden haben?</summary>
+
+#### Go
+
+In Go gilt die Umwandlung zwischen benannten Typen mit derselben untergeordneten
+Struktur **nur für Datenwerte**, „portiert“ jedoch keine Methoden. Das heißt,
+nach der Konvertierung erhalten Sie einen neuen Wert eines anderen benannten
+Typs mit einem eigenen Methodensatz.
+
+#### Das Hauptprinzip:
+
+1. **Die Konvertierung ändert den Typ des Werts, anstatt das Verhalten der Typen
+   zu vereinheitlichen.**
+
+2. **Methoden gehören zu dem spezifischen benannten Typ**, für den sie
+   deklariert sind.
+
+3. Nach `T2(vT1)` sind die Methoden `T2` verfügbar und auf die Methoden `T1`
+   kann nicht mehr direkt zugegriffen werden.
+
+#### Was bei der Konvertierung gespeichert wird:
+
+1. Bit/Boolesche Darstellung von Feldern (gemäß Typkompatibilitätsregeln).
+
+2. Datenwert.
+
+#### Was nicht gespeichert wird:
+
+1. Methodensatz des ursprünglichen Typs.
+
+2. Automatischer Schnittstellenabgleich durch den ursprünglichen Typ.
+
+#### Praktische Konsequenzen:
+
+1. Zwei Typen mit denselben Feldern können sich in der API unterschiedlich
+   verhalten.
+
+2. Nach der Konvertierung schlägt die Kompilierung des Codes möglicherweise an
+   Stellen fehl, an denen eine nur durch den Quelltyp implementierte
+   Schnittstelle erwartet wurde.
+
+3. Dies ist nützlich für die Domänenmodellierung: gleiche Datenstruktur, aber
+   unterschiedliche semantische Rollen und Verträge.
+
+#### Fazit:
+
+In Go ändert die Konvertierung zwischen benannten Typen die „Identität“ des Typs
+und nicht das Kopierverhalten. Die Daten können dieselben sein, aber die
+Methoden und Schnittstellenfunktionen werden ausschließlich durch den Zieltyp
+definiert.
+
+</details>

@@ -1159,3 +1159,54 @@ Methoden und Schnittstellenfunktionen werden ausschließlich durch den Zieltyp
 definiert.
 
 </details>
+
+
+<details>
+<summary>21. Was ist `Memory Alignment` (Ausrichtung) und wie wirkt es sich auf die Größe von Strukturen aus?</summary>
+
+#### Go
+
+`Memory Alignment` (Ausrichtung) ist eine Regel zum Platzieren von Daten im
+Speicher an Adressen, die ein Vielfaches eines bestimmten Schritts
+(Ausrichtungsanforderung) für einen bestimmten Typ sind. Wenn diese
+Anforderungen erfüllt sind, lesen Prozessor und Laufzeit solche Daten schneller
+und sicherer.
+
+#### So funktioniert es in Frameworks:
+
+1. Jedes Feld hat seine eigene Ausrichtungsanforderung (z. B. erfordert `int64`
+   normalerweise eine strengere Ausrichtung als `byte`).
+
+2. Zwischen den Feldern kann der Compiler **Padding**
+   (Platzhalter-Service-Bytes) hinzufügen, damit das nächste Feld an der
+   richtigen Adresse beginnt.
+
+3. Es kann auch Tail-Padding am Ende einer Struktur geben, sodass ein Array
+   solcher Strukturen die korrekte Ausrichtung jedes Elements beibehält.
+
+#### Auswirkungen auf die Strukturgröße:
+
+1. **Die Strukturgröße ist aufgrund der Auffüllung oft größer als die Summe der
+   Feldgrößen**.
+
+2. **Feldreihenfolge ist wichtig:** Eine schlechte Platzierung (`byte`, `int64`,
+   `byte`, ...) kann die Gesamtgröße erheblich erhöhen.
+
+3. **Eine optimale Gruppierung von Feldern** (von größer ausgerichtet nach
+   kleiner) reduziert normalerweise den Speicherverbrauch.
+
+#### Warum es in der Praxis wichtig ist:
+
+1. Kleinere Strukturgröße = bessere Cache-Lokalität.
+
+2. Weniger RAM-Verbrauch in großen Arrays/Caches/Indizes.
+
+3. Höherer Durchsatz in Hot Paths aufgrund geringerer Speicherbelastung.
+
+#### Technische Schlussfolgerung:
+
+Ausrichtung ist kein „Low-Level-Exot“, sondern ein praktischer Leistungsfaktor.
+In Go wirkt sich die richtige Reihenfolge der Felder in der Struktur direkt auf
+deren Größe und damit auf Speichereffizienz und Systemgeschwindigkeit aus.
+
+</details>

@@ -1210,3 +1210,54 @@ In Go wirkt sich die richtige Reihenfolge der Felder in der Struktur direkt auf
 deren Größe und damit auf Speichereffizienz und Systemgeschwindigkeit aus.
 
 </details>
+
+
+<details>
+<summary>22. Warum ist die Übergabe einer großen Struktur „als Wert“ oft langsamer als die Übergabe eines Zeigers?</summary>
+
+#### Go
+
+Die Übergabe einer großen Struktur als Wert bedeutet, dass bei jedem Aufruf der
+Funktion der gesamte Inhalt kopiert wird. Bei Massentypen kann dies erheblich
+teurer sein als die Übergabe eines einzelnen Zeigers auf dieselben Daten.
+
+#### Warum es einen Leistungsunterschied gibt:
+
+1. **Kosten für Speicherkopien:** Je größer die Struktur, desto mehr Bytes
+   müssen bei E/A-Aufrufen kopiert werden.
+
+2. **Belastung des Prozessor-Cache:** Massive Kopien erhöhen den Speicherverkehr
+   und können die Cache-Lokalität in Hot-Code-Bereichen verschlechtern.
+
+3. **Kaskadeneffekt in Schleifen und Pipelines:** Wenn eine Struktur mehrmals
+   übergeben wird, häuft sich der Overhead.
+
+4. **Mögliche Auswirkungen auf Zuweisungen:** In einigen Szenarien kann das
+   Kopier- und Escape-Verhalten die Laufzeit und den GC-Druck erhöhen.
+
+#### Wenn ein Zeiger oft besser ist:
+
+1. Wenn die Struktur groß ist und häufig zwischen Funktionen übergeben wird.
+
+2. Wenn Sie den Freigabestatus ohne zusätzliches Kopieren ändern müssen.
+
+3. Wenn ein stabiles Latenzverhalten unter Last wichtig ist.
+
+#### Aber nicht immer ist ein Zeiger automatisch besser:
+
+1. Bei kleinen Strukturen kann die Wertübergabe einfacher und recht effizient
+   sein.
+
+2. Value sorgt für eine bessere Zustandsisolation (kein impliziter gemeinsamer
+   veränderlicher Zustand).
+
+3. Pointer fügt Aliasing-Risiken und die Notwendigkeit einer sorgfältigeren
+   Synchronisierung im konkurrierenden Code hinzu.
+
+#### Praktisches Fazit:
+
+In Go erfolgt die Wahl zwischen Wert und Zeiger nicht dogmatisch, sondern anhand
+des Datenprofils: Große Strukturen und häufige Aufrufe begünstigen den Zeiger;
+Kleine, unveränderliche Daten eignen sich oft für die Wertübergabe.
+
+</details>

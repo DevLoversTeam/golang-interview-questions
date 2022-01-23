@@ -1261,3 +1261,61 @@ des Datenprofils: Große Strukturen und häufige Aufrufe begünstigen den Zeiger
 Kleine, unveränderliche Daten eignen sich oft für die Wertübergabe.
 
 </details>
+
+
+<details>
+<summary>23. Warum ist `map` bei sequentiellem Zugriff langsamer als `slice` und wann sollte man was auswählen?</summary>
+
+#### Go
+
+Für sequenziellen Zugriff (`sequential access`) ist `slice` normalerweise
+schneller als `map`, da die Elemente von `slice` kompakt sind und linear gelesen
+werden, während `map` Schlüssel-Hashing und Zugriff auf eine komplexere interne
+Struktur durchführt.
+
+#### Warum `slice` in einem sequentiellen Durchgang schneller ist:
+
+1. **Lineare Platzierung im Speicher:** Elemente liegen nebeneinander, was gut
+   mit CPU-Caches übereinstimmt.
+
+2. **Einfacher Zugriff per Index:** minimale Hilfsoperationen pro Element.
+
+3. **Bessere Vorhersagbarkeit für den Prozessor:** Das lineare Muster reduziert
+   die Anzahl der Cache-Fehler.
+
+#### Warum `map` in diesem Szenario langsamer ist:
+
+1. **Hashing-Schlüssel** erhöhen den Rechenaufwand.
+
+2. **Ungleichmäßige Bucket-Platzierung** ist schlechter für die
+   Speicherlokalität.
+
+3. **Komplexere Zugriffslogik** (Suche in Buckets, Kollisionen, Service-Checks).
+
+#### Wann Sie `slice` wählen sollten:
+
+1. Daten werden sequentiell übergeben.
+
+2. Erfordert Iterationen, Sortierung und Stapelverarbeitung.
+
+3. Der Schlüssel ist eigentlich eine Position (Index), kein beliebiger
+   Bezeichner.
+
+#### Wann Sie `map` wählen sollten:
+
+1. Erfordert schnellen Schlüsselzugriff (`id`, `name`, zusammengesetzter
+   Schlüssel).
+
+2. Set-/Wörterbuch-Semantik ist wichtig.
+
+3. Die Suche nach Schlüsselwerten dominiert die vollständige lineare
+   Durchquerung.
+
+#### Praktisches Fazit:
+
+`slice` – ein Tool für geordnete, dichte Iterationen; `map` – für den
+Adresszugriff per Schlüssel. Wenn die Arbeitslast hauptsächlich sequentiell ist,
+bietet `slice` normalerweise eine bessere Leistung und einen geringeren
+Overhead.
+
+</details>

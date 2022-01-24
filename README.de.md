@@ -1319,3 +1319,66 @@ bietet `slice` normalerweise eine bessere Leistung und einen geringeren
 Overhead.
 
 </details>
+
+
+<details>
+<summary>24. Wie überprüfe ich, ob eine Variable eine Schnittstelle implementiert?</summary>
+
+#### Go
+
+In Go ist die Implementierung einer Schnittstelle implizit: Es wird davon
+ausgegangen, dass ein Typ eine Schnittstelle implementiert, wenn er über den
+vollständigen Satz erforderlicher Methoden verfügt. Daher ist eine Überprüfung
+sowohl in der Kompilierungsphase als auch zur Laufzeit möglich.
+
+#### 1) Überprüfung in der Kompilierungsphase (empfohlen):
+
+Der zuverlässigste Ansatz besteht darin, eine Behauptung zur Kompilierungszeit
+hinzuzufügen:
+
+```go
+var _ MyInterface = (*MyType)(nil)
+```
+
+Was das bedeutet:
+
+1. Wenn `*MyType` `MyInterface` nicht implementiert, wird der Code nicht
+   kompiliert.
+
+2. Dies dokumentiert den Typvertrag direkt in der Codebasis.
+
+3. Besonders nützlich für öffentliche APIs, Adapter und große Befehle.
+
+#### 2) Prüfung während der Ausführung (Laufzeit):
+
+Wenn ein Wert vom Typ `any`/interface vorhanden ist, wird die Typzusicherung
+verwendet:
+
+```go
+v, ok := x.(MyInterface)
+```
+
+1. `ok == true` – der Wert implementiert die Schnittstelle.
+
+2. `ok == false` – wird nicht implementiert.
+
+3. Die Option ohne `ok` kann Panik auslösen, daher verwendet Produktionscode
+   normalerweise die sichere Form mit `ok`.
+
+#### Zeiger vs. Wertempfänger – eine entscheidende Nuance:
+
+1. Die Methodensätze `T` und `*T` sind unterschiedlich.
+
+2. Oft implementiert `*T` die Schnittstelle und `T` nicht.
+
+3. Im Vorstellungsgespräch ist es wichtig, diesen Punkt klar anzusprechen, denn
+   er ist eine typische Fehlerquelle.
+
+#### Fazit:
+
+Die beste Vorgehensweise besteht darin, die Implementierung der Schnittstelle
+mit einer Assertion zur Kompilierungszeit festzulegen und die
+Laufzeitüberprüfung per Assertion zu verwenden, bei der der Typ des Werts erst
+zur Laufzeit bekannt ist.
+
+</details>

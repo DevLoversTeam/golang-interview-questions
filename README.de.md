@@ -1382,3 +1382,95 @@ Laufzeitüberprüfung per Assertion zu verwenden, bei der der Typ des Werts erst
 zur Laufzeit bekannt ist.
 
 </details>
+
+
+<details>
+<summary>25. Was sind `type assertion` und `type switch` – welche Vorteile haben sie und wie geht man mit Behauptungen ohne Panik um?</summary>
+
+#### Go
+
+`type assertion` und `type switch` in Go sind Mechanismen zum Arbeiten mit
+Schnittstellenwerten, wenn der tatsächliche (dynamische) Typ zur Laufzeit
+angegeben werden muss.
+
+#### Was ist `type assertion`:
+
+`type assertion` hat die Form:
+
+```go
+v, ok := x.(T)
+```
+
+1. `x` – Schnittstellentypwert.
+
+2. `T` ist der Typ, zu dem wir führen wollen.
+
+3. `ok == true` bedeutet, dass der dynamische Typ mit `T` kompatibel ist.
+
+#### Vorteil `type assertion`:
+
+1. Ermöglicht den Zugriff auf bestimmtes Verhalten eines bestimmten Typs.
+
+2. Ermöglicht sicheres Arbeiten mit `any`/Schnittstellen in Adaptern, Decodern
+   und Middleware.
+
+3. Nützlich, wenn ein bestimmter Typ erwartet wird.
+
+#### So vermeiden Sie Panik:
+
+Gefährliche Form:
+
+```go
+v := x.(T) // panic, якщо x не є T
+```
+
+Sicheres Formular:
+
+```go
+v, ok := x.(T)
+if !ok {
+    // обробити невідповідність типу
+}
+```
+
+Als Produktionsstandard gilt die zweistellige Form mit `ok`.
+
+#### Was ist `type switch`:
+
+`type switch` ist eine bequeme Möglichkeit, mehrere mögliche Typen gleichzeitig
+zu verarbeiten:
+
+```go
+switch v := x.(type) {
+case string:
+    // ...
+case int:
+    // ...
+default:
+    // ...
+}
+```
+
+#### Vorteil `type switch`:
+
+1. Macht die Typverzweigung lesbar.
+
+2. Reduziert die Kaskade mehrerer Behauptungen.
+
+3. Gibt einen expliziten `default`-Pfad für unbekannte Typen an.
+
+#### Wann was zu verwenden ist:
+
+1. **`type assertion`** – beim Überprüfen eines erwarteten Typs.
+
+2. **`type switch`** – wenn wir mehrere Typen zulassen und für jeden
+   unterschiedliche Logik benötigen.
+
+#### Fazit:
+
+`type assertion` und `type switch` sind eine kontrollierte Möglichkeit, einen
+dynamischen Schnittstellenwerttyp „offenzulegen“. Um Abstürze zu vermeiden,
+sollte die Behauptung in der sicheren Form `v, ok := ...` erfolgen und immer
+über ein Verarbeitungsskript `ok == false` verfügen.
+
+</details>

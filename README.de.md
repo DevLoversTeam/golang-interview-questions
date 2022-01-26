@@ -1474,3 +1474,55 @@ sollte die Behauptung in der sicheren Form `v, ok := ...` erfolgen und immer
 über ein Verarbeitungsskript `ok == false` verfügen.
 
 </details>
+
+
+<details>
+<summary>26. Warum sind `interface{}` und `any` identisch, aber `*interface{}` ist fast immer ein Fehler?</summary>
+
+#### Go
+
+In Go ist `any` nur ein Alias (`alias`) für `interface{}`. Das heißt, aus der
+Sicht eines typischen Systems sind sie absolut gleich: Der Unterschied ist nur
+stilistischer und semantischer Natur und dient der Lesbarkeit des Codes.
+
+#### Warum `interface{}` == `any`:
+
+1. `any` wird zur besseren Übersichtlichkeit eingeführt, insbesondere im
+   generischen Code.
+
+2. Der Compiler behandelt `any` und `interface{}` als denselben Typ.
+
+3. Verhalten bei Zuweisung, Assertion, Switch ist identisch.
+
+#### Warum `*interface{}` fast immer ein Fehler ist:
+
+1. **Eine Schnittstelle ist bereits ein „Referenzcontainer“ für Wert + Typ.**
+   Das Hinzufügen einer weiteren Zeigerebene macht normalerweise keinen Sinn.
+
+2. **Kompliziert man die Semantik von nil:** mit `*interface{}`, erscheint eine
+   weitere Ebene von Zuständen (`nil`-Zeiger, Nicht-Null-Zeiger auf der
+   Null-Schnittstelle usw.), die nicht offensichtliche Fehler erzeugt.
+
+3. **Schlechte Lesbarkeit und API-Design:** Dieser Typ signalisiert fast immer,
+   dass das Datenmodell oder die Funktionssignatur schlecht entworfen ist.
+
+4. **Anstelle von `*interface{}` reicht normalerweise:**
+
+- oder übergeben Sie `interface{}`/`any` als Wert;
+
+- oder verwenden Sie einen bestimmten Zeigertyp (`*T`), wenn die Veränderbarkeit
+  des `T`-Objekts erforderlich ist.
+
+#### Wenn `*interface{}` passieren kann:
+
+- In engen technischen Szenarien (in denen genau eine Schnittstellenvariable wie
+  eine Zelle geändert werden muss), aber im angewandten Produktionscode ist dies
+  ein seltenes und meist unerwünschtes Muster.
+
+#### Fazit:
+
+`any` und `interface{}` sind identisch. Stattdessen handelt es sich bei
+`*interface{}` in den meisten Fällen um eine unnötige Abstraktion, die den Code
+verkompliziert und das Risiko von Logikfehlern erhöht.
+
+</details>

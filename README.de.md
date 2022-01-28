@@ -1587,3 +1587,65 @@ natürlich ist, nicht dort, wo ein strenger Vertrag ausgedrückt werden kann und
 sollte.
 
 </details>
+
+
+<details>
+<summary>28. Welchen Vorteil hat es, Schnittstellen zu akzeptieren und bestimmte Strukturen zurückzugeben?</summary>
+
+#### Go
+
+In Go gibt es ein gemeinsames und äußerst praktisches Prinzip: **Schnittstellen
+akzeptieren, Strukturen zurückgeben**. Seine Stärke liegt darin,
+Eingabeabhängigkeiten flexibel und Ausgabeverträge klar und funktionsreich zu
+halten.
+
+#### Was bedeutet „Schnittstellen akzeptieren“:
+
+1. Die Funktion/Methode akzeptiert einen Vertrag mit minimalem Verhalten (z. B.
+   `io.Reader`) anstelle eines hartcodierten Typs.
+
+2. Dies reduziert die Kopplung zwischen Modulen.
+
+3. Vereinfacht das Testen: Einfaches Ersetzen von Stub/Mock/Fake durch
+   erforderliche Methoden.
+
+#### Was bedeutet „Rückgabestrukturen“:
+
+1. Der Aufruf erhält einen konkreten Typ mit seinem vollständigen Methodensatz.
+
+2. API wird transparenter: Der Benutzer sieht die tatsächlichen Fähigkeiten des
+   Objekts.
+
+3. Einfacher, einen Typ weiterzuentwickeln, ohne externe Schnittstellenverträge
+   zu brechen.
+
+#### Warum diese Kombination effektiv ist:
+
+1. **Am Eingang – Abstraktion, am Ausgang – Konkretheit.**
+
+2. **Höhere Integrationsflexibilität** ohne Einbußen bei der API-Ausdruckskraft.
+
+3. **Bessere Wartbarkeit:** Modulgrenzen sind klar, Abhängigkeiten werden
+   kontrolliert.
+
+4. **Einfacheres Refactoring:** Interne Änderungen sind ohne kaskadierende
+   Bearbeitungen einfacher durchzuführen.
+
+#### Wann Sie vorsichtig sein sollten:
+
+1. Erstellen Sie keine Fallback-Schnittstellen ohne echten Bedarf.
+
+2. Eine Schnittstelle sollte dort leben, wo sie verbraucht wird, und nicht dort,
+   wo sie implementiert ist.
+
+3. Wenn nur eine Implementierung erforderlich ist und kein Testvorteil besteht,
+   kann zu viel Abstraktion die Lesbarkeit beeinträchtigen.
+
+#### Fazit:
+
+Das Akzeptieren von Schnittstellen und das Zurückgeben konkreter Strukturen ist
+eine Balance zwischen Erweiterbarkeit und Klarheit. Es ermöglicht Ihnen, Go-Code
+zu schreiben, der sowohl bequem zu testen als auch einfach zu warten und
+natürlich zu entwickeln ist.
+
+</details>

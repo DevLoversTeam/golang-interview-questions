@@ -1649,3 +1649,51 @@ zu schreiben, der sowohl bequem zu testen als auch einfach zu warten und
 natürlich zu entwickeln ist.
 
 </details>
+
+
+<details>
+<summary>29. Warum verwendet Go Ein-Methoden-Schnittstellen (z. B. `io.Reader`, `fmt.Stringer`) und welchen architektonischen Vorteil bietet dies?</summary>
+
+#### Go
+
+Einzelmethodenschnittstellen in Go sind ein konzentrierter Verhaltensvertrag:
+Sie beschreiben genau eine Fähigkeit eines Objekts, ohne die API zu überlasten.
+Aus diesem Grund wurden `io.Reader`, `io.Writer`, `fmt.Stringer` zu den
+Grundbausteinen des Ökosystems.
+
+#### Warum dieser Ansatz so wirkungsvoll ist:
+
+1. **Mindestvertrag:** Typ muss nur eine Methode implementieren, um eine große
+   Anzahl von Komponenten zu integrieren.
+
+2. **Geringe Kopplung:** Module hängen von einer Fähigkeit ab, nicht von einer
+   bestimmten Implementierung oder einer großen „fetten“ Schnittstelle.
+
+3. **Zusammensetzbarkeit:** Komplexe Funktionen lassen sich leicht aus
+   Kombinationen kleiner Schnittstellen erstellen.
+
+4. **Einfaches Testen:** Für den Test reicht ein kleiner Fake/Stub mit einer
+   Methode.
+
+#### Architektonischer Nutzen:
+
+1. **Plugin-ähnliche Austauschbarkeit von Implementierungen:** Datei,
+   Netzwerk-Socket, In-Memory-Puffer können genauso funktionieren wie
+   `io.Reader`.
+
+2. **Stabile Modulgrenzen:** Abhängigkeiten zwischen Systemschichten werden klar
+   und evolutionär stabil.
+
+3. **Einfache Codeentwicklung:** Neue Implementierungen können ohne Änderung der
+   Verbraucher hinzugefügt werden, wenn der Vertrag erhalten bleibt.
+
+4. **Lesbarkeit der Absicht:** Die Funktionssignatur beantwortet sofort die
+   Frage „Was wird vom Argument verlangt“.
+
+#### Praktisches Fazit:
+
+Ein-Methoden-Schnittstellen sind keine stilistische Dekoration, sondern eine
+Architekturstrategie Go: kleine Verträge, hohe Zusammensetzbarkeit, einfache
+Testbarkeit und kontrollierte Systemskalierbarkeit.
+
+</details>

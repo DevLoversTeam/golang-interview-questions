@@ -1697,3 +1697,76 @@ Architekturstrategie Go: kleine Verträge, hohe Zusammensetzbarkeit, einfache
 Testbarkeit und kontrollierte Systemskalierbarkeit.
 
 </details>
+
+
+<details>
+<summary>30. Warum `nil != nil` in Go und in welcher Beziehung steht es zu Schnittstellen?</summary>
+
+#### Go
+
+Der Ausdruck „`nil != nil`“ in Go bezieht sich normalerweise auf Schnittstellen
+und bedeutet, dass ein Schnittstellenwert **Typ + Wert** enthalten kann, wobei
+der darin enthaltene Wert `nil` ist, die Schnittstelle selbst jedoch nicht `nil`
+ist.
+
+#### Wie die Schnittstelle konzeptionell aufgebaut ist:
+
+Die Schnittstelle besteht aus zwei Teilen:
+
+1. **Dynamischer Typ**
+
+2. **Dynamischer Wert**
+
+Eine Schnittstelle ist nur dann `nil`, wenn **beide** Teile fehlen.
+
+#### Wo die Falle auftritt:
+
+1. Wir haben `var p *MyType = nil`.
+
+2. Zuweisen `var i any = p`.
+
+3. Jetzt enthält `i`:
+
+- Typ: `*MyType`
+
+- Wert: `nil`
+
+Also `i != nil`, weil der typische Teil gefüllt ist.
+
+#### Praktische Konsequenzen:
+
+1. Die Prüfung `if err != nil` oder `if x != nil` verhält sich möglicherweise
+   nicht wie vom Entwickler erwartet, wenn in der Schnittstelle der Typ nil
+   eingeschlossen ist.
+
+2. Dies ist eine typische Fehlerquelle in Fehlern, Fabriken, Middleware und
+   DI-Code.
+
+#### So vermeiden Sie Probleme:
+
+1. Gib `nil` genau als „leere Schnittstelle“ zurück, nicht als Null in die
+   Schnittstelle eingegeben.
+
+2. Konstruieren Sie `error` und andere Schnittstellenergebnisse mit Sorgfalt.
+
+3. Führen Sie bei Bedarf eine explizite Prüfung eines bestimmten Typs über
+   Assertion/Switch durch.
+
+#### Fazit:
+
+In Go ist „`nil != nil`“ kein Paradoxon, sondern eine Folge der
+Zweikomponentennatur der Schnittstelle. Die wichtigste Regel ist, dass eine
+Schnittstelle nur dann `nil` ist, wenn sie weder einen dynamischen Typ noch
+einen dynamischen Wert enthält.
+
+#### Beispiel:
+
+```go
+var p *bytes.Buffer = nil
+var x any = p
+
+fmt.Println(p == nil) // true
+fmt.Println(x == nil) // false: type=*bytes.Buffer, value=nil
+```
+
+</details>

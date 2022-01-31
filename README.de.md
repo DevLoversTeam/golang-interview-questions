@@ -1770,3 +1770,59 @@ fmt.Println(x == nil) // false: type=*bytes.Buffer, value=nil
 ```
 
 </details>
+
+
+<details>
+<summary>31. Können Methoden für `nil`-Werte aufgerufen werden und wo wird dies aktiv verwendet?</summary>
+
+#### Go
+
+Ja, in Go kann die Methode auf dem `nil`-Wert aufgerufen werden, **sofern dies
+aus Sicht des Empfängertyps zulässig ist**. Am häufigsten sprechen wir von
+Methoden mit einem Zeigerempfänger (`*T`), wobei der Empfänger `nil` sein kann.
+
+#### Schlüsselidee:
+
+1. Der Aufruf einer Methode auf einen `nil`-Zeiger ist technisch möglich.
+
+2. Die Frage ist, was der Methodencode darin macht.
+
+3. Wenn die Methode den Empfänger ohne Überprüfung dereferenziert, kommt es zu
+   einer Panic.
+
+#### Wenn es sicher funktioniert:
+
+1. Die Methode behandelt explizit den `nil`-Empfänger:
+
+- gibt den Standardwert zurück;
+
+- gibt einen Fehler zurück;
+
+- verhält sich wie ein No-Op.
+
+2. Dieses Design wird manchmal bewusst für eine praktische API verwendet.
+
+#### Wo dies tatsächlich verwendet wird:
+
+1. **Fehlertypen und Wrapper:** Methoden für Zeigertypen können ordnungsgemäß
+   mit `nil` funktionieren, um die Fehlerbehandlung zu vereinfachen.
+
+2. **Verknüpfte/listen-/baumartige Strukturen:** `nil`-Knoten kann als leerer
+   Zustand mit korrektem Verhalten interpretiert werden.
+
+3. **Dienstobjekte mit optionalen Komponenten:** `nil` Empfänger wird manchmal
+   im „deaktivierten“ oder „leeren“ Modus verwendet.
+
+#### Eine wichtige Nuance bei Schnittstellen:
+
+Wenn ein `nil`-Zeiger in eine Schnittstelle eingeschlossen ist, ist die
+Schnittstelle selbst möglicherweise nicht `nil`. Daher sollten Prüfungen auf
+`nil` sorgfältig durchgeführt werden, um falsches Vertrauen zu vermeiden.
+
+#### Praktisches Fazit:
+
+Methoden für `nil`-Werte in Go sind ein legitimes Werkzeug, aber nur mit
+bewusstem API-Design: entweder sichere Handhabung von `nil` innerhalb der
+Methode oder klare Dokumentation, dass ein Aufruf von `nil` nicht zulässig ist.
+
+</details>

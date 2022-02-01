@@ -1826,3 +1826,78 @@ bewusstem API-Design: entweder sichere Handhabung von `nil` innerhalb der
 Methode oder klare Dokumentation, dass ein Aufruf von `nil` nicht zulässig ist.
 
 </details>
+
+
+<details>
+<summary>32. Wie kann man der Haupt-Goroutine mitteilen, dass sie auf den Abschluss aller Worker-Goroutines warten soll?</summary>
+
+#### Go
+
+Die kanonische Möglichkeit, auf den Abschluss aller funktionierenden Goroutines
+in Go zu warten, ist die Verwendung von `sync.WaitGroup`. Es bietet ein
+einfaches und robustes Muster: Erhöhen Sie den Zähler, bevor Sie den Job
+starten, dekrementieren Sie ihn, nachdem er erledigt ist, und rufen Sie `Wait()`
+in der Haupt-Goroutine auf.
+
+#### Grundschema:
+
+1. Erstellen Sie `var wg sync.WaitGroup`.
+
+2. Vor jedem Goroutine-Aufruf `wg.Add(1)`.
+
+3. Innerhalb der Goroutine führen Sie `defer wg.Done()` aus.
+
+4. Im Haupt-Goroutine-Aufruf `wg.Wait()`.
+
+#### Warum es funktioniert:
+
+1. `WaitGroup` zählt die Anzahl der nicht erledigten Aufgaben.
+
+2. `Wait()` blockiert die Ausführung, bis der Zähler Null erreicht.
+
+3. Dadurch wird sichergestellt, dass `main` nicht vor den funktionierenden
+   Goroutines beendet wird.
+
+#### Typische Fehler, die Sie vermeiden sollten:
+
+1. Aufruf `Add(1)` **nach** dem Start der Goroutine (Gefahr von Race und
+   falscher Beendigung).
+
+2. Vergessen Sie `Done()` im Bug- oder frühen `return`-Zweig.
+
+3. Wiederverwendung desselben `WaitGroup` in verschiedenen Phasen ohne klare
+   Synchronisierung.
+
+#### Wann ist besser `errgroup`:
+
+Wenn Sie zusätzlich zum Warten noch Folgendes benötigen:
+
+1. sammeln Sie den ersten Fehler,
+
+2. Andere Aufgaben über `context` abbrechen,
+
+dann ist es praktischer, `errgroup.Group` zu verwenden.
+
+#### Fazit:
+
+Für die Aufgabe „Warten, bis alle Goroutines abgeschlossen sind“ ist das
+Standardtool `sync.WaitGroup`: einfacher Vertrag, vorhersehbares Verhalten und
+Produktionszuverlässigkeit.
+
+#### Beispiel:
+
+```go
+var wg sync.WaitGroup
+
+for i := 0; i < 3; i++ {
+	wg.Add(1)
+	go func(id int) {
+		defer wg.Done()
+		fmt.Println("worker", id)
+	}(i)
+}
+
+wg.Wait()
+```
+
+</details>

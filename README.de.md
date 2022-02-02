@@ -1901,3 +1901,59 @@ wg.Wait()
 ```
 
 </details>
+
+
+<details>
+<summary>33. Warum wurde die Vorlage `value := value` in Schleifen verwendet und ist sie nach Go 1.22 relevant?</summary>
+
+#### Go
+
+Das `value := value`-Muster wurde in der Vergangenheit in `for range`-Schleifen
+verwendet, um eine separate lokale Kopie einer Variablen zu erstellen und diese
+sicher in einem Abschluss zu erfassen, insbesondere in einer Goroutine.
+
+#### Warum dies vor Go 1.22 erforderlich war:
+
+1. Die Iterationsvariable in `range` wurde zwischen den Iterationen tatsächlich
+   wiederverwendet.
+
+2. Ein Abschluss würde oft dieselbe Variable anstelle ihres „aktuellen“ Werts
+   erfassen.
+
+3. Als Ergebnis sah die Goroutine unerwartete Daten (normalerweise den letzten
+   Wert).
+
+Deshalb schrieben sie:
+
+`v := v`
+
+um eine neue Variable innerhalb einer Iteration zu erstellen.
+
+#### Was sich nach Go 1.22 geändert hat:
+
+1. Die Semantik von `range` wurde geändert: Für jede Iteration haben die
+   Schleifenvariablen separate Werte, die im Abschluss erfasst werden müssen.
+
+2. Ein typischer Fehler mit einem „späten“ Wert in Goroutines wurde auf
+   Sprachebene behoben.
+
+3. In den meisten modernen Fällen wird die Vorlage `value := value` nicht mehr
+   benötigt.
+
+#### Ist die Vorlage heute relevant:
+
+1. **Für Code, der garantiert unter Go 1.22+** funktioniert – normalerweise
+   nicht.
+
+2. **Für Projekte mit älteren Versionen Go** – ja, kann erforderlich sein.
+
+3. **Für gemischte Umgebungen/Bibliotheken** sollten Sie die niedrigste
+   unterstützte Version anstreben.
+
+#### Praktisches Fazit:
+
+`value := value` war ein Schutzmuster gegen die spezifische Falle `range`. Nach
+Go 1.22 ist die Notwendigkeit größtenteils verschwunden, sie bleibt jedoch in
+Legacy-Code oder bei der Unterstützung älterer Versionen relevant.
+
+</details>

@@ -1957,3 +1957,57 @@ Go 1.22 ist die Notwendigkeit größtenteils verschwunden, sie bleibt jedoch in
 Legacy-Code oder bei der Unterstützung älterer Versionen relevant.
 
 </details>
+
+
+<details>
+<summary>34. Kann die Verwendung von Goroutines das System verlangsamen und in welchen Fällen?</summary>
+
+#### Go
+
+Ja, das kann es. Obwohl Goroutines leichtgewichtig sind, sind sie nicht
+„kostenlos“. Eine unsachgemäße oder übermäßige Verwendung kann die Leistung
+verringern, die Latenz erhöhen und die Laufzeit verkomplizieren.
+
+#### Wenn Goroutines das System verlangsamen können:
+
+1. **Übermäßige Anzahl von Goroutines (Goroutines-Explosion):** Tausende oder
+   Hunderttausende Aufgaben ohne Einschränkung des Wettbewerbs belasten den
+   Planer und den Speicher.
+
+2. **Feingranulare Aufgaben:** Wenn die Arbeit sehr klein ist, kann der
+   Start-/Koordinationsaufwand größer sein als die nützliche Arbeit.
+
+3. **Intensive Synchronisierung:** Häufiges Blockieren (`mutex`, Kanäle,
+   `select`) führt zu Konflikten und verringert den Durchsatz.
+
+4. **Fehlgeschlagener Datenaustausch über Kanäle:** Die redundante Weiterleitung
+   großer Nutzlasten oder komplexer Fan-In/Fan-Out-Topologien kann mehr kosten
+   als einfachere Modelle.
+
+5. **Fehlender Gegendruck:** Wenn Produzenten Arbeit schneller generieren als
+   Verbraucher sie verarbeiten, sammeln sich Warteschlangen an, Speicher und
+   Verzögerungen nehmen zu.
+
+6. **E/A- und externe Ressourcenprobleme:** Übermäßige Parallelität kann die
+   Datenbank, das Netzwerk, das Dateisystem oder APIs von Drittanbietern
+   überlasten und das Gesamtsystem beeinträchtigen, anstatt es zu beschleunigen.
+
+#### So vermeiden Sie eine Verschlechterung:
+
+1. Begrenzter Wettbewerb (Arbeiterpool, Semaphor, begrenzte Warteschlangen).
+
+2. Profile (`pprof`, Trace) statt sich auf die Intuition zu verlassen.
+
+3. Reduzieren Sie den gemeinsam genutzten veränderlichen Zustand und sperren Sie
+   Konflikte.
+
+4. Wählen Sie die Größe der Parallelität entsprechend der tatsächlichen
+   Arbeitslast und den Ressourcen aus.
+
+#### Fazit:
+
+Horoutinen beschleunigen das System nur, wenn die Parallelität kontrolliert
+wird. In der Produktion ist das Prinzip einfach: nicht „mehr Goroutines“,
+sondern „genügend Goroutines mit den richtigen Grenzen und Synchronisation“.
+
+</details>

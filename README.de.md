@@ -2011,3 +2011,77 @@ wird. In der Produktion ist das Prinzip einfach: nicht „mehr Goroutines“,
 sondern „genügend Goroutines mit den richtigen Grenzen und Synchronisation“.
 
 </details>
+
+
+<details>
+<summary>35. Was ist der Unterschied zwischen gepufferten und ungepufferten Kanälen? Wann ist es angebracht, Slice + Mutex anstelle von Kanälen zu verwenden?</summary>
+
+#### Go
+
+Kanäle in Go können gepuffert oder ungepuffert sein, und dieser Unterschied
+definiert die Semantik der Synchronisation zwischen Goroutines. Die Wahl des
+Kanaltyps ist eine Wahl des Koordinationsmodells und nicht nur eine „technische
+Sache“.
+
+#### Ungepufferter Kanal (`make(chan T)`):
+
+1. **Synchroner Austausch:** `send` blockiert, bis eine andere Goroutine den
+   entsprechenden `receive` ausführt (und umgekehrt).
+
+2. **Klare Übergabe:** ist gut, wenn eine enge Schrittsynchronisation
+   erforderlich ist.
+
+3. **Mindestanzahl der Warteschlange:** Es sammeln sich keine Daten im Kanal an.
+
+#### Gepufferter Kanal (`make(chan T, n)`):
+
+1. **Mehr asynchrone Interaktion:** `send` blockiert nicht, solange Platz im
+   Puffer ist.
+
+2. **Verwaltete Warteschlange:** ermöglicht das Glätten kurzfristiger
+   Lastspitzen.
+
+3. **Rückstau aufgrund der Kapazität:** Wenn der Puffer voll ist, blockiert
+   `send` erneut.
+
+#### Wenn `slice + mutex` anstelle von Kanälen angemessen ist:
+
+1. **Erfordert einen gemeinsam genutzten Puffer mit nicht trivialen Vorgängen:**
+   Stapellöschung, Neuordnung, Direktzugriff, komplexe Aggregationsregeln.
+
+2. **Wenn das Modell „gemeinsam genutzter Zustand mit expliziter Sperre“ und
+   kein Nachrichtenfluss ist:** Kanäle sind nicht immer das einfachste Werkzeug
+   für veränderbare Sammlungen.
+
+3. **Wenn eine subtile Speicher-/Layoutoptimierung wichtig ist:** `slice` bietet
+   eine direktere Kontrolle über Datenstruktur und Vorgänge.
+
+4. **Wenn die Kanalarchitektur unnötige Komplexität erzeugt:** Manchmal ist
+   `mutex` + eine klare Invariante einfacher, besser lesbar und schneller.
+
+#### Praktische Wahlregel:
+
+1. **Kanäle** – zur Weitergabe von Ereignissen/Nachrichten zwischen unabhängigen
+   akteurähnlichen Goroutines.
+
+2. **`slice + mutex`** – zum Verwalten einer gemeinsam genutzten Sammlung mit
+   einer Vielzahl von Statusoperationen.
+
+#### Fazit:
+
+Gepufferte und ungepufferte Kanäle unterscheiden sich im Grad der
+Austauschsynchronität. Die Alternative `slice + mutex` ist gerechtfertigt, wenn
+Sie eine verwaltete, gemeinsam genutzte Statusstruktur anstelle eines
+Nachrichtentransports wünschen.
+
+#### Beispiel:
+
+```go
+unbuf := make(chan int)    // надсилання чекає отримувача
+buf := make(chan int, 100) // надсилання не блокується, поки є місце
+
+buf <- 1
+buf <- 2
+```
+
+</details>

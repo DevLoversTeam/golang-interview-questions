@@ -2129,3 +2129,74 @@ Eigenschaft ist sowohl eine Quelle häufiger Fehler als auch eine leistungsstark
 `select` Kontrolltechnik, wenn sie absichtlich verwendet wird.
 
 </details>
+
+
+<details>
+<summary>37. Wie und warum werden `nil`-Kanäle in `select` verwendet? Warum blockiert der Kanal `nil` für immer und wie wird er verwendet?</summary>
+
+#### Go
+
+Der Kanal `nil` in `select` ist eine kontrollierte Möglichkeit, einzelne Zweige
+dynamisch zu aktivieren oder zu deaktivieren. Da Vorgänge auf dem Kanal `nil`
+nicht abgeschlossen werden können, wird der entsprechende Kanal `case` inaktiv.
+
+#### Warum der Kanal `nil` für immer blockiert:
+
+1. Der Kanal ist nicht initialisiert (`var ch chan T`), d. h. er verfügt über
+   keine Laufzeitstruktur für Senden/Empfangen.
+
+2. `send` und `receive` haben keinen „Treffpunkt“, also warten sie auf
+   unbestimmte Zeit.
+
+3. In `select` bedeutet dies: Ein Fall mit diesem Kanal wird niemals ausgewählt.
+
+#### So verwenden Sie es in `select`:
+
+1. **Ereignisquelle dynamisch deaktivieren:** `ch = nil` zuweisen und Zweig
+   `case <-ch:` ist nicht mehr aktiviert.
+
+2. **Lebenszyklusverwaltung von Pipeline-Stufen:** Nach Abschluss einer
+   bestimmten Stufe wird die Pipeline zurückgesetzt, um sie von der weiteren
+   Auswahl auszuschließen.
+
+3. **Vermeidung redundanter Statusflags:** Anstelle zusätzlicher `if` innerhalb
+   der Schleife wird die Statuslogik an den `select`-Mechanismus selbst
+   übertragen.
+
+#### Praktische Vorsichtsmaßnahmen:
+
+1. Wenn alle Kanäle in `select` zu `nil` werden und es kein `default` gibt,
+   erhalten Sie eine dauerhafte Sperre.
+
+2. `close(nil)` verursacht Panik, daher sollten Nullen und Schließen nicht
+   verwechselt werden.
+
+3. Code mit `nil`-Kanälen benötigt klare Invarianten, sonst kann es leicht zu
+   einem Deadlock kommen, der schwer zu debuggen ist.
+
+#### Fazit:
+
+Der Kanal `nil` in `select` ist ein eleganter Fallaktivitätsschalter. Dies ist
+für die kontrollierte Parallelitätslogik nützlich, solange die Zustände
+sorgfältig kontrolliert werden und eine Situation vermieden wird, in der alle
+Pfade blockiert werden.
+
+#### Beispiel:
+
+```go
+var in <-chan int = source
+for {
+	select {
+	case v, ok := <-in:
+		if !ok {
+			in = nil // вимикаємо гілку
+			continue
+		}
+		_ = v
+	case <-ctx.Done():
+		return
+	}
+}
+```
+
+</details>

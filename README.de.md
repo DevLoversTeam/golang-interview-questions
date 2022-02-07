@@ -2200,3 +2200,60 @@ for {
 ```
 
 </details>
+
+
+<details>
+<summary>38. Wann ist es sinnvoll, `select` mit dem Zweig `default` zu verwenden und welche Szenarien werden damit abgedeckt?</summary>
+
+#### Go
+
+`select` mit Zweig `default` macht den Vorgang nicht blockierend: Wenn kein
+Kanal zum Austausch bereit ist, geht die Steuerung sofort an `default` über.
+Dies ist nützlich für eine kontrollierte Reaktionsfähigkeit, aber gefährlich,
+wenn man es unüberlegt anwendet.
+
+#### Falls zutreffend:
+
+1. **Try-Send/Try-Receive-Szenarien:** sollten den Austausch versuchen und,
+   falls dies jetzt nicht möglich ist, einen alternativen Pfad ohne Blockierung
+   wählen.
+
+2. **Ereignisschleifen mit Hintergrundarbeit:** wenn die Goroutine beim Warten
+   auf Ereignisse Hilfsaktionen ausführen soll (Heartbeat, Housekeeping,
+   Lichttelemetrie).
+
+3. **Gegendruck und kontrollierter Lastabwurf:** Wenn der Puffer voll ist, kann
+   `default` die Aufgabe ablehnen/verzögern, anstatt die gesamte Schleife zu
+   blockieren.
+
+4. **Soft-Timeouts/Statusabfrage:** in Kombination mit `time.Ticker` oder einer
+   anderen Logik ermöglicht es Ihnen, beim Warten auf einen Kanal nicht
+   „hängenzubleiben“.
+
+#### Welche Risiken deckt es ab und schafft:
+
+1. **Abdeckt das Risiko des Einfrierens** in kritischen Bereichen, in denen eine
+   Blockierung nicht akzeptabel ist.
+
+2. **Kann aber zu einer Auslastungsschleife** (aktive CPU-Spinning) führen, wenn
+   `default` zu oft ohne Pause oder sinnvolle Arbeit ausgelöst wird.
+
+#### Praktische Vorsichtsmaßnahmen:
+
+1. Verwenden Sie `default` nicht, wenn eine Blockierung der Synchronisierung
+   gewünscht wird.
+
+2. Fügen Sie in Schleifen eine Geschwindigkeitskontrolle hinzu (`ticker`,
+   `sleep`, Grenzwerte), um verschwendeten CPU-Verbrauch zu vermeiden.
+
+3. Korrigieren Sie die Richtlinie klar: Was tun wir, wenn der Kanal nicht bereit
+   ist (Löschen, erneuter Versuch, Warteschlange, Protokoll, Metrik).
+
+#### Fazit:
+
+`select` von `default` ist ein nicht blockierendes Parallelitätstool. Es eignet
+sich dort, wo Reaktivität und Lastmanagement Priorität haben, erfordert jedoch
+Disziplin, um den Verarbeitungszyklus nicht in ineffizientes aktives Polling zu
+verwandeln.
+
+</details>

@@ -2257,3 +2257,60 @@ Disziplin, um den Verarbeitungszyklus nicht in ineffizientes aktives Polling zu
 verwandeln.
 
 </details>
+
+
+<details>
+<summary>39. Wie funktioniert `select`, wenn Daten von mehreren Kanälen gleichzeitig empfangen werden?</summary>
+
+#### Go
+
+Wenn bei der Ausführung von `select` mehrere `case` bereitstehen, wählt Go
+pseudozufällig einen davon aus. Dies geschieht, um die starre Priorität des
+ersten Zweigs zu vermeiden und das systematische „Aushungern“ einzelner Kanäle
+zu reduzieren.
+
+#### Was passiert Schritt für Schritt:
+
+1. Runtime prüft alle `case` in `select`.
+
+2. Definiert einen Satz bereiter Vorgänge (Senden/Empfangen, die jetzt
+   ausgeführt werden können).
+
+3. Wenn ein `case` bereit ist, wird er ausgeführt.
+
+4. Wenn mehrere bereit sind, wird einer pseudozufällig ausgewählt.
+
+5. Wenn keine bereit sind:
+
+- führt `default` aus (falls zutreffend),
+
+- Andernfalls wird `select` blockiert, bis mindestens ein `case` bereit ist.
+
+#### Praktische Konsequenzen:
+
+1. **Es gibt keine Garantie für die Verarbeitungsreihenfolge** zwischen
+   gleichzeitig bereiten Kanälen.
+
+2. **Geschäftspriorität** kann nicht nur in der Reihenfolge `case` in `select`
+   codiert werden.
+
+3. **Das Verhalten ist kompetitiv korrekt, aber nicht deterministisch**, was für
+   ereignisgesteuerte Logik normal ist.
+
+#### So implementieren Sie die Priorität, falls erforderlich:
+
+1. Erstellen Sie zweiphasig `select` (zuerst kritischer Kanal, dann gemeinsam).
+
+2. Verwenden Sie separate Warteschlangen/Prioritätsplaner.
+
+3. Erzwingen Sie eine explizite Fair-/Prioritätsrichtlinie auf der
+   Anwendungsebene, anstatt sich auf die Laufzeit-Randomisierung zu verlassen.
+
+#### Fazit:
+
+Stehen mehrere Kanäle gleichzeitig zur Verfügung, wählt `select` einen zufällig
+(pseudozufällig) aus. Dies ist eine gute Strategie für allgemeine Fairness, aber
+die Priorisierung erfordert eine explizite Architekturlogik zusätzlich zum
+grundlegenden `select` .
+
+</details>

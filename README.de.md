@@ -2314,3 +2314,77 @@ die Priorisierung erfordert eine explizite Architekturlogik zusätzlich zum
 grundlegenden `select` .
 
 </details>
+
+
+<details>
+<summary>40. Wie kann ich einen Kanal in Go sicher schließen, wenn mehrere Goroutines darauf schreiben?</summary>
+
+#### Go
+
+Go Grundlinie: Der Kanal wird von **dem Eigentümer der Schreibseite**
+geschlossen und erst dann, wenn alle `send` Vorgänge garantiert abgeschlossen
+sind. Ein Skript mit mehreren Writer-Goroutines erfordert eine
+Abschlusskoordination.
+
+#### Sicherer Ansatz (kanonisch):
+
+1. Starten Sie mehrere Writer-Unterroutinen.
+
+2. Jeder Autor meldet dies nach Abschluss der Arbeit (`WaitGroup.Done()`).
+
+3. Eine separate Kontroll-Goroutine wartet auf `wg.Wait()`.
+
+4. Nur dann ruft `close(ch)` auf.
+
+#### Warum es sicher ist:
+
+1. Keine Goroutine schreibt nach `close` in den Kanal.
+
+2. Vermeidet Panik `send on closed channel`.
+
+3. Das Schließen erfolgt genau einmal pro kontrolliertem Punkt.
+
+#### Was nicht möglich ist:
+
+1. Ermöglichen Sie jedem Autor, den geteilten Kanal unabhängig zu schließen.
+
+2. Schließen Sie den Kanal „nur für den Fall“ von mehreren Standorten aus.
+
+3. Panik als „Synchronisationsmechanismus“ einzufangen, ist ein Antimuster.
+
+#### Zusätzliche Praktiken:
+
+1. Für einen frühen Stopp verwenden Sie auf der Leserseite ein separates
+   `done/context` anstelle von `close(dataCh)`.
+
+2. Wenn Sie einen einmaligen Abschluss in einer komplexen Topologie
+   gewährleisten müssen, verwenden Sie `sync.Once`.
+
+#### Fazit:
+
+In einem Multi-Writer-Szenario wird der Kanal vom Koordinator sicher
+geschlossen, nachdem er den Abschluss aller Writer-Unterroutinen explizit
+bestätigt hat. Das Prinzip ist einfach: **viele Absender, einer, der näher
+kommt, schließlich sendet er**.
+
+#### Beispiel:
+
+```go
+ch := make(chan int)
+var wg sync.WaitGroup
+
+for i := 0; i < 5; i++ {
+	wg.Add(1)
+	go func(v int) {
+		defer wg.Done()
+		ch <- v
+	}(i)
+}
+
+go func() {
+	wg.Wait()
+	close(ch) // один координатор закриває канал
+}()
+```
+
+</details>

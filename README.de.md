@@ -2388,3 +2388,70 @@ go func() {
 ```
 
 </details>
+
+
+<details>
+<summary>41. Wie implementiert man ein Semaphor über einen gepufferten Kanal?</summary>
+
+#### Go
+
+In Go wird das Semaphor natürlich durch einen gepufferten Kanal mit fester
+Kapazität modelliert. Die Anzahl der Slots im Puffer entspricht der maximal
+zulässigen Anzahl gleichzeitiger Operationen (Parallelität).
+
+#### Funktionsprinzip:
+
+1. **Erfassen (einen Slot belegen):** Vor Beginn der Arbeit führt die Goroutine
+   `sem <- token` aus. Wenn der Puffer voll ist, wird das Senden blockiert.
+
+2. **Release (Slot freigeben):** Nach Abschluss führt die Goroutine `<-sem` aus.
+   Dadurch wird Platz für die nächste Aufgabe frei.
+
+#### Typische Form:
+
+- `sem := make(chan struct{}, N)`
+
+- `N` – Begrenzung gleichzeitig aktiver Aufgaben.
+
+- `struct{}` wird als Lightweight-Token ohne Nutzlast ausgewählt.
+
+#### Warum es effektiv ist:
+
+1. **Einfaches Gegendruckmodell:** Redundante Aufgaben warten natürlich.
+
+2. **Transparente Synchronisierung:** Laufzeit Go führt Sperre/Aufwecken ohne
+   manuelle Steuerung von Bedingungsvariablen durch.
+
+3. **Liest sich gut im Code:** Die Absicht, „den Wettbewerb einzuschränken“, ist
+   sofort erkennbar.
+
+#### Praktische Vorsichtsmaßnahmen:
+
+1. Führen Sie immer `release` über `defer` aus, damit Sie im Fehlerfall keinen
+   Slot verlieren.
+
+2. Um das Warten abzubrechen, verwenden Sie `select` mit `context.Done()`.
+
+3. Verwechseln Sie ein Semaphor (Parallelitätslimit) nicht mit einer
+   Aufgabenwarteschlange (Worker-Pool).
+
+#### Fazit:
+
+Der gepufferte Kanal in Go ist eine kanonische Implementierung des
+Zählsemaphors: einfach, zuverlässig und gut in das Goroutine-Modell integriert.
+Dies ist eine der besten Möglichkeiten, den Wettbewerb in
+Produktionsdienstleistungen zu kontrollieren.
+
+#### Beispiel:
+
+```go
+sem := make(chan struct{}, 10) // максимум 10 одночасних задач
+
+run := func(job Job) {
+	sem <- struct{}{}         // зайняти слот
+	defer func() { <-sem }() // звільнити слот
+	job.Do()
+}
+```
+
+</details>

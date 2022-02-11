@@ -2455,3 +2455,61 @@ run := func(job Job) {
 ```
 
 </details>
+
+
+<details>
+<summary>42. Wie implementiert man die Muster `Fan-in` und `Fan-out`?</summary>
+
+#### Go
+
+`Fan-out` und `Fan-in` sind die grundlegenden Parallelitätsmuster in Go für
+verwaltete Parallelität: Ersteres verteilt die Arbeit an mehrere Ausführer,
+letzteres sammelt Ergebnisse zurück in einem gemeinsamen Thread.
+
+#### `Fan-out` (Verzweigung laden):
+
+1. Es gibt einen Eingabekanal für Aufgaben.
+
+2. Startet die Worker-Routine `N`.
+
+3. Jeder Worker liest aus einem gemeinsamen Eingabekanal und verarbeitet seinen
+   Teil.
+
+#### `Fan-in` (Ergebnisse zusammenführen):
+
+1. Mehrere Produzentenkanäle oder Arbeiterergebnisse.
+
+2. Einzelne Zusammenführungsroutinen senden Daten an einen Ausgabekanal.
+
+3. Nach Abschluss aller Zusammenführungszweige wird der Ausgabekanal
+   geschlossen.
+
+#### Typisches Architekturschema:
+
+1. `jobs` Kanal → `fan-out` für Arbeiter.
+
+2. Jeder Arbeiter schreibt an `results`.
+
+3. `fan-in` fasst `results` (oder mehrere `results`-Kanäle) in einem einzigen
+   Kanal für die nächste Stufe der Pipeline zusammen.
+
+#### Kritisch wichtige Regeln:
+
+1. Das Schließen von Kanälen sollte zentralisiert und einmalig erfolgen.
+
+2. Verwenden Sie `WaitGroup`, um die Kündigung des Arbeitnehmers zu
+   koordinieren.
+
+3. Für eine vorzeitige Beendigung verwenden Sie `context`/`done`, um
+   Goroutine-Lecks zu vermeiden.
+
+4. Kontrollieren Sie die Größe der Puffer und den Grad der Parallelität, um eine
+   Überlastung des Speichers oder externe Abhängigkeiten zu vermeiden.
+
+#### Fazit:
+
+`Fan-out` skaliert die Verarbeitung, `Fan-in` gibt die Kontrolle über den
+Ergebnisstrom zurück. Zusammen bilden sie die Grundlage für die effektivsten
+Pipeline-Lösungen in Go-Diensten.
+
+</details>

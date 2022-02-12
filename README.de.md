@@ -2513,3 +2513,57 @@ Ergebnisstrom zurück. Zusammen bilden sie die Grundlage für die effektivsten
 Pipeline-Lösungen in Go-Diensten.
 
 </details>
+
+
+<details>
+<summary>43. Warum sollten Sie keine Kanäle zur Übertragung großer Datenmengen nutzen?</summary>
+
+#### Go
+
+Kanäle in Go sind ein großartiges Werkzeug zum Koordinieren und Weiterleiten von
+Ereignissen/kleinen Nachrichten, aber nicht der beste Transport für große
+Nutzlasten. Bei großen Datenmengen verursachen sie oft unnötigen Overhead.
+
+#### Warum es möglicherweise nicht effektiv ist:
+
+1. **Kosten des Kopierens:** Die Übergabe großer Werte über den Kanal erhöht die
+   Speicheroperationen und den Datenverkehr zwischen Goroutines.
+
+2. **Konkurrenz- und Synchronisierungskosten:** Kanäle verfügen über eine
+   interne Zugriffskoordination; Bei hoher Auslastung kann es zu einem Engpass
+   kommen.
+
+3. **GC und Speicherdruck:** Große Kanalpuffer oder zahlreiche große Nachrichten
+   erhöhen den Speicherdruck und können Pausen/Laufzeitkosten erhöhen.
+
+4. **Verschlechterung der Cache-Lokalität:** Große Objekte durchlaufen die
+   Parallelitätspipeline schlechter als kompakte Signale + Zugriff auf gemeinsam
+   genutzten Speicher.
+
+#### Bessere Alternativen:
+
+1. Übertragung über Kanal **Links/Handles/Indizes**, nicht über Big Data.
+
+2. Behalten Sie die Nutzlast in einem gemeinsamen Puffer/Pool und verwenden Sie
+   den Kanal als Bereitschaftssignal.
+
+3. Verwenden Sie gegebenenfalls einen Worker-Pool mit kontrolliertem Zugriff auf
+   eine gemeinsam genutzte Datenstruktur (`slice/map + mutex`).
+
+#### Wenn Kanäle noch geeignet sind:
+
+1. Für kleine Kontrollnachrichten.
+
+2. Für Ereignisse, Befehle, Status und Abschlusssignale.
+
+3. Für eine Pipeline, in der sich leichter Metadatenkontext in der Pipeline
+   bewegt.
+
+#### Fazit:
+
+Der Kanal in Go ist in erster Linie ein Synchronisations- und
+Koordinationsmechanismus. Bei großen Datenmengen ist es effizienter, zu trennen:
+„Was zu tun ist“ über einen Kanal zu übertragen und die umfangreichsten
+Nutzlasten – über geeignetere Speicherstrukturen.
+
+</details>

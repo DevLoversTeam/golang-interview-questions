@@ -2567,3 +2567,74 @@ Koordinationsmechanismus. Bei großen Datenmengen ist es effizienter, zu trennen
 Nutzlasten – über geeignetere Speicherstrukturen.
 
 </details>
+
+
+<details>
+<summary>44. Wie kann ich einen Fehler von einer Goroutine korrekt an den Hauptthread zurückgeben?</summary>
+
+#### Go
+
+Eine Routine kann einen Wert nicht direkt über `return` an den Aufrufer
+„zurückgeben“. Daher wird der Fehler aus der Wettbewerbsaufgabe explizit
+übertragen: über den Fehlerkanal oder über `errgroup`, der dieses Muster
+kapselt.
+
+#### Kanonische Ansätze:
+
+1. **`errgroup.Group` + `context` (empfohlen):** am besten zum Ausführen einer
+   Gruppe von Goroutines, zum Sammeln des ersten Fehlers und zum Abbrechen der
+   verbleibenden Aufgaben.
+
+2. **Separate `errCh` + `WaitGroup`:** explizite Kontrolle über den
+   Lebenszyklus; Nach Abschluss aller Worker wird der Kanal geschlossen und der
+   Hauptthread liest Fehler.
+
+#### Wichtige Regeln der Korrektheit:
+
+1. Fehler werden in einem vereinbarten Kanal/Aggregator übertragen.
+
+2. Das Schließen von `errCh` erfolgt durch den Koordinator nach Abschluss aller
+   Writer-Routinen.
+
+3. Beim ersten kritischen Fehler sollten andere Aufgaben über `context` gestoppt
+   werden (um unnötige Arbeit und Goroutine-Lecks zu vermeiden).
+
+4. Fehler in konkurrierenden Zweigen können nicht ignoriert werden – dies führt
+   zu „stillen“ Fehlern.
+
+#### Typische Verarbeitungsstrategie:
+
+1. Starten Sie Worker mit Zugriff auf `ctx`.
+
+2. Bei Fehler senden Sie `error` an den Aggregator.
+
+3. Cancel-Kontext (wenn eine Fail-Fast-Richtlinie erforderlich ist).
+
+4. Warten Sie, bis alle Goroutines abgeschlossen sind.
+
+5. Gibt das vereinbarte Ergebnis zurück (erster Fehler oder aggregierter
+   Fehler).
+
+#### Fazit:
+
+Die korrekte „Fehlerrückgabe“ von Goroutine ist eine Disziplin des expliziten
+Kommunikationskanals plus Lebenszyklusverwaltung über `WaitGroup`/`errgroup` und
+`context`. In der Produktion ist `errgroup` meist die optimale Wahl.
+
+#### Beispiel (Go 1.22+):
+
+```go
+g, ctx := errgroup.WithContext(context.Background())
+
+for _, task := range tasks {
+	g.Go(func() error {
+		return task.Run(ctx)
+	})
+}
+
+if err := g.Wait(); err != nil {
+	return err
+}
+```
+
+</details>

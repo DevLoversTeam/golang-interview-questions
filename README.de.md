@@ -2688,3 +2688,86 @@ Abfangen von Panikattacken in konkurrierendem Code auf der Ebene jeder
 untergeordneten Goroutine separat entworfen werden.
 
 </details>
+
+
+<details>
+<summary>46. Erzählen Sie uns von Wettbewerbsmustern in Go.</summary>
+
+#### Go
+
+Parallelitätsmuster in Go sind sich wiederholende Architekturmuster zur
+Koordination von Goroutines, Pipes und Synchronisierungsprimitiven. Ihr Ziel ist
+es, eine beherrschbare Parallelität ohne Chaos, Lecks und Deadlocks
+bereitzustellen.
+
+#### Die am häufigsten verwendeten Muster:
+
+1. **Worker-Pool**
+
+- Eine feste Anzahl von Worker-Routinen liest Aufgaben aus der Warteschlange;
+
+- begrenzt den Grad der Parallelität und stabilisiert die Last.
+
+2. **Fan-Out / Fan-In**
+
+- `fan-out`: Zuweisung einer Aufgabenwarteschlange an viele Ausführende;
+
+- `fan-in`: Ergebnisse aus mehreren Quellen in einem Kanal zusammenführen.
+
+3. **Pipeline (Stufenförderer)**
+
+- Daten durchlaufen aufeinanderfolgende Verarbeitungsstufen;
+
+- jede Stufe kann ihre eigene Wettbewerbsfähigkeit und ihren eigenen Gegendruck
+  haben.
+
+4. **Semaphor über gepufferten Kanal**
+
+- begrenzt die Anzahl gleichzeitiger Vorgänge;
+
+- nützlich für die Arbeit mit Datenbanken, Dateideskriptoren und externen APIs.
+
+5. **Kontextstornierung**
+
+- zentrale Löschung der gesamten Gruppe von Goroutines;
+
+- verhindert Lecks bei Zeitüberschreitung, Fehler oder Herunterfahren.
+
+6. **Errgroup (ausfallsichere Orchestrierung)**
+
+- sammelt Fehler aus einer Gruppe von Aufgaben;
+
+- lässt sich bequem mit `context` kombinieren, um den Rest der Arbeit vorzeitig
+  zu stoppen.
+
+7. **Einzelbesitzer / schauspielerähnliche Schleife**
+
+- eine Goroutine hat einen veränderlichen Zustand;
+
+- Andere interagieren über Nachrichten, wodurch Sperrkonflikte reduziert werden.
+
+8. **Veröffentlichen/Abonnieren (Broadcast)**
+
+- Ereignisse werden an mehrere Verbraucher gesendet;
+
+- erfordert eine sorgfältige Überwachung der Puffer und des
+  Abonnentenlebenszyklus.
+
+#### Kritische Prinzipien für alle Muster:
+
+1. Explizite Regeln für Ressourcenbesitz und Kanalschließung.
+
+2. Wettbewerbsbeschränkungen (nicht „unendliche“ Goroutines).
+
+3. Erforderlicher Beendigungspfad (`context`, `done`, `WaitGroup`).
+
+4. Beobachtbarkeit: Metriken, Protokollierung, Profilerstellung.
+
+#### Fazit:
+
+Die Kraft von Go liegt nicht in „den Goroutines selbst“, sondern in der
+Disziplin der Muster. Es ist die richtige Kombination aus Worker-Pool, Pipeline,
+Fan-In/Fan-Out, Abbruch und Fehlerkoordination, die den Systemen Skalierbarkeit,
+Vorhersagbarkeit und Produktionszuverlässigkeit verleiht.
+
+</details>

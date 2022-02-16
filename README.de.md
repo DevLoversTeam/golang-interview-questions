@@ -2771,3 +2771,65 @@ Fan-In/Fan-Out, Abbruch und Fehlerkoordination, die den Systemen Skalierbarkeit,
 Vorhersagbarkeit und Produktionszuverlässigkeit verleiht.
 
 </details>
+
+
+<details>
+<summary>47. Wann sollte `sync.Mutex` und wann `sync.RWMutex` verwendet werden?</summary>
+
+#### Go
+
+`sync.Mutex` und `sync.RWMutex` lösen das gleiche Problem – den Schutz des
+gemeinsamen Staates, jedoch mit einem anderen Nebenläufigkeitsmodell. Die
+richtige Wahl hängt vom Profil des Datenzugriffs ab: dem Verhältnis von Lese-
+und Schreibvorgängen, der Dauer kritischer Abschnitte und dem Grad der
+Konflikte.
+
+#### `sync.Mutex` – wann wählen:
+
+1. **Gemischte oder häufige Schreibvorgänge:** Sofern Schreibvorgänge nicht
+   selten sind, wird der Vorteil von `RWMutex` oft zunichte gemacht.
+
+2. **Kurze kritische Abschnitte:** Einfaches Sperren/Entsperren führt
+   normalerweise zu vorhersehbarem und schnellem Verhalten.
+
+3. **Grundlegende Standardauswahl:** geringere Komplexität, geringere
+   Wahrscheinlichkeit, dass das Sperrmodell falsch ist.
+
+4. **Wenn einfache Wartung wichtig ist:** `Mutex` ist einfacher zu lesen, zu
+   debuggen und zu profilieren.
+
+#### `sync.RWMutex` – wenn es Sinn macht:
+
+1. **Lesungen dominieren, Schreibvorgänge sind selten:** Viele gleichzeitige
+   Leser können parallel arbeiten.
+
+2. **Lesevorgänge sind relativ lang:** Paralleler Lesezugriff führt zu einem
+   echten Durchsatzgewinn.
+
+3. **Der Lesekonflikt ist hoch:** und es gibt empirische Belege dafür, dass es
+   die Lesesperre ist, die zum Engpass wird.
+
+#### Wichtige Hinweise:
+
+1. `RWMutex` ist nicht „automatisch schneller“ – aufgrund komplexerer interner
+   Koordination kann es bei realen Arbeitslasten langsamer sein.
+
+2. Leser werden bei häufigen Schreibvorgängen weiterhin blockiert.
+
+3. Die endgültige Entscheidung sollte auf der Grundlage der Profilerstellung
+   (`pprof`, Benchmarks) und nicht der Intuition getroffen werden.
+
+#### Faustregel:
+
+1. Beginnen Sie mit `sync.Mutex`.
+
+2. Gehen Sie nur dann zu `sync.RWMutex`, wenn ein gemessenes leseintensives
+   Szenario und ein nachgewiesener Leistungsgewinn vorliegen.
+
+#### Fazit:
+
+`sync.Mutex` ist für die meisten Aufgaben ein zuverlässiger Standardwert.
+`sync.RWMutex` ist ein Punktoptimierungstool für leserorientierte Workloads, bei
+dem der Gewinn durch Metriken bestätigt wird.
+
+</details>

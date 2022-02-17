@@ -2833,3 +2833,53 @@ Konflikte.
 dem der Gewinn durch Metriken bestätigt wird.
 
 </details>
+
+
+<details>
+<summary>48. Warum können `sync.Mutex`-Objekte nicht kopiert werden?</summary>
+
+#### Go
+
+`sync.Mutex` enthält den internen Sperrstatus. Nach der ersten Verwendung führt
+das Kopieren eines solchen Objekts zu einer gefährlichen Situation: Es treten
+zwei verschiedene Instanzen des Sperrzustands auf, die der Programmierer
+fälschlicherweise als eine wahrnehmen kann.
+
+#### Warum es grundsätzlich verboten ist:
+
+1. **Mutex ist nicht nur „Daten“, sondern ein zustandsbehaftetes
+   Synchronisierungsprimitiv.**
+
+2. **Die Kopie hat nicht denselben Sperrstatus** wie das Original.
+
+3. Dies verstößt gegen gegenseitige Ausschlussgarantien und kann in komplexen
+   Szenarien zu Wettlauf, Stillstand oder Panik führen.
+
+#### Typische Möglichkeiten, einen Mutex versehentlich zu kopieren:
+
+1. Übergeben Sie eine Struktur mit `sync.Mutex` als Wert an eine Funktion.
+
+2. Gibt nach der Initialisierung/Verwendung die folgende Struktur nach Wert
+   zurück.
+
+3. Kopien über Kanäle oder Wertsammlungen aufbewahren/weiterleiten.
+
+#### Richtiges Üben:
+
+1. Strukturen aus `sync.Mutex` sollten über Zeiger (`*T`) und nicht über
+   Wertkopien verwendet werden.
+
+2. Exportieren Sie `Mutex` nicht direkt in die öffentliche API.
+
+3. Wenn der Typ eine Sperre hat, dokumentieren Sie, dass er nach der ersten
+   Verwendung nicht kopiert wird.
+
+4. Verwenden Sie `go vet` (Copylocks) und Linters zur Früherkennung.
+
+#### Fazit:
+
+`sync.Mutex` kann nicht kopiert werden, da es das Synchronisationsmodell selbst
+untergräbt. Beachten Sie die Regel: Sperrprimitive haben eine stabile Identität
+und müssen in einer Instanz pro geschütztem Zustand leben.
+
+</details>

@@ -2933,3 +2933,56 @@ zuverlässige Weg besteht darin, die `happens-before`-Beziehung explizit über d
 richtigen Parallelitätsprimitive zu bilden.
 
 </details>
+
+
+<details>
+<summary>50. Was ist Race Condition und wie funktioniert der `-race`-Detektor? Was kann es erkennen und was nicht?</summary>
+
+#### Go
+
+`Race Condition` ist eine allgemeine Klasse von Parallelitätsfehlern, bei denen
+das Ergebnis eines Programms von einer unvorhersehbaren Reihenfolge von
+Ereignissen zwischen Ausführungsthreads abhängt. `Data race` ist ein Sonderfall
+der Race Condition, die sich auf einen gefährlichen gleichzeitigen Zugriff auf
+denselben Speicher ohne Synchronisierung bezieht.
+
+#### So funktioniert `-race`:
+
+1. Während `go test -race` / `go run -race` wird Code instrumentiert.
+
+2. Runtime verfolgt Speicherlese-/schreibvorgänge zwischen Goroutines.
+
+3. Wenn Zugriffe ohne `happens-before` erkannt werden (und es einen Datensatz
+   gibt), wird `data race` mit Stack-Traces gemeldet.
+
+#### Was `-race` gut erkennt:
+
+1. Klassische Lese-/Schreib- und Schreib-/Schreibrennen auf gemeinsam genutzten
+   Variablen.
+
+2. Sperren/Entsperren in Wettbewerbsbereichen verpasst.
+
+3. Ein Teil von Abstimmungsfehlern in Testszenarien mit realer Konkurrenz.
+
+#### Was `-race` nicht garantiert:
+
+1. **Erkennt nicht alle Race-Bedingungen als logische Fehler:** z. B. falsches
+   Interaktionsprotokoll ohne direkten Daten-Race.
+
+2. **Nicht ausgeführter Code wird nicht angezeigt:** Wenn Tests keinen
+   Wettbewerbspfad abdecken, kann das Rennen unbemerkt bleiben.
+
+3. **Erweist sich nicht als fehlerfrei:** Ein „sauberer“ Lauf bedeutet nur, dass
+   das Tool während dieses Laufs keine Verstöße festgestellt hat.
+
+4. **Hat Overhead:** Verlangsamung und erhöhter Speicherverbrauch im
+   Instrumentierungsmodus.
+
+#### Praktisches Fazit:
+
+`-race` ist ein obligatorisches Tool für konkurrierende Codehygiene, aber kein
+absolutes Orakel der Korrektheit. Seine Leistungsfähigkeit zeigt sich in
+Kombination mit Qualitätstests, Designinvarianten und
+Synchronisierungsdisziplin.
+
+</details>

@@ -3042,3 +3042,70 @@ Synchronisierung für einfache Fälle. Für komplexe gemeinsame Zustands- und
 Geschäftsinvarianten ist `mutex` normalerweise das zuverlässigere Tool.
 
 </details>
+
+
+<details>
+<summary>52. Wie funktioniert `sync.WaitGroup` und was passiert mit einem negativen Zähler? Warum kann `wg.Done()` nicht vor `wg.Add()` aufgerufen werden?</summary>
+
+#### Go
+
+`sync.WaitGroup` ist ein Zähler für aktive Wettbewerbsaufgaben. Sein Zweck
+besteht darin, einer Goroutine (`Wait`) zu ermöglichen, darauf zu warten, dass
+die anderen ihre Arbeit abschließen.
+
+#### So funktioniert es:
+
+1. `wg.Add(n)` erhöht den Zähler um `n` (wir addieren die Anzahl der Aufgaben).
+
+2. Jede abgeschlossene Aufgabe löst `wg.Done()` aus (entspricht `Add(-1)`).
+
+3. `wg.Wait()` wird blockiert, bis der Zähler Null erreicht.
+
+#### Was passiert bei einem negativen Zähler:
+
+1. Dies ist ein logischer Koordinationsfehler.
+
+2. Runtime verursacht Panik (typischerweise: `sync: negative WaitGroup
+   counter`).
+
+3. Diese Situation bedeutet, dass `Done()` öfter aufgerufen wurde als `Add()`.
+
+#### Warum Sie `Done()` nicht auf `Add()` anwenden können:
+
+1. Der Task-Lifecycle-Vertrag wird verletzt.
+
+2. `Wait()` kann vorzeitig enden, da der Zähler zum Zeitpunkt des Wartens noch
+   nicht die tatsächliche Anzahl der Jobs widerspiegelt.
+
+3. Im schlimmsten Fall bekommen wir einen negativen Zähler und geraten in Panik.
+
+#### Richtige Disziplin:
+
+1. Rufen Sie `Add(1)` auf, **bevor** die Goroutine startet.
+
+2. Setzen Sie innerhalb der Goroutine `defer wg.Done()` direkt am Eingang ein.
+
+3. Rufen Sie `Wait()` erst auf, nachdem Sie alle Aufgaben registriert haben.
+
+#### Fazit:
+
+`WaitGroup` ist nur unter strenger `Add -> go -> Done -> Wait`-Sequenz
+zuverlässig. Ein negativer Zähler und `Done()` bis `Add()` ist ein Signal für
+ein defektes Synchronisationsmodell, das unweigerlich zu instabilem Verhalten
+oder Panik führt.
+
+#### Beispiel:
+
+```go
+var wg sync.WaitGroup
+wg.Add(1)
+
+go func() {
+	defer wg.Done()
+	work()
+}()
+
+wg.Wait()
+```
+
+</details>

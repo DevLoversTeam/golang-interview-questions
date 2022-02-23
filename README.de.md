@@ -3173,3 +3173,65 @@ die meisten Produktionsszenarien mit Fehlern und ausfallsicherer Semantik ist
 `errgroup` praktischer.
 
 </details>
+
+
+<details>
+<summary>54. Beschreiben Sie den Zweck und die Implementierung von `sync.Once` – wie garantiert es eine einmalige Initialisierung?</summary>
+
+#### Go
+
+`sync.Once` ist für die garantierte einmalige Ausführung einer Funktion unter
+Bedingungen gleichzeitigen Zugriffs gedacht. Unabhängig von der Anzahl der
+Goroutines, die gleichzeitig `once.Do(f)` aufrufen, darf der Hauptteil von `f`
+nur einmal ausgeführt werden.
+
+#### Wofür wird es verwendet:
+
+1. Verzögerte Initialisierung von Singleton-Ressourcen.
+
+2. Einmaliges Laden der Konfiguration/des Caches.
+
+3. Führen Sie eine umfangreiche Initialisierung sicher aus, ohne doppelte Arbeit
+   zu leisten.
+
+#### Wie `sync.Once` die Reproduzierbarkeit gewährleistet:
+
+1. Überprüft ein internes Statusflag „Fertig/fehlgeschlagen“.
+
+2. Wenn die Initialisierung noch nicht durchgeführt wurde – blockiert
+   Konkurrenten synchron.
+
+3. Genau eine Goroutine führt `f` aus.
+
+4. Bei Erfolg wird der Status als „erledigt“ markiert und `Do` kehrt zurück,
+   ohne `f` neu zu starten.
+
+#### Wichtige Eigenschaften:
+
+1. Die korrekte Sichtbarkeit initialisierter Daten für andere Goroutines ist
+   gewährleistet (Speichersicherheit durch interne Synchronisierung).
+
+2. Andere Goroutines, die während der Ausführung von `f` kamen, warten auf den
+   Abschluss.
+
+3. `Once` ist nicht für einen „Neustart“ gedacht – es handelt sich um einen
+   einmaligen Lebenszyklus.
+
+#### Nuancen und Warnungen:
+
+1. Wenn `f` in Panik gerät, muss das Verhalten sorgfältig überlegt werden:
+   `Once` ist kein Fallback-Mechanismus.
+
+2. Sie sollten nicht zu komplexe Geschäftslogik in `Do` verstecken; Es ist
+   besser, die Initialisierung der Ressource dort zu belassen.
+
+3. Aufgaben zum Zurücksetzen/Neuladen erfordern andere Muster (atomarer Zeiger,
+   Mutex, Versionsstatus usw.).
+
+#### Fazit:
+
+`sync.Once` ist ein diszipliniertes einmaliges Initialisierungsprimitiv:
+rennsicher, vorhersehbar und sehr nützlich, wenn eine erneute Initialisierung
+entweder überflüssig oder gefährlich ist.
+
+</details>

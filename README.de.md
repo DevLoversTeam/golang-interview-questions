@@ -3235,3 +3235,69 @@ rennsicher, vorhersehbar und sehr nützlich, wenn eine erneute Initialisierung
 entweder überflüssig oder gefährlich ist.
 
 </details>
+
+
+<details>
+<summary>55. Was ist `sync.Cond` und wann überschreibt es einen Kanal?</summary>
+
+#### Go
+
+`sync.Cond` ist ein bedingtes Synchronisierungsprimitiv: Es ermöglicht
+Goroutines, zu warten, bis ein bestimmter Zustand (Bedingung) wahr wird, und
+durch ein Signal einer anderen Goroutine geweckt zu werden.
+
+#### Basismodell `sync.Cond`:
+
+1. `Cond` funktioniert zusätzlich zu `Locker` (normalerweise `*sync.Mutex`).
+
+2. Die Routine in der Schleife prüft den gesperrten Zustand.
+
+3. Wenn die Bedingung falsch ist, wird `Wait()` aufgerufen.
+
+4. Eine andere Goroutine ruft nach einer Statusänderung `Signal()` oder
+   `Broadcast()` auf.
+
+#### Schlüsselmethoden:
+
+1. **`Wait()`** – gibt die Sperre atomar frei, schläft ein und greift nach dem
+   Aufwachen wieder nach der Sperre.
+
+2. **`Signal()`** – weckt eine wartende Goroutine.
+
+3. **`Broadcast()`** – weckt alle Wartenden.
+
+#### Wenn der Kanal `sync.Cond` vorherrscht:
+
+1. **Komplexe Bedingung für den gemeinsamen Status, nicht für die
+   Nachrichtenübertragung:** wenn es wichtig ist, auf „Prädikat über Status“ zu
+   warten und keine Nutzdaten zu empfangen.
+
+2. **Viele Kellner auf einer sperrengeschützten Ressource:** `Cond` drückt die
+   Koordination um den gemeinsamen Zustand natürlicher aus.
+
+3. **Feine Wecksteuerung erforderlich:** `Signal/Broadcast` sind manchmal besser
+   geeignet als die Kanalsemantik.
+
+4. **Hochfrequenzszenarien mit minimalem Zuordnungsrauschen:** In bestimmten
+   Fällen auf niedriger Ebene bietet `Cond` ein effizienteres Modell als die
+   Erstellung zusätzlicher Kanalprotokolle.
+
+#### Wenn der Kanal besser ist:
+
+1. Wenn die Aufgabe darin besteht, Ereignisse/Daten zwischen unabhängigen
+   Akteuren zu übertragen.
+
+2. Wenn ein einfaches Pipeline-Modell und ein lesbarer Nachrichtenfluss wichtig
+   sind.
+
+3. Wenn Sie den gemeinsam genutzten veränderlichen Status nicht gesperrt
+   verwalten möchten.
+
+#### Fazit:
+
+`sync.Cond` ist ein Tool zum Warten auf Änderung der Mutex-Bedingung, während
+ein Kanal ein Tool zum Weiterleiten von Nachrichten ist. `Cond` herrscht vor,
+wenn das Zentrum der Logik der Zustand selbst und seine Invarianten ist, nicht
+der Datentransport.
+
+</details>

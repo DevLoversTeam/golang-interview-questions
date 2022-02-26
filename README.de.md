@@ -3361,3 +3361,62 @@ Konkurrenz haben, kann dies zu einem Gewinn führen. In anderen Fällen ist
 einfaches `map + mutex` oft transparenter und effizienter.
 
 </details>
+
+
+<details>
+<summary>57. Was sind Wettbewerbstests in Go und warum werden sie verwendet?</summary>
+
+#### Go
+
+Parallelitätstests in Go sind Tests, die das Verhalten des Codes unter
+Bedingungen gleichzeitiger Goroutine-Ausführung, Statusfreigabe und
+Ressourcenkonflikt testen. Ihr Ziel ist es, Fehler zu erkennen, die in einem
+linearen Szenario nicht auftreten.
+
+#### Was genau prüfen die folgenden Tests:
+
+1. Richtigkeit der Synchronisation (`mutex`, `channel`, `atomic`, `WaitGroup`).
+
+2. Fehlendes Datenrennen im gemeinsam genutzten Zustand.
+
+3. Resistenz gegenüber Deadlock-/Live-Lock-Szenarien.
+
+4. Ordentliche Fertigstellung von Goroutines (keine Lecks).
+
+5. Beobachtung von Invarianten unter Wettbewerbslast.
+
+#### Warum werden sie benötigt:
+
+1. **Frühzeitige Erkennung von Wettbewerbsfehlern:** Viele von ihnen
+   manifestieren sich nur unter dem Druck der Parallelität.
+
+2. **Verringerung des unzuverlässigen Verhaltens in der Produktion:** Tests
+   erfassen Szenarien, in denen die Reihenfolge der Ereignisse nicht
+   deterministisch ist.
+
+3. **Durchsetzung architektonischer Garantien:** wie zum Beispiel, dass das
+   System keine Ereignisse verliert und die Zustandskonsistenz nicht verletzt.
+
+4. **Sichereres Refactoring:** Wettbewerbsinvarianten bleiben durch den
+   Regressionssatz geschützt.
+
+#### Tools und Praktiken in Go:
+
+1. `go test -race` als obligatorische Verifizierungsstufe.
+
+2. Paralleles Scripting über Goroutines, `t.Run`, `t.Parallel`.
+
+3. Explizite Zeitüberschreitungen/`context`, um zu verhindern, dass Tests hängen
+   bleiben.
+
+4. Stressläufe und Mehrfachläufe, um die Wahrscheinlichkeit der Reproduktion
+   nichtdeterministischer Fehler zu erhöhen.
+
+#### Fazit:
+
+Wettbewerbstests sind kein „Extra-Luxus“, sondern ein notwendiges
+Qualitätselement für Go-Dienstleistungen. Sie prüfen nicht nur die
+Funktionalität, sondern auch die Korrektheit des Zusammenspiels von Goroutines
+unter realen Parallelitätsbedingungen.
+
+</details>

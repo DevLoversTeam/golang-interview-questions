@@ -3420,3 +3420,85 @@ Funktionalität, sondern auch die Korrektheit des Zusammenspiels von Goroutines
 unter realen Parallelitätsbedingungen.
 
 </details>
+
+
+<details>
+<summary>58. Warum verwendet Go `context.Context` und wie wird es durch den Funktionsaufrufbaum weitergeleitet?</summary>
+
+#### Go
+
+`context.Context` in Go ist ein Standardmechanismus zur Verwaltung des
+Anforderungs-/Vorgangslebenszyklus: Stornierungen, Fristen, Zeitüberschreitungen
+und Anforderungsmetadaten. Es ermöglicht allen Ausführungszweigen, ein einziges
+„Stopp“-Signal zu sehen.
+
+#### Warum brauchen Sie `Context`:
+
+1. **Stornierung:** Arbeit stoppen, die nicht mehr benötigt wird (die Verbindung
+   zum Client wurde getrennt, in einer nahegelegenen Filiale ist ein Fehler
+   aufgetreten, der Dienst wird beendet).
+
+2. **Frist/Timeout:** Begrenzen Sie die Ausführungszeit von Vorgängen (HTTP, DB,
+   externe APIs), damit sie nicht auf unbestimmte Zeit hängen bleiben.
+
+3. **Anforderungsbereichswerte:** Übertragen Sie Dienstanforderungsdaten
+   (Trace-ID, Authentifizierungstoken, Mandanten-ID) zwischen Ebenen.
+
+#### Wie es durch den Aufrufbaum geleitet wird:
+
+1. `ctx` wird als **erster Parameter** an eine Funktion übergeben, die E/A
+   blockieren oder ausführen kann.
+
+2. Jeder untergeordnete Aufruf erhält den gleichen `ctx` oder die gleiche
+   Ableitung:
+
+- `context.WithCancel`
+
+- `context.WithTimeout`
+
+- `context.WithDeadline`
+
+- `context.WithValue`
+
+3. Untergeordnete Kontexte bilden einen Baum:
+
+- Durch das Abbrechen eines übergeordneten Kontexts werden alle untergeordneten
+  Kontexte abgebrochen.
+
+- Fristen werden vererbt (oder eingegrenzt).
+
+#### Praktische Regeln:
+
+1. Speichern Sie `Context` nicht als langlebiges Feld in einer Struktur.
+
+2. Übergeben Sie keinen `nil`-Kontext (verwenden Sie `context.Background()` oder
+   `context.TODO()`).
+
+3. Verwenden Sie `WithValue` nicht für Geschäftsparameter, die explizite
+   Funktionsargumente sein müssen.
+
+#### Fazit:
+
+`context.Context` ist das „Nervensystem“ der Abfrage in Go. Es verteilt die
+Zeit- und Abbruchkontrolle über den gesamten Aufrufbaum und macht
+konkurrierenden Code in einer Produktionsumgebung verwaltbar, wirtschaftlich und
+vorhersehbar.
+
+#### Beispiel:
+
+```go
+func handler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	if err := service.Do(ctx); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+}
+
+func (s *Service) Do(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	return s.repo.Call(ctx)
+}
+```
+
+</details>

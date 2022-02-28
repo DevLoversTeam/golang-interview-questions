@@ -3502,3 +3502,56 @@ func (s *Service) Do(ctx context.Context) error {
 ```
 
 </details>
+
+
+<details>
+<summary>59. Ist `context.Context` unveränderlich und was bedeutet das in der Praxis?</summary>
+
+#### Go
+
+Ja, `context.Context` ist konzeptionell unveränderlich: Nach der Erstellung wird
+der vorhandene Kontext nicht „bearbeitet“, sondern ein neuer abgeleiteter
+Kontext wird auf dem übergeordneten Kontext aufgebaut.
+
+#### Was bedeutet unveränderlich im Fall von `Context`:
+
+1. Aufrufe `WithCancel`, `WithTimeout`, `WithDeadline`, `WithValue` ändern nicht
+   das alte `ctx`.
+
+2. Sie geben einen **neuen** Nachkommenkontext zurück.
+
+3. Der übergeordnete Kontext bleibt unverändert.
+
+#### Praktische Konsequenzen:
+
+1. **Sichere Weitergabe zwischen Goroutines:** Dasselbe `ctx` kann ohne das
+   Risiko eines „versteckten Überschreibens“ von Parametern weitergegeben
+   werden.
+
+2. **Transparenter Lebenszyklus:** Der Kontextbaum zeigt deutlich, wer die
+   Stornierung/Frist von wem geerbt hat.
+
+3. **Beabsichtigtes API-Verhalten:** Eine Funktion, die `ctx` empfangen hat,
+   kann sie nicht heimlich für andere Aufrufe „verdrehen“; Es kann nur ein
+   lokaler Nachkomme erstellt werden.
+
+4. **Bessere Testbarkeit und Fehlerbehebung:** Es ist einfacher, genau zu
+   verfolgen, wo Timeout/Abbruch/Wert aufgetreten ist, da es sich um separate
+   abgeleitete Knoten und nicht um Mutationen eines einzelnen Objekts handelt.
+
+#### Wichtige Klarstellung:
+
+Unveränderlichkeit bedeutet nicht, dass es keine Dynamik im Inneren gibt: Das
+Abbruchsignal und der Friststatus können sich im Laufe der Zeit ändern. Dabei
+handelt es sich jedoch um eine Änderung des **Ausführungsstatus** innerhalb des
+Kontextmodells und nicht um eine „In-Place“-Mutation des API-Vertrags des
+übergebenen Objekts.
+
+#### Fazit:
+
+`context.Context` in Go ist ein Funktionskettenmodell: Wir ändern das bestehende
+nicht, sondern erstellen ein Derivat. Dies sorgt für eine saubere
+Zusammensetzung, sichere Parallelität und eine vorhersehbare Verwaltung des
+Abfragelebenszyklus.
+
+</details>

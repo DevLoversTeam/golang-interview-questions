@@ -3555,3 +3555,67 @@ Zusammensetzung, sichere Parallelität und eine vorhersehbare Verwaltung des
 Abfragelebenszyklus.
 
 </details>
+
+
+<details>
+<summary>60. Wie hilft die Verwendung von `context.WithCancel`, Goroutine-Lecks zu vermeiden?</summary>
+
+#### Go
+
+`context.WithCancel` gibt allen Goroutines, die im selben Kontextbaum ausgeführt
+werden, ein verwaltetes Beendigungssignal. Dies ist der Schlüssel zur
+Verhinderung von Goroutine-Lecks – einer Situation, in der Hilfs-Goroutines „am
+Leben“ bleiben, nachdem die Arbeit ihre Relevanz verloren hat.
+
+#### So entsteht ein Goroutine-Leck:
+
+1. Die Routine wartet auf einen Kanal/ein Netzwerk/einen Timer ohne
+   Stoppbedingung.
+
+2. Die Anfrage wurde bereits beendet oder ist unnötig geworden, aber der
+   Mitarbeiter wusste nichts davon.
+
+3. Solche „verwaisten“ Goroutines sammeln und verbrauchen Ressourcen.
+
+#### Rolle `WithCancel`:
+
+1. Untergeordneten Kontext erstellen: `ctx, cancel :=
+   context.WithCancel(parent)`.
+
+2. Alle Worker-Goroutines haben `select` mit Zweig `case <-ctx.Done():`.
+
+3. Wenn `cancel()` aufgerufen wird, erhalten alle abhängigen Goroutines ein
+   Stoppsignal.
+
+4. Groutinen werden auf kontrollierte Weise beendet, wodurch Ressourcen
+   freigegeben werden.
+
+#### Praktische Sicherheitsregeln:
+
+1. Rufen Sie immer `cancel()` auf (häufig über `defer cancel()`), auch bei
+   erfolgreichem Abschluss.
+
+2. Überprüfen Sie bei jeder langlebigen Schleife/Blockierungsoperation
+   `ctx.Done()`.
+
+3. Überspringen Sie `ctx` durch alle E/A-Aufrufe, die den Abbruch unterstützen.
+
+4. Kombinieren Sie mit `WaitGroup`/`errgroup`, um auf den tatsächlichen
+   Abschluss zu warten.
+
+#### Was es dem System gibt:
+
+1. Keine „hängenden“ Hintergrundarbeiter.
+
+2. Bessere CPU-/Speicherauslastung unter Last.
+
+3. Vorhergesagtes Herunterfahren und stabileres Verhalten des Dienstes.
+
+#### Fazit:
+
+`context.WithCancel` ist der grundlegende Anti-Leak-Mechanismus in der
+Go-Parallelität: ein einzelnes explizites Stoppsignal, das alle zugehörigen
+Goroutines auf konsistente Weise beendet und das System vor einer Überlastung
+der Ressourcen bewahrt.
+
+</details>

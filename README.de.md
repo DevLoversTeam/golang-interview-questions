@@ -3619,3 +3619,77 @@ Goroutines auf konsistente Weise beendet und das System vor einer Überlastung
 der Ressourcen bewahrt.
 
 </details>
+
+
+<details>
+<summary>61. Warum verwendet Go nicht standardmäßige Schlüsseltypen (z. B. `struct{}`) für `context.WithValue` und wie werden dadurch Kollisionen verhindert?</summary>
+
+#### Go
+
+In `context.WithValue` muss der Schlüssel vergleichbar sein, aber am wichtigsten
+ist, dass er **einzigartig in Ihrem Anwendungs- und Abhängigkeitsraum** sein
+muss. Aus diesem Grund wird empfohlen, anstelle der häufig verwendeten
+Schlüsseltypen `string` eigene (nicht standardmäßige) Schlüsseltypen zu
+verwenden.
+
+#### Warum `string`-Schlüssel gefährlich sind:
+
+1. Verschiedene Pakete verwenden möglicherweise versehentlich dieselbe
+   Zeichenfolge (`"userID"`, `"request_id"` usw.).
+
+2. Der Wert im Kontext wird von einem anderen Paket überschrieben oder
+   „überschattet“.
+
+3. Erhalten Sie stille, schwer reproduzierbare
+   Routing-/Authentifizierungs-/Anmeldefehler.
+
+#### So verhindert ein nicht standardmäßiger Typ Kollisionen:
+
+1. Erstellt einen privaten Schlüsseltyp im Paket, zum Beispiel: `type ctxKey
+   struct{}` oder `type ctxKey int`.
+
+2. Externer Code kann nicht versehentlich denselben Schlüsseltyp und denselben
+   Schlüsselwert verwenden.
+
+3. Auf diese Weise wird der Schlüsselnamespace auf der Ebene des typischen
+   Systems isoliert.
+
+#### Warum `struct{}` oft verwendet wird:
+
+1. Leichter Markierertyp ohne Nutzlast.
+
+2. Betont, dass die Identität des Schlüssels wichtig ist, nicht seine „Daten“.
+
+3. Entspricht gut der Redewendung „package-local-unique-key“.
+
+#### Faustregel:
+
+1. Schlüssel als nicht exportierte Paketvariablen deklarieren.
+
+2. Verwenden Sie keine „leeren“ Zeichenfolgen als Schlüssel für `WithValue`.
+
+3. Speichern Sie in `Context` nur anforderungsbezogene Dienstdaten, keine
+   Geschäftsparameter.
+
+#### Fazit:
+
+Nicht standardmäßige Schlüsseltypen in `context.WithValue` sind ein typsicherer
+Namespace-Mechanismus. Sie reduzieren zuverlässig das Risiko von Kollisionen
+zwischen Paketen und machen Kontextwerte in großen Codebasen vorhersehbar.
+
+#### Beispiel:
+
+```go
+type requestIDKey struct{}
+
+func withRequestID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, requestIDKey{}, id)
+}
+
+func requestID(ctx context.Context) (string, bool) {
+	v, ok := ctx.Value(requestIDKey{}).(string)
+	return v, ok
+}
+```
+
+</details>

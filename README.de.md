@@ -3693,3 +3693,61 @@ func requestID(ctx context.Context) (string, bool) {
 ```
 
 </details>
+
+
+<details>
+<summary>62. Was ist der Unterschied zwischen `context.Value` und der Übergabe von Parametern über Funktionsargumente?</summary>
+
+#### Go
+
+`context.Value` und normale Funktionsargumente haben unterschiedliche Zwecke. In
+einem kompetenten Go-Design sind sie nicht austauschbar: Die Argumente
+übermitteln Geschäftsdaten und `context.Value` – der Metakontext mit
+Serviceanforderungsbereich.
+
+#### Argumente weitergeben:
+
+1. **Expliziter API-Vertrag:** Alle erforderlichen Daten sind in der Signatur
+   sichtbar.
+
+2. **Typsicherheit und Lesbarkeit:** Der Compiler hilft bei der Kontrolle der
+   Korrektheit.
+
+3. **Beste Wahl für Domänenlogik:** Domänenparameter müssen direkt übergeben
+   werden.
+
+#### `context.Value`:
+
+1. **Impliziter Dienstdatenkanal:** Trace-ID, Anforderungs-ID,
+   Authentifizierungsansprüche, Mandant, Korrelationsmetadaten.
+
+2. **Propagiert sich durch Schichten, ohne Signaturen zu vergrößern:** nützlich
+   für Middleware, Protokollierung und Beobachtbarkeit.
+
+3. **Geringere Transparenz:** Wertabhängigkeit aus Funktionssignatur nicht
+   ersichtlich.
+
+#### Warum Sie die Argumente `context.Value` nicht ersetzen sollten:
+
+1. API-Klarheit lässt nach (versteckte Eingaben werden angezeigt).
+
+2. Erhöht das Risiko von Laufzeitfehlern aufgrund der Behauptung mit `any`.
+
+3. Tests und Refactoring sind kompliziert.
+
+#### Faustregel:
+
+1. In `Context` ist nur das, was zum Anforderungslebenszyklus gehört und von den
+   Infrastrukturschichten benötigt wird.
+
+2. In den Funktionsparametern - alles, was das Wesentliche des Geschäftsbetriebs
+   ist.
+
+#### Fazit:
+
+Argumente bilden einen expliziten Domänenvertrag; `context.Value` trägt die
+Dienstmetadaten der Anfrage. Durch die Vermischung dieser Rollen wird die
+Architektur beeinträchtigt, sodass durch professionellen Go-Code die Grenze
+zwischen ihnen klar bleibt.
+
+</details>

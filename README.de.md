@@ -3751,3 +3751,58 @@ Architektur beeinträchtigt, sodass durch professionellen Go-Code die Grenze
 zwischen ihnen klar bleibt.
 
 </details>
+
+
+<details>
+<summary>63. Wie funktioniert die Stack- vs. Heap-Zuordnung in Go?</summary>
+
+#### Go
+
+In Go wird die Platzierung der Daten auf dem Stack oder Heap vom Compiler durch
+Escape-Analyse bestimmt. Der Entwickler wählt dies nicht direkt manuell aus,
+sondern kann Code schreiben, um unnötige Heap-Zuweisungen zu reduzieren.
+
+#### Stapelzuordnung:
+
+1. Data befindet sich in einem Funktionsaufruf (oder einem verwalteten
+   Goroutine-Stack).
+
+2. Isolation und Release sind sehr günstig.
+
+3. Der GC wird nicht direkt geladen.
+
+#### Heap-Zuweisung:
+
+1. Daten sind außerhalb des aktuellen Stapelrahmens erforderlich.
+
+2. Speicher wird vom Garbage Collector verwaltet.
+
+3. Bietet einen höheren Overhead (Zuweisung + anschließende
+   Speicherbereinigung).
+
+#### Was entscheidet, wohin der Wert geht:
+
+1. **Escape-Analyse des Compilers:** Wenn der Wert außerhalb der Funktion
+   „entweicht“ (ein Zeiger wird zurückgegeben, in einer langlebigen Struktur
+   gespeichert, durch einen Abschluss erfasst usw.), gelangt er in den Heap.
+
+2. **Verwendungskontext:** Sogar eine lokale Variable kann auf dem Heap landen,
+   wenn ihre Lebensdauer länger als der aktuelle Frame ist.
+
+#### Warum das wichtig ist:
+
+1. Mehr Heap-Zuweisungen = mehr Arbeit für den GC.
+
+2. Im Hot-Path wirkt es sich auf Latenz und Durchsatz aus.
+
+3. Die Optimierung von Zuweisungen führt häufig zu einer spürbaren Steigerung
+   der Serviceleistung.
+
+#### Praktisches Fazit:
+
+In Go liegt der Schlüssel nicht in der „manuellen Verwaltung des Speichers“,
+sondern darin, das Escape-Verhalten zu verstehen. Ein klares Datendesign und die
+Minimierung unnötiger Lecks im Heap tragen dazu bei, schnellen und stabilen
+Produktionscode zu schreiben.
+
+</details>

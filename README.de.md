@@ -3806,3 +3806,63 @@ Minimierung unnötiger Lecks im Heap tragen dazu bei, schnellen und stabilen
 Produktionscode zu schreiben.
 
 </details>
+
+
+<details>
+<summary>64. Wie minimiert man Heap-Zuweisungen mit `sync.Pool`?</summary>
+
+#### Go
+
+`sync.Pool` ist ein temporärer Mechanismus zur Wiederverwendung von Objekten,
+mit dem Sie die Häufigkeit von Heap-Zuweisungen in Hot-Code-Bereichen reduzieren
+können. Die Idee ist einfach: Kurzlebige Objekte nicht jedes Mal neu erschaffen,
+sondern sie aus dem Pool nehmen und nach Gebrauch zurückgeben.
+
+#### Grundschema:
+
+1. Erstellen Sie einen Pool von `New`, der das Objekt nach Bedarf initialisiert.
+
+2. Am Eingang der Operation: `obj := pool.Get()`.
+
+3. Versetzen Sie das Objekt vor der Verwendung in einen gültigen Zustand.
+
+4. Nach Abschluss: Felder löschen und `pool.Put(obj)`.
+
+#### Warum dadurch die Zuweisungen reduziert werden:
+
+1. Ein Teil der Anfragen erhält bereits zugewiesene Objekte.
+
+2. Weniger neue Heap-Zuweisungen.
+
+3. Weniger Druck auf GC durch hohe Häufigkeit kurzer Operationen.
+
+#### Wobei `sync.Pool` besonders relevant ist:
+
+1. Puffer (`[]byte`, `bytes.Buffer`) in Serialisierungs-/Netzwerkhandlern.
+
+2. Temporäre Hilfsstrukturen in Parse-/Codierungs-/Decodierungspfaden.
+
+3. Hoch ausgelastete HTTP/RPC-Dienste mit wiederholten kurzen Vorgängen.
+
+#### Wichtige Hinweise:
+
+1. `sync.Pool` ist ein Cache, kein Langzeitspeicher; Elemente können durch GC
+   gereinigt werden.
+
+2. Das Objekt vor `Put` muss in einen sauberen Zustand gebracht werden,
+   andernfalls ist ein Datenverlust zwischen Anforderungen möglich.
+
+3. Pool ist kein Allheilmittel: Auf kalten Pfaden zahlt sich die Komplexität des
+   Codes möglicherweise nicht aus.
+
+4. Optimierung sollte durch Profiling und nicht durch Intuition bestätigt
+   werden.
+
+#### Fazit:
+
+`sync.Pool` ist effektiv für die Wiederverwendung kurzlebiger Objekte in Hot
+Paths, bei denen kritische Zuordnungen und GC-Pause von entscheidender Bedeutung
+sind. Seine Stärke liegt in der Reduzierung von Allokationsturbulenzen, es
+sollte jedoch selektiv und profiliert eingesetzt werden.
+
+</details>

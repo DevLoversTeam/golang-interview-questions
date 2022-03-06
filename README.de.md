@@ -3866,3 +3866,78 @@ sind. Seine Stärke liegt in der Reduzierung von Allokationsturbulenzen, es
 sollte jedoch selektiv und profiliert eingesetzt werden.
 
 </details>
+
+
+<details>
+<summary>65. Was bedeuten die Umgebungsvariablen `GOGC` und `GOMEMLIMIT` und wie wirken sie sich auf den Garbage Collector aus?</summary>
+
+#### Go
+
+`GOGC` und `GOMEMLIMIT` sind Schlüsselparameter zur Steuerung des GC-Verhaltens
+in Go. Sie ermöglichen es Ihnen, den Speicherverbrauch, die Häufigkeit der
+Speicherbereinigung und die Serviceleistung in Einklang zu bringen.
+
+#### `GOGC`:
+
+1. Gibt die angestrebte Heap-Wachstumsrate vor dem nächsten GC-Zyklus an (in
+   Prozent).
+
+2. Der typische Wert ist `100` (ermöglichen, dass sich der Heap im Vergleich zu
+   „Live“-Daten nach dem vorherigen GC ungefähr verdoppelt).
+
+3. Mehr `GOGC`:
+
+- weniger GC-Zyklen;
+
+- mehr Speicherverbrauch;
+
+- potenziell geringerer GC-CPU-Overhead.
+
+4. Weniger `GOGC`:
+
+- häufigere GC;
+
+- kleinerer Heap;
+
+- höherer Kollektor-Overhead.
+
+#### `GOMEMLIMIT`:
+
+1. Legt eine weiche obere Speichergrenze fest, innerhalb derer die Laufzeit
+   versucht, den Prozess aufrechtzuerhalten.
+
+2. Wenn sich der Speicher dieser Grenze nähert, arbeitet der GC aggressiver,
+   auch wenn `GOGC` eine weniger häufige Sammlung dies zulassen würde.
+
+3. Besonders nützlich in Containern/Orchestratoren mit harten
+   Speicherbeschränkungen.
+
+#### Wie sie zusammenarbeiten:
+
+1. `GOGC` legt die allgemeine „Gierigkeit“ des Heap-Wachstums fest.
+
+2. `GOMEMLIMIT` fungiert als Sicherung, die übermäßiges Speicherwachstum
+   begrenzt.
+
+3. In der Produktion ist es die Kombination beider Parameter, die die beste
+   Kontrolle über Latenz- und OOM-Risiken bietet.
+
+#### Praktischer Ansatz:
+
+1. Beginnen Sie mit den Standardeinstellungen.
+
+2. Messung `heap`, GC-Pause, CPU, Tail-Latenz unter realer Last.
+
+3. Passen Sie die Parameter schrittweise an und erfassen Sie die Auswirkungen
+   auf das SLA.
+
+4. Für Container ist es notwendig, `GOMEMLIMIT` mit dem Speicherlimit der
+   Plattform abzugleichen.
+
+#### Fazit:
+
+`GOGC` steuert die GC-Frequenz über das Heap-Wachstumsziel und `GOMEMLIMIT`
+begrenzt den Speicher von oben. Zusammen bilden sie ein praktisches Werkzeug zur
+Feinabstimmung des Laufzeitverhaltens von Go-Diensten.
+
+</details>

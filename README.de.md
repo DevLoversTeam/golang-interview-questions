@@ -3941,3 +3941,56 @@ begrenzt den Speicher von oben. Zusammen bilden sie ein praktisches Werkzeug zur
 Feinabstimmung des Laufzeitverhaltens von Go-Diensten.
 
 </details>
+
+
+<details>
+<summary>66. Was ist `runtime.SetFinalizer` und wird es in der Standardbibliothek verwendet?</summary>
+
+#### Go
+
+`runtime.SetFinalizer` ist ein Mechanismus zum Binden einer Finalizer-Funktion
+an ein Objekt, das vom GC aufgerufen werden kann, bevor das Objekt endgültig
+freigegeben wird. Wichtig: Der Finalizer bietet keine strengen Laufzeitgarantien
+und ist kein zuverlässiger Ersatz für explizite `Close`/`Dispose`.
+
+#### Was `SetFinalizer` macht:
+
+1. Registriert einen Rückruf für ein bestimmtes Heap-Objekt.
+
+2. Wenn ein Objekt nicht mehr erreichbar ist, führt die Laufzeit möglicherweise
+   einen Finalizer aus.
+
+3. Das Objekt wird dann in einem der nächsten GC-Zyklen gesammelt.
+
+#### Wichtige Einschränkungen:
+
+1. **Es gibt keine Garantie, „wann“ der Finalizer ausgeführt wird.**
+
+2. **Es gibt keine Garantie dafür, dass es ausgeführt wird, bevor der Prozess
+   abgeschlossen ist.**
+
+3. Finalizer erschweren die Überlegungen zum Lebenszyklus und können versteckte
+   Kosten/Verzögerungen verursachen.
+
+#### Faustregel:
+
+1. Für Ressourcen (Dateien, Sockets, Handles, externe Verbindungen) verwenden
+   Sie immer einen expliziten Abschluss (`defer obj.Close()`).
+
+2. Der Finalizer ist nur als „Sicherheitsnetz“ gegen Nutzungsfehler zulässig,
+   nicht als primäre Möglichkeit zur Kontrolle der Ressource.
+
+#### Ob in der Standardbibliothek verwendet:
+
+Ja, wird an einigen Stellen auf niedriger Ebene punktuell als zusätzlicher
+Sicherheits-/Diagnosemechanismus verwendet, jedoch nicht als zugrunde liegendes
+Ressourcenverwaltungsmodell. Die allgemeine Philosophie der Standardbibliothek
+ist ein expliziter Lebenszyklus und ein expliziter Abschluss.
+
+#### Fazit:
+
+`runtime.SetFinalizer` ist ein spezialisiertes Tool mit Soft-Garantien. In der
+Produktion-Go wird es vorsichtig und selten verwendet; Die explizite
+Ressourcenverwaltung bleibt die Grundlage für zuverlässigen Code.
+
+</details>

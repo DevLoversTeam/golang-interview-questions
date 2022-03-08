@@ -3994,3 +3994,67 @@ Produktion-Go wird es vorsichtig und selten verwendet; Die explizite
 Ressourcenverwaltung bleibt die Grundlage für zuverlässigen Code.
 
 </details>
+
+
+<details>
+<summary>67. Wie finde ich ein Speicherleck mit `pprof`?</summary>
+
+#### Go
+
+Die Suche nach Speicherlecks in Go bis `pprof` basiert auf dem Vergleich von
+Heap-Profilen im Laufe der Zeit: Wenn „lebende“ Objekte stetig wachsen, ohne auf
+die Basisebene zurückzukehren, liegt ein Anzeichen für ein Leck oder eine
+unkontrollierte Referenzaufbewahrung vor.
+
+#### Grundlegende Diagnosestrategie:
+
+1. Profiling (`net/http/pprof`) im Dienst aktivieren.
+
+2. Mehrere Heap-Profile entfernen:
+
+- am Anfang;
+
+- unter Arbeitslast;
+
+- nach einer „ruhigen“ Zeit.
+
+3. Vergleichen Sie Profile (`go tool pprof`, Diff-Modus), um Typen/Stacks zu
+   finden, die ständig wachsen.
+
+#### Was Sie in `pprof` sehen sollten:
+
+1. **`inuse_space` / `inuse_objects`** — das bleibt wirklich im Gedächtnis.
+
+2. **Top-Allokatoren** und ihre Aufrufstapel.
+
+3. **Im Aufrufdiagramm (`web`)** werden langlebige Objekte gespeichert.
+
+4. Dynamik nach mehreren GC-Zyklen: Das echte Leck „explodiert“ nicht.
+
+#### Typische Leckquellen:
+
+1. Globale Karte/Cache ohne Räumungsrichtlinie.
+
+2. Nicht gelöschte Puffer/Warteschlangen/Kanäle.
+
+3. Nicht terminierende Routinen, die Verweise auf große Strukturen enthalten.
+
+4. Fehler beim Projektieren von Pools oder „für immer“ Metrik-/Labelsammlungen.
+
+#### Praktische Techniken:
+
+1. Führen Sie Profile unter einer repräsentativen Arbeitslast aus.
+
+2. Vergleichs-Snapshots vor/nach dem Fix hinzufügen.
+
+3. Beobachten Sie das Goroutine-Profil parallel (`goroutine`) – Goroutine-Lecks
+   korrelieren oft mit Speicherlecks.
+
+#### Fazit:
+
+Mit `pprof` können Sie einen Speicherverlust nicht „nach Augenmaß“, sondern
+nachweislich finden: aufgrund des Wachstums der `inuse`-Metriken und
+spezifischer Aufbewahrungsstapel. Der Schlüssel zum Erfolg ist der
+Zeitprofilvergleich bei stabiler, reproduzierbarer Belastung.
+
+</details>

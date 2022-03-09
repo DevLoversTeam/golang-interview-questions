@@ -4058,3 +4058,72 @@ spezifischer Aufbewahrungsstapel. Der Schlüssel zum Erfolg ist der
 Zeitprofilvergleich bei stabiler, reproduzierbarer Belastung.
 
 </details>
+
+
+<details>
+<summary>68. Wie finde ich Hot Paths und messe den Durchsatz?</summary>
+
+#### Go
+
+`Hot paths` sind Codeabschnitte, in denen das Programm die meiste Zeit oder
+Ressourcen aufwendet. Um sie richtig zu finden, ist keine Intuition
+erforderlich, sondern eine Profilerstellung unter realer oder nahezu realer
+Last.
+
+#### So finden Sie heiße Pfade:
+
+1. **CPU-Profiling (`pprof`):** zeigt an, wo die CPU-Zeit am meisten verbraucht
+   wird.
+
+2. **Heap/alloc-profiles:** helfen dabei, „heiße“ Zuordnungspfade zu finden, die
+   häufig zu indirekten Verschlechterungen durch GC führen.
+
+3. **Trace (`go tool trace`):** gibt ein Bild des Schedulers, der Sperren,
+   Verzögerungen zwischen Goroutines und E/A.
+
+4. **Flame-Graph / Top / Call-Graph:** visualisieren, welche Funktionen die
+   Hauptkosten bilden.
+
+#### So messen Sie den Durchsatz:
+
+1. Definieren Sie Bandbreiten-Geschäftsmetriken:
+
+- req/s, msg/s, jobs/s, rows/s usw.
+
+2. Kontrollierte Lasttests durchführen:
+
+- feste Eingabe;
+
+- bekanntes Wettbewerbsprofil;
+
+- stabile Startumgebung.
+
+3. Metriken gleichzeitig entfernen:
+
+- Durchsatz;
+
+- Latenz (p50/p95/p99);
+
+- CPU, Speicher, GC, Sperrenkonflikt.
+
+4. Vergleichen Sie „Vorher/Nachher“-Änderungen unter denselben Bedingungen (und
+   vorzugsweise mit mehreren Durchläufen).
+
+#### Praktische Grundsätze:
+
+1. Optimieren Sie nur das, was vom Profiler bestätigt wird.
+
+2. Verbessern Sie den Durchsatz nicht auf Kosten eines unkontrollierten
+   Wachstums der Tail-Latenz.
+
+3. Führen Sie nach der Optimierung ein erneutes Profil aus, um sicherzustellen,
+   dass der Engpass tatsächlich behoben ist und sich nicht verschoben hat.
+
+#### Fazit:
+
+Das Finden heißer Pfade und das Messen des Durchsatzes erfolgt in einem einzigen
+Zyklus: **Profilerstellung → Hypothese → Änderung → Messung wiederholen**. In Go
+wird dieser Ansatz durch Standardwerkzeuge gut unterstützt und liefert technisch
+einwandfreie Ergebnisse.
+
+</details>

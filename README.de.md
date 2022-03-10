@@ -4127,3 +4127,75 @@ wird dieser Ansatz durch Standardwerkzeuge gut unterstützt und liefert technisc
 einwandfreie Ergebnisse.
 
 </details>
+
+
+<details>
+<summary>69. Wie optimiert man die String-Verarbeitung mit `strings.Builder`? Warum kann man nicht in einer Schleife verketten?</summary>
+
+#### Go
+
+In Go sind Zeichenfolgen unveränderlich. Das bedeutet, dass bei jeder
+Verkettungsoperation eine neue Zeichenfolge erstellt wird. Daher erzeugt
+wiederholtes `s += part` in einer Schleife oft eine Lawine von Zuweisungen und
+Kopien.
+
+#### Warum die Verkettung in einer Schleife ineffizient ist:
+
+1. Bei jeder Iteration wird eine neue Zeile erstellt.
+
+2. Alte Inhalte werden immer wieder kopiert.
+
+3. Die Gesamtkosten können bei großen Volumina quadratisch ansteigen.
+
+4. Zunehmender Druck auf den GC aufgrund kurzlebiger Zwischenobjekte.
+
+#### Wie `strings.Builder` hilft:
+
+1. `Builder` sammelt Daten in einem internen Puffer.
+
+2. Entries (`WriteString`, `WriteByte`, `WriteRune`) minimieren redundante
+   Kopien.
+
+3. Der endgültige String wird einmalig über `String()` generiert.
+
+4. Kann bei Bedarf als `Grow(n)` bezeichnet werden, um Kapazität vorab zu
+   reservieren und die Neuzuweisung zu reduzieren.
+
+#### Praktische Vorteile:
+
+1. Weniger Zuweisungen.
+
+2. Besserer Durchsatz bei Formatierungs-/Textgenerierungs-Hot-Paths.
+
+3. Stabileres Latenzverhalten unter Last.
+
+#### Wenn es besonders notwendig ist, Folgendes zu verwenden:
+
+1. Generierung großer Nutzlasten (JSON/SQL/HTML/Protokollzeilen).
+
+2. String-Konstruktion in Schleifen.
+
+3. Alle Operationen, bei denen eine Zeichenfolge aus vielen Fragmenten gebildet
+   wird.
+
+#### Fazit:
+
+Die Verkettung in einer Schleife ist aufgrund wiederholter Zuweisungen und des
+Kopierens unveränderlicher Zeilen teuer. `strings.Builder` ist ein idiomatisches
+und effizientes Tool zum Erstellen von Zeichenfolgen in Go , insbesondere an
+leistungskritischen Stellen.
+
+#### Beispiel:
+
+```go
+var b strings.Builder
+b.Grow(1024)
+
+for _, part := range parts {
+	b.WriteString(part)
+}
+
+result := b.String()
+```
+
+</details>

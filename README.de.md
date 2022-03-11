@@ -4199,3 +4199,72 @@ result := b.String()
 ```
 
 </details>
+
+
+<details>
+<summary>70. Wie optimiert man die Serialisierung?</summary>
+
+#### Go
+
+Die Optimierung der Serialisierung in Go betrifft in erster Linie die Arbeit mit
+Zuweisungen, Datenformat, Wiederverwendung von Puffern und Reduzierung der
+Reflexion in Hot Paths. Nur ein profilierter Ansatz liefert das beste Ergebnis,
+keine „blinden“ Mikrooptimierungen.
+
+#### Praktische Optimierungsstrategien:
+
+1. **Format für die Aufgabe auswählen:**
+
+- JSON ist praktisch und vielseitig, aber schwerer als die CPU;
+
+- Protobuf/MessagePack sind für dienstübergreifenden Datenverkehr oft schneller
+  und kompakter.
+
+2. **Reduzierung der Zuteilungen:**
+
+- Wiederverwendung `bytes.Buffer` / `[]byte` über `sync.Pool`;
+
+- vermeiden Sie unnötige Zwischenobjekte beim Marshallen/Unmarshalieren.
+
+3. **Thread-Serialisierung:**
+
+- verwenden Sie `Encoder/Decoder` für große Streams, um zu vermeiden, dass die
+  gesamte Nutzlast auf einmal im Speicher bleibt.
+
+4. **Datenstrukturoptimierung:**
+
+- unnötige Felder entfernen;
+
+- verwenden Sie die richtigen Tags (`omitempty`, bei Bedarf Kurzschlüssel);
+
+- Vermeiden Sie übermäßig verschachtelte Strukturen, sofern dies nicht durch die
+  Geschäftslogik erforderlich ist.
+
+5. **Vermeidung redundanter Reflexion im Hot-Path:**
+
+- Erwägen Sie an kritischen Stellen die Codegenerierung oder eine manuell
+  optimierte (De-)Serialisierung.
+
+6. **Nutzlastgrößenkontrolle:**
+
+- Komprimierung ist nur nach Messungen sinnvoll, da sie die CPU-Kosten erhöht;
+
+- Manchmal ist es besser, weniger Daten zu übertragen, als „besser“ zu
+  komprimieren.
+
+#### So bewerten Sie die Wirkung:
+
+1. Benchmarks (`go test -bench`) vorher/nachher.
+
+2. CPU/Alloc-Profile (`pprof`).
+
+3. Produktionsmetriken: Durchsatz, p95/p99-Latenz, Heap, GC.
+
+#### Fazit:
+
+Eine optimale Serialisierung ist ein Gleichgewicht zwischen Format, Zuordnungen
+und Codekomplexität. In Go besteht die beste Vorgehensweise darin, ein Profil zu
+erstellen, redundante Kopien zu bereinigen, Puffer wiederzuverwenden und ein
+Format auszuwählen, das den Anforderungen eines bestimmten Systems entspricht.
+
+</details>

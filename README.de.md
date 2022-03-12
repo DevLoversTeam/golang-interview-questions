@@ -4268,3 +4268,57 @@ erstellen, redundante Kopien zu bereinigen, Puffer wiederzuverwenden und ein
 Format auszuwählen, das den Anforderungen eines bestimmten Systems entspricht.
 
 </details>
+
+
+<details>
+<summary>71. Wie optimiert man die Arbeit mit Dateien?</summary>
+
+#### Go
+
+Bei der Optimierung der Datei-E/A in Go geht es um die Wahl des richtigen
+Lese-/Schreibmusters, der Puffergröße, des Parallelitätsgrads und der
+Festplattenstrategie. Das Hauptziel besteht darin, Systemaufrufe, redundante
+Kopien und Deadlocks zu reduzieren.
+
+#### Schlüsselpraktiken:
+
+1. **Gepufferte E/A (`bufio.Reader/Writer`):** reduziert die Anzahl kleiner
+   `read/write` und erhöht den Durchsatz.
+
+2. **Stapelverarbeitung statt byteweiser Zugriff:** Lesen/Schreiben in Blöcken
+   ist viel effizienter als kleine Operationen.
+
+3. **Threading großer Dateien:** Laden Sie nicht die gesamte Datei in den
+   Speicher, wenn sie in Teilen verarbeitet werden kann.
+
+4. **Richtige Griffverwaltung:** `defer file.Close()` unmittelbar nach dem
+   Öffnen – grundlegende Hygiene zur Vermeidung von FD-Lecks.
+
+5. **Parallelitätskontrolle:** Parallelität ist nur innerhalb der
+   Festplatten-/FS-Bandbreite sinnvoll; Übermäßige parallele E/A-Vorgänge können
+   die Latenz verschlechtern.
+
+6. **Redundante Kopien minimieren:** Verwenden Sie `io.Copy` und verwenden Sie
+   Puffer gegebenenfalls wieder.
+
+7. **Profiling vor der Optimierung:** messen, ob der Engpass in der Festplatte,
+   der CPU, der Serialisierung oder der Synchronisierung liegt.
+
+#### Zusätzliche technische Tipps:
+
+1. Berücksichtigen Sie bei Protokollen/Ereignissen die Flush-Richtlinie
+   (häufiges Flushing = geringerer Durchsatz).
+
+2. Unterteilen Sie bei großen Pipelines das Lesen, Verarbeiten und Schreiben in
+   überschaubare Phasen.
+
+3. Überprüfen Sie bei kritischen Szenarien das Dateisystem und die
+   Container-/Host-Einstellungen (E/A-Kontingent, Volume-Typ, Netzwerkspeicher).
+
+#### Fazit:
+
+Das effiziente Arbeiten mit Dateien in Go ist eine Disziplin der Pufferung, des
+Streamings, der kontrollierten Parallelität und der Messungen. Die Optimierung
+sollte auf dem realen Lastprofil und nicht auf allgemeinen Annahmen basieren.
+
+</details>

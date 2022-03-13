@@ -4322,3 +4322,77 @@ Streamings, der kontrollierten Parallelität und der Messungen. Die Optimierung
 sollte auf dem realen Lastprofil und nicht auf allgemeinen Annahmen basieren.
 
 </details>
+
+
+<details>
+<summary>72. Wie funktioniert die Stapelverarbeitung und wann ist sie sinnvoll?</summary>
+
+#### Go
+
+`Batching` ist die Zusammenfassung vieler kleiner Operationen zu größeren
+Paketen (Batch), um den Overhead jeder einzelnen Operation zu reduzieren. In
+hochbelasteten Systemen ist dies eine der effektivsten Möglichkeiten, den
+Durchsatz zu steigern.
+
+#### So funktioniert die Stapelverarbeitung:
+
+1. Ereignisse/Datensätze sammeln sich im Puffer an.
+
+2. Batch wird gemäß einem der Auslöser gesendet:
+
+- Größe erreicht `N`;
+
+- timeout `T`;
+
+- complete/flush empfangen.
+
+3. Der Vorgang wird durch einen „Batch“-Aufruf (Datenbank, Netzwerk, Festplatte,
+   Warteschlange) ausgeführt.
+
+#### Warum es effektiv ist:
+
+1. **Weniger Systemaufrufe und Roundtrips.**
+
+2. **Bessere Auslastung des I/O-Kanals** (Netzwerk, Festplatte, Datenbank).
+
+3. **Weniger Synchronisierungsaufwand** für eine große Anzahl kleiner Aufgaben.
+
+#### Wenn die Dosierung angemessen ist:
+
+1. Massenoperationen desselben Typs (Protokollierung, Telemetrie,
+   Masseneinfügung/-aktualisierung).
+
+2. Szenarien, in denen der Durchsatz wichtiger ist als die minimal mögliche
+   Latenz der Einheit.
+
+3. Integrationen, bei denen das externe System gut mit Batch-Anfragen
+   funktioniert.
+
+#### Wenn die Dosierung schädlich sein kann:
+
+1. Strenge Anforderungen an die Verzögerung eines einzelnen Vorgangs.
+
+2. Fehler bei der Batch-Größen-/Timeout-Konfiguration, was zu einer Erhöhung der
+   Endlatenz führt.
+
+3. Hohes Risiko, dass ein großer Datenblock ohne ordnungsgemäße
+   Wiederholungs-/Löschlogik verloren geht.
+
+#### Praktische Regeln:
+
+1. Stellen Sie **sowohl Größe als auch Zeit** (`N` + `T`) gleichzeitig ein.
+
+2. Führen Sie beim Herunterfahren eine explizite Spülung durch.
+
+3. Stellen Sie Wiederholungsversuche/Backoffs für teilweise oder vollständige
+   Fehler von Batch-Anfragen bereit.
+
+4. Durchsatz ↔ Latenzbalance bei realer Last messen.
+
+#### Fazit:
+
+Batching ist ein architektonischer Leistungsmultiplikator für Massenvorgänge.
+Seine Leistungsfähigkeit zeigt sich dort, wo die Reduzierung des Overheads pro
+Anfrage wichtiger ist als die sofortige Reaktion auf jedes einzelne Ereignis.
+
+</details>

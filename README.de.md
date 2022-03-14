@@ -4396,3 +4396,57 @@ Seine Leistungsfähigkeit zeigt sich dort, wo die Reduzierung des Overheads pro
 Anfrage wichtiger ist als die sofortige Reaktion auf jedes einzelne Ereignis.
 
 </details>
+
+
+<details>
+<summary>73. Wann ist die Codegenerierung (`go generate`) besser als die Reflexion?</summary>
+
+#### Go
+
+`Code generation` und `reflection` lösen ähnliche Metaprogrammierungsprobleme,
+haben jedoch unterschiedliche Preise. In Go gewinnt die Codegenerierung häufig
+dort, wo Geschwindigkeit, Typsicherheit und Vorhersagbarkeit in der Produktion
+erforderlich sind.
+
+#### Wenn `go generate` besser ist als Reflexion:
+
+1. **Hot-Path-Leistung ist entscheidend:** Generierter Code wird ohne
+   Laufzeitreflexion ausgeführt, daher ist er normalerweise schneller und mit
+   kleineren Zuweisungen.
+
+2. **Starke Typsicherheit erforderlich:** Fehler werden zur Kompilierungszeit
+   erkannt, nicht zur Laufzeit.
+
+3. **Hohe Latenz-/Durchsatzanforderungen:** Serialisierung, Zuordnung,
+   RPC-Codecs, Validierung in Massenanfragen.
+
+4. **Stabiler Datenvertrag:** wenn Schemata im Voraus bekannt sind und sich
+   selten ändern.
+
+5. **Erfordert transparentes Debugging:** Generierte Aufrufe können als normaler
+   Go-Code profiliert und analysiert werden.
+
+#### Wenn Reflexion gerechtfertigt ist:
+
+1. Das Schema ist dynamisch und wird nur zur Laufzeit definiert.
+
+2. Erfordert schnelles Prototyping oder universelle Bibliotheksflexibilität.
+
+3. Geringe Leistungsanforderungen, bei denen es einfacher ist, den
+   Laufzeit-Overhead zu akzeptieren.
+
+#### Kompromisse `go generate`:
+
+1. Fügt einen Schritt im Build/Workflow hinzu.
+
+2. Muss Vorlagen/Generatoren unterstützen.
+
+3. Der generierte Code erhöht die Größe des Repositorys.
+
+#### Praktisches Fazit:
+
+Wenn das System leistungsempfindlich ist und das Standardmodell stabil ist, ist
+`go generate` normalerweise besser als Reflexion. Reflexion ist dort angebracht,
+wo Dynamik im Vordergrund steht und nicht maximale Leistungseffizienz.
+
+</details>

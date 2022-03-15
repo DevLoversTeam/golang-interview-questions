@@ -4450,3 +4450,68 @@ Wenn das System leistungsempfindlich ist und das Standardmodell stabil ist, ist
 wo Dynamik im Vordergrund steht und nicht maximale Leistungseffizienz.
 
 </details>
+
+
+<details>
+<summary>74. Was ist Escape Analysis und wie kann man sie mit Compiler-Flags überprüfen?</summary>
+
+#### Go
+
+`Escape Analysis` ist eine Compiler-Analyse von Go, die bestimmt, ob ein Wert
+auf dem Stapel verbleiben kann oder auf dem Heap zugewiesen werden muss, weil er
+über den aktuellen Stapelrahmen hinaus „entweicht“.
+
+#### Warum ist es wichtig:
+
+1. Stack-Zuweisungen sind günstiger.
+
+2. Heap-Zuweisungen erhöhen den GC-Druck.
+
+3. Das Verständnis des Escape-Verhaltens hilft bei der Optimierung von Hot
+   Paths.
+
+#### Typische Fluchtgründe:
+
+1. Zeiger auf lokalen Wert zurückgeben.
+
+2. Werterhalt in einer langlebigen Struktur.
+
+3. Erfassung der Variablen durch Schließung.
+
+4. Übergabe eines Werts an Kontexte, in denen der Compiler keinen lokalen
+   Lebenszyklus garantieren kann.
+
+#### So überprüfen Sie Compiler-Flags:
+
+Die am häufigsten verwendete Methode:
+
+1. `go build -gcflags="-m" ./...`
+
+2. Für eine detailliertere Ausgabe: `go build -gcflags="-m -m" ./...`
+
+Nachrichten werden nach Phrasen durchsucht wie:
+
+- `moved to heap`
+
+- `escapes to heap`
+
+Dies ist ein direkter Indikator dafür, dass kein Wert mehr auf dem Stapel
+vorhanden ist.
+
+#### Praktischer Ablauf:
+
+1. Führen Sie den Benchmark/das Profil aus und finden Sie das heiße Fragment.
+
+2. Überprüfen Sie die Compiler-Escape-Ausgabe für diesen Abschnitt.
+
+3. Lokal umgestalten (ohne die Lesbarkeit zu beeinträchtigen).
+
+4. Remeasure-Effekt (`bench`, `pprof`, Allocs/Op).
+
+#### Fazit:
+
+Escape Analysis ist ein Compiler-„Radar“ für das Zuordnungsverhalten. Mit
+`-gcflags="-m"` können Sie sehen, wo Daten in den Heap gelangen, und fundierte
+Entscheidungen zur Speicher- und Leistungsoptimierung treffen.
+
+</details>

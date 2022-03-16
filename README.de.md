@@ -4515,3 +4515,57 @@ Escape Analysis ist ein Compiler-„Radar“ für das Zuordnungsverhalten. Mit
 Entscheidungen zur Speicher- und Leistungsoptimierung treffen.
 
 </details>
+
+
+<details>
+<summary>75. Warum sind `panic` und `recover` kein Ersatz für die normale Fehlerbehandlung?</summary>
+
+#### Go
+
+In Go `panic/recover` sind für außergewöhnliche Notfallsituationen gedacht,
+nicht für die normale Fehlerbehandlung in der Geschäftslogik. Der normale Weg,
+Fehler zu behandeln, besteht darin, explizit `error` zurückzugeben und den
+Ausführungsfluss zu steuern.
+
+#### Warum `panic/recover` nicht durch `error handling` ersetzt wird:
+
+1. **Verletzung der Vertragsklarheit:** Bei `error` zeigt die Funktionssignatur
+   explizit, was schief gehen kann; mit `panic` wird der Fehler implizit.
+
+2. **Flusskontrolle schwieriger machen:** Panik wickelt den Stapel ab, wodurch
+   das Verhalten für den Aufrufer weniger vorhersehbar wird.
+
+3. **Schlimmer zu testen:** Das Testen auf Panikszenarien ist schwieriger und
+   weniger natürlich als das Testen auf zurückgegebene Fehler.
+
+4. **Verschlechtern Sie die Zuverlässigkeit von Diensten:** Eine nicht erfasste
+   Panik in einer Goroutine kann einen Prozess oder eine wichtige
+   Verarbeitungsschleife zerstören.
+
+5. **`recover` ist lokaler Natur:** funktioniert nur in `defer` derselben
+   Goroutine, es handelt sich also nicht um einen universellen Fehlermechanismus
+   zwischen Komponenten.
+
+#### Wenn `panic` gerechtfertigt ist:
+
+1. Verletzung interner Invarianten, was auf einen Softwarefehler hinweist.
+
+2. Vertraglich unmögliche Zustände („das sollte niemals passieren“).
+
+3. Kritische Initialisierungsfehler beim Fortfahren sind falsch.
+
+#### Wenn `error` benötigt wird:
+
+1. Erwartete Ausfälle externer Systeme (Netzwerk, DB, I/O).
+
+2. Validierungs- und Domänenfehler.
+
+3. Alle Situationen, in denen der Anrufer die Wahl hat, wie er reagieren möchte.
+
+#### Fazit:
+
+Im ausgereiften Go-Code ist `error` das primäre Tool für die verwaltete
+Fehlerbehandlung. `panic/recover` ist ein Notfallmechanismus für Ausnahmefälle
+und keine alltägliche Alternative zur Standard-Fehlerbehandlung.
+
+</details>

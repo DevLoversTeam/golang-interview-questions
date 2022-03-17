@@ -4569,3 +4569,73 @@ Fehlerbehandlung. `panic/recover` ist ein Notfallmechanismus für Ausnahmefälle
 und keine alltägliche Alternative zur Standard-Fehlerbehandlung.
 
 </details>
+
+
+<details>
+<summary>76. Wie funktionieren `errors.Is` und `errors.As` mit dem Fehlerumbruch in Go und was ist der Unterschied zwischen ihnen?</summary>
+
+#### Go
+
+Im modernen Go werden Fehler häufig durch Hinzufügen von Kontext über
+`fmt.Errorf("...: %w", err)` „umhüllt“. `errors.Is` und `errors.As` ermöglichen
+es Ihnen, mit einer solchen Fehlerkette korrekt zu arbeiten, ohne die
+ursprüngliche Ursache zu verlieren.
+
+#### So funktioniert `errors.Is`:
+
+1. Überprüft, ob die Fehlerkette einen bestimmten Zielfehler enthält.
+
+2. Wird hauptsächlich für Sentinel-Fehler verwendet (`io.EOF`,
+   `context.Canceled` usw.).
+
+3. Semantik: **„Ist dies (oder eine verpackte Version) der genaue Fehler?“**
+
+#### So funktioniert `errors.As`:
+
+1. Durchsucht die Kette nach einem Fehler eines bestimmten Typs.
+
+2. Wenn es gefunden wird, wird es in das übergebene Ziel (Zeiger) geschrieben.
+
+3. Semantik: **"Kann ein Fehler dieser Art aus der Zeichenfolge entfernt
+   werden?"**
+
+#### Hauptunterschied:
+
+1. `errors.Is` – Fehler **Identitäts-/Äquivalenzprüfung**.
+
+2. `errors.As` – **Typprüfung** und Zugriff auf typspezifische Felder/Methoden.
+
+#### Praktisches Nutzungsmuster:
+
+1. Erster `errors.Is` für bekannte Sentinel-Fälle.
+
+2. Dann `errors.As`, wenn benutzerdefinierte Typdetails (Code, Metadaten,
+   Kontext) erforderlich sind.
+
+3. Vergleichen Sie verpackte Fehler nicht mit `==`, da auf diese Weise die
+   Korrektheit in der Wrapping-Kette verloren geht.
+
+#### Fazit:
+
+`errors.Is` beantwortet die Frage „Ist das derselbe Fehler?“ und `errors.As`
+antwortet „Ist das derselbe Fehlertyp?“. Zusammen bilden sie ein korrektes und
+zuverlässiges Arbeitsmodell mit Fehlerumschließung in Go.
+
+#### Beispiel:
+
+```go
+if err := repo.Save(ctx, x); err != nil {
+	return fmt.Errorf("save user: %w", err)
+}
+
+if errors.Is(err, sql.ErrNoRows) {
+	// перевірка sentinel-помилки
+}
+
+var ve *ValidationError
+if errors.As(err, &ve) {
+	// доступ до полів конкретного типу помилки
+}
+```
+
+</details>

@@ -4639,3 +4639,80 @@ if errors.As(err, &ve) {
 ```
 
 </details>
+
+
+<details>
+<summary>77. Wann sollten Sie einen benutzerdefinierten Fehlertyp anstelle eines Sentinel-Fehlers verwenden und welche praktischen Konsequenzen hat diese Wahl für die Architektur?</summary>
+
+#### Go
+
+`Sentinel error` und `custom error type` sind unterschiedliche
+Fehlermodellierungstools. Sentinel eignet sich für ein einfaches Binärsignal und
+einen benutzerdefinierten Typ – wenn der Fehler einen strukturierten Kontext
+enthält und das Verhalten mehrerer Schichten des Systems beeinflusst.
+
+#### Wenn ein Sentinel-Fehler ausreicht:
+
+1. Nur die Angabe der konkreten Fehlerkategorie ist erforderlich.
+
+2. Es müssen keine zusätzlichen Felder übergeben werden.
+
+3. Die Überprüfung über `errors.Is` ist ausreichend.
+
+#### Wann ist ein benutzerdefinierter Fehlertyp:
+
+1. Erfordert **strukturierte Details**:
+
+- Fehlercode;
+
+- Domänengrund;
+
+- Ressourcen-ID;
+
+- retryability;
+
+- HTTP/gRPC-Zuordnung.
+
+2. Verschiedene Ebenen müssen auf der Grundlage dieser Felder unterschiedliche
+   Entscheidungen treffen.
+
+3. Erfordern eine stabile Entwicklung des Fehlervertrags ohne chaotische
+   String-Prüfungen.
+
+#### Architektonische Konsequenzen der Wahl:
+
+1. **Sentinel-Fehler**
+
+- ein einfacherer Start;
+
+- less Code;
+
+- aber schwächere Aussagekraft und Risiko des „Wachstums“ impliziter
+  Verarbeitungsregeln.
+
+2. **Benutzerdefinierter Fehlertyp**
+
+- klarerer Domainvertrag;
+
+- bessere Integration zwischen Transport-/Dienst-/Domänenschichten;
+
+- höhere Tests der Verarbeitungsrichtlinien;
+
+- aber erfordert Designdisziplin und einen Versionierungsansatz.
+
+#### Empfohlene Vorgehensweise:
+
+1. Für einfache globale Signale – Sentinel.
+
+2. Für domänenrelevante Fehler – benutzerdefinierter Typ + `errors.As`.
+
+3. Wickeln Sie kleinere Fehler durch `%w`, ohne die Ursache zu verlieren.
+
+#### Fazit:
+
+Die Wahl zwischen Sentinel- und benutzerdefiniertem Typ ist eine Wahl des
+Ausdrucksniveaus der Fehlerarchitektur. Wenn sich ein Fehler auf die
+Entscheidungsweiterleitung im System auswirkt, bietet ein benutzerdefinierter
+Fehlertyp einen wesentlich robusteren und skalierbareren Vertrag.
+
+</details>

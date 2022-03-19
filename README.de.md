@@ -4716,3 +4716,64 @@ Entscheidungsweiterleitung im System auswirkt, bietet ein benutzerdefinierter
 Fehlertyp einen wesentlich robusteren und skalierbareren Vertrag.
 
 </details>
+
+
+<details>
+<summary>78. Wie verhält sich `defer` innerhalb einer Schleife und was könnten die Auswirkungen auf Speicher und Leistung sein?</summary>
+
+#### Go
+
+`defer` in Go wird nicht am Ende der Schleifeniteration ausgeführt, sondern im
+Moment des Verlassens der umgebenden Funktion. Daher sammelt sich `defer`
+innerhalb der Schleife an und wird erst nach Abschluss der gesamten Funktion
+ausgelöst.
+
+#### So funktioniert es:
+
+1. Jede Iteration fügt einen neuen verzögerten Aufruf zum Verzögerungsstapel
+   hinzu.
+
+2. Diese Aufrufe werden erst am Ende der Funktion ausgeführt.
+
+3. Sie werden beim Beenden in umgekehrter Reihenfolge (LIFO) ausgeführt.
+
+#### Mögliche Folgen:
+
+1. **Verzögerte Freigabe von Ressourcen:** Dateien, Sockets, Transaktionen und
+   Sperren bleiben möglicherweise länger als nötig geöffnet.
+
+2. **Erhöhter Speicherverbrauch:** Viele zurückgestellte Einträge in einer
+   langen Schleife erhöhen den Overhead.
+
+3. **Leistungsabfall:** In Hot-Loops erhöhen übermäßige Verzögerungen den
+   Laufzeit-Overhead.
+
+4. **Risiko, dass die Ressourcen knapp werden:** z. B. „zu viele geöffnete
+   Dateien“, wenn `defer file.Close()` sich in einem langen Lesezyklus befindet.
+
+#### Wenn es sicher ist:
+
+1. Kleine Anzahl von Iterationen.
+
+2. Kurzer Funktionslebenszyklus.
+
+3. Ressourcen sind nicht knapp.
+
+#### Best Practice für Schleifen:
+
+1. Fügen Sie den Iterationskörper in eine separate Funktion ein und fügen Sie
+   dort `defer` ein.
+
+2. Oder die Ressource am Ende jeder Iteration explizit schließen/freigeben.
+
+3. Bei Sperren ist es besonders wichtig, die Haltezeit des kritischen Abschnitts
+   zu überwachen.
+
+#### Fazit:
+
+`defer` in einer Schleife ist ein Tool, das Disziplin erfordert: Es vereinfacht
+den Code, kann aber heimlich Ressourcen und Overhead ansammeln. Bei vielen
+Iterationen ist es besser sicherzustellen, dass innerhalb jedes Schritts
+Ressourcen freigegeben werden.
+
+</details>

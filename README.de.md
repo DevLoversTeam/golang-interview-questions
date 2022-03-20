@@ -4777,3 +4777,70 @@ Iterationen ist es besser sicherzustellen, dass innerhalb jedes Schritts
 Ressourcen freigegeben werden.
 
 </details>
+
+
+<details>
+<summary>79. Wie funktioniert die Funktion `init` und können Sie sich auf die Reihenfolge ihrer Ausführung verlassen?</summary>
+
+#### Go
+
+`init` in Go ist eine spezielle Paketfunktion, die automatisch während der
+Programminitialisierung (vor `main`) ausgeführt wird. Es wird für die
+Ersteinrichtung verwendet, die einmal vor dem Start der Hauptlogik erfolgen
+sollte.
+
+#### So funktioniert die Initialisierung:
+
+1. Importierte Abhängigkeiten werden zuerst initialisiert.
+
+2. Die Paketvariablen werden dann initialisiert.
+
+3. Danach werden die `init` Funktionen des Pakets aufgerufen.
+
+4. Erst nachdem der gesamte Initialisierungsbaum abgeschlossen ist, wird `main`
+   ausgeführt.
+
+#### Können Sie sich auf die Bestellung verlassen:
+
+1. **Zwischen Paketen**: Ja, innerhalb von Abhängigkeiten ist die Reihenfolge
+   definiert – zuerst Abhängigkeiten, dann Verbraucherpaket.
+
+2. **Innerhalb eines Pakets**:
+
+- die Reihenfolge der Initialisierung von Variablen wird durch die
+  Abhängigkeiten zwischen ihnen bestimmt;
+
+- Für mehrere `init` verschiedene Dateien im selben Paket ist es eine schlechte
+  Designidee, sich auf eine „zufällige“ Reihenfolge der Textdateien zu
+  verlassen.
+
+3. Fazit: Es gibt grundlegende Garantien, aber architektonisch ist es besser,
+   kritische Geschäftslogik nicht auf komplexen impliziten `init`-Ketten
+   aufzubauen.
+
+#### Risiken einer Überbeanspruchung `init`:
+
+1. Implizite Nebenwirkungen.
+
+2. Aufwendigeres Debuggen und Testen.
+
+3. Komplexere Auftragssteuerung in großen Codebasen.
+
+#### Praxisempfehlung:
+
+1. Halten Sie `init` minimal und vorhersehbar.
+
+2. Verwenden Sie explizite Konstruktoren/`Setup`-Funktionen für wichtige
+   Initialisierungen.
+
+3. Abhängigkeiten und Startreihenfolge sollten explizit in der Kompositionsebene
+   festgelegt werden.
+
+#### Fazit:
+
+`init` in Go wird automatisch ausgeführt und verfügt über formale
+Ordnungsgarantien auf der Ebene des Importdiagramms. Für eine lesbare, testbare
+Architektur ist es jedoch besser, kritische Initialisierungen explizit zu
+machen, anstatt sich auf versteckte `init`-Effekte zu verlassen.
+
+</details>

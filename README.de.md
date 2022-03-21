@@ -4844,3 +4844,58 @@ Architektur ist es jedoch besser, kritische Initialisierungen explizit zu
 machen, anstatt sich auf versteckte `init`-Effekte zu verlassen.
 
 </details>
+
+
+<details>
+<summary>80. Warum sollten Sie globale Variablen und `init`-Funktionen in Bibliotheken vermeiden?</summary>
+
+#### Go
+
+Im Bibliothekscode führen globale Variablen und „schwere“ `init`-Funktionen
+häufig zu implizitem Verhalten, das die Integration, das Testen und die
+Vorhersage der Anwendung erschwert. Dies ist besonders wichtig für
+wiederverwendbare Verpackungen.
+
+#### Warum globale Variablen in Bibliotheken schlecht sind:
+
+1. **Versteckter gemeinsam genutzter veränderlicher Zustand:** Ein Verbraucher
+   der Bibliothek weiß möglicherweise nicht, dass es irgendwo einen globalen
+   Zustand gibt, der das Verhalten beeinflusst.
+
+2. **Wettbewerbsprobleme:** Globale Unternehmen werden leicht zu einer Quelle
+   von Rassenkonflikten.
+
+3. **Komplexe Tests:** Tests beginnen, von der Ausführungsreihenfolge und den
+   Nebenwirkungen früherer Fälle abzuhängen.
+
+4. **Schlechte Zusammensetzbarkeit:** Es ist schwierig, mehrere unabhängige
+   Bibliotheksinstanzen mit unterschiedlichen Einstellungen zu haben.
+
+#### Warum „schwer“ `init` unerwünscht ist:
+
+1. **Implizite Importnebeneffekte:** nur `import` und der Code ist bereits
+   ausgeführt.
+
+2. **Keine explizite Steuerung der Initialisierungszeit:** Es ist schwierig, die
+   Startreihenfolge/-bedingungen in einer großen Anwendung zu steuern.
+
+3. **Eingeschränkte Beobachtbarkeit/Debugbarkeit:** Startfehler und
+   Nebenwirkungen sind schwerer zu lokalisieren.
+
+#### Was ist stattdessen besser:
+
+1. Explizite Konstruktoren (`New(...)`) und Konfigurationsstrukturen.
+
+2. Instanzorientiertes Design ohne globalen veränderlichen Zustand.
+
+3. Expliziter `Setup/Start/Close` Lebenszyklus, wo erforderlich.
+
+4. Minimum `init` nur für Aktionen ohne Nebenwirkungen.
+
+#### Fazit:
+
+Die Bibliothek sollte vorhersehbar und benutzergesteuert sein. Die Vermeidung
+globaler Zustände und übermäßiger `init` ist eine Investition in Testbarkeit,
+Skalierbarkeit und architektonische Reinheit des Go-Codes.
+
+</details>

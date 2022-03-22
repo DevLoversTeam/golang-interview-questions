@@ -4899,3 +4899,58 @@ globaler Zustände und übermäßiger `init` ist eine Investition in Testbarkeit
 Skalierbarkeit und architektonische Reinheit des Go-Codes.
 
 </details>
+
+
+<details>
+<summary>81. Was passiert, wenn Sie eine Struktur mit Feldern, die mit einem Kleinbuchstaben beginnen, in JSON serialisieren?</summary>
+
+#### Go
+
+In Go sind Strukturfelder, die mit einem Kleinbuchstaben beginnen, nicht
+exportierbar (`unexported`). Das Paket `encoding/json` hat keinen
+reflektierenden Zugriff auf sie als öffentliche Felder, daher werden sie bei der
+Serialisierung ignoriert.
+
+#### Was passiert mit `json.Marshal`:
+
+1. Nur exportierte Felder (in Großbuchstaben) werden in JSON aufgenommen.
+
+2. Felder mit einem Kleinbuchstaben werden ignoriert.
+
+3. Die `json:"..."`-Tags für nicht exportierte Felder „erzwingen“ nicht deren
+   Serialisierung.
+
+#### Konsequenzen in der Praxis:
+
+1. Unerwartet „leerer“ oder unvollständiger JSON.
+
+2. Verlust wichtiger Daten in API-Antworten.
+
+3. Es ist schwierig, Fehler zu beheben, wenn der Entwickler die Exportregel
+   nicht berücksichtigt hat.
+
+#### Was ist mit der Deserialisierung (`json.Unmarshal`):
+
+1. Ebenso schreibt `encoding/json` Daten nicht direkt in nicht exportierte
+   Felder.
+
+2. Die Prozesssteuerung erfordert benutzerdefinierte `MarshalJSON` /
+   `UnmarshalJSON` , separate DTOs oder andere explizite
+   Transformationsmechanismen.
+
+#### Faustregel:
+
+1. Für Felder, die JSON sein sollen, verwenden Sie exportierte Namen.
+
+2. Domain-sensible interne Daten absichtlich nicht exportieren.
+
+3. Separate interne Modelle und Transport-DTOs, wenn eine differenzierte
+   Kontrolle öffentlicher Verträge erforderlich ist.
+
+#### Fazit:
+
+In Go funktioniert die JSON-Serialisierung nur mit exportierten Strukturfeldern.
+Kleingeschriebene Felder im Standard `encoding/json` werden nicht serialisiert,
+auch wenn sie mit Tags versehen sind.
+
+</details>

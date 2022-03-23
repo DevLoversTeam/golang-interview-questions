@@ -4954,3 +4954,68 @@ Kleingeschriebene Felder im Standard `encoding/json` werden nicht serialisiert,
 auch wenn sie mit Tags versehen sind.
 
 </details>
+
+
+<details>
+<summary>82. Welche Möglichkeiten gibt es, Daten aus JSON in Go abzurufen?</summary>
+
+#### Go
+
+In Go gibt es keinen einzigen „richtigen“ Weg, mit JSON zu arbeiten: Der Ansatz
+wird basierend auf der Schemastabilität, den Leistungsanforderungen und dem Grad
+der Typsicherheit ausgewählt.
+
+#### Hauptmethoden:
+
+1. **Dekodierung in Struktur (`struct`)**
+
+- die typischste und zuverlässigste Option für ein bekanntes Schema;
+
+- bietet Typsicherheit, klare Verträge und bessere Wartbarkeit.
+
+2. **Dekodierung in `map[string]any`**
+
+- ist praktisch für teilweise dynamische Nutzlasten;
+
+- flexibel, aber weniger sicher: erfordert Behauptungen und Typprüfungen.
+
+3. **Stream-Lesen über `json.Decoder`**
+
+- ist für große JSON-Dateien oder Streams (HTTP-Body, Dateien) geeignet;
+
+- ermöglicht Ihnen das Arbeiten, ohne das gesamte Dokument in den Speicher laden
+  zu müssen.
+
+4. **`json.RawMessage` für verzögertes/teilweises Parsen**
+
+- nützlich, wenn ein Teil des Schemas vom Feld „Diskriminator“ abhängt;
+
+- gibt die Kontrolle über die Dekodierungsschritte.
+
+5. **Benutzerdefiniert `UnmarshalJSON` / `MarshalJSON`**
+
+- für nicht standardmäßige Formate, Validierung oder spezielle
+  Geschäftssemantik.
+
+6. **Dritte Bibliotheken / Codegen**
+
+- ist für hohe Leistung oder spezifische Kompatibilitätsanforderungen geeignet.
+
+#### Praktische Wahl:
+
+1. Stabiler API-Vertrag → `struct`.
+
+2. Dynamischer oder teilweise unbekannter JSON → `map` + `RawMessage`.
+
+3. Große Datenmengen → `Decoder` (Streaming).
+
+4. Kritische Leistung/pathologisches JSON → Profiling + Codegen/Alternativen.
+
+#### Fazit:
+
+Der optimale Weg zum „Abrufen“ der JSON-Daten in Go hängt von der Art des
+Schemas ab. In den meisten Produktionsfällen sind typisierte Strukturen die
+grundlegende Wahl und dynamische Mechanismen (`map`, `RawMessage`,
+benutzerdefiniertes Unmarshalieren) – für komplexere Szenarien.
+
+</details>

@@ -5019,3 +5019,69 @@ grundlegende Wahl und dynamische Mechanismen (`map`, `RawMessage`,
 benutzerdefiniertes Unmarshalieren) – für komplexere Szenarien.
 
 </details>
+
+
+<details>
+<summary>83. Was ist der Unterschied zwischen `json.Marshal` und `json.Encoder`?</summary>
+
+#### Go
+
+`json.Marshal` und `json.Encoder` führen eine ähnliche Serialisierungsaufgabe
+aus, verfügen jedoch über ein anderes Speicher- und E/A-Modell. Die Wahl hängt
+davon ab, ob Sie ein fertiges `[]byte` oder ein direktes Streaming zu
+`io.Writer` wünschen.
+
+#### `json.Marshal`:
+
+1. Gibt serialisiertes JSON als `[]byte` zurück.
+
+2. Praktisch, wenn Sie Folgendes benötigen:
+
+- ein Byte-Array zur weiteren Verarbeitung abrufen;
+
+- nutzlast vor dem Senden protokollieren/signieren/komprimieren;
+
+- mit JSON im Speicher arbeiten.
+
+3. Minus: Bei großen Objekten kann es sein, dass mehr Speicher benötigt wird, da
+   das Ergebnis zunächst vollständig im Puffer gebildet wird.
+
+#### `json.Encoder`:
+
+1. Schreibt JSON sofort in `io.Writer` (`http.ResponseWriter`, Datei, Socket).
+
+2. Geeignet für Streaming-Skripte und große Antworten.
+
+3. In HTTP-Handlern oft praktischer, da dadurch Zwischenpuffer reduziert werden.
+
+4. `Encode` fügt am Ende ein Newline-Zeichen hinzu (dies ist wichtig zu
+   beachten).
+
+#### Praktische Wahlregel:
+
+1. JSON als Wert im Code erfordern → `json.Marshal`.
+
+2. Muss sofort in Stream/Antwort → `json.NewEncoder(w).Encode(...)` schreiben.
+
+#### Fazit:
+
+`Marshal` – „JSON im Speicher bilden“, `Encoder` – „JSON in Stream schreiben“.
+Funktionell ähneln sie sich, aber aus Sicht der Ressourcen und der
+I/O-Architektur ist der Unterschied grundlegend.
+
+#### Beispiel:
+
+```go
+// Marshal: отримуємо JSON у []byte
+payload, err := json.Marshal(resp)
+if err != nil { return err }
+_ = payload
+
+// Encoder: пишемо JSON одразу у HTTP-відповідь
+w.Header().Set("Content-Type", "application/json")
+if err := json.NewEncoder(w).Encode(resp); err != nil {
+	return err
+}
+```
+
+</details>

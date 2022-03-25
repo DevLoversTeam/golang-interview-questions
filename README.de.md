@@ -5085,3 +5085,55 @@ if err := json.NewEncoder(w).Encode(resp); err != nil {
 ```
 
 </details>
+
+
+<details>
+<summary>84. Was ist `json.RawMessage` und wann ist es nützlich?</summary>
+
+#### Go
+
+`json.RawMessage` ist ein Typ (im Wesentlichen `[]byte`) aus dem Paket
+`encoding/json`, der es Ihnen ermöglicht, ein JSON-Fragment „wie es ist“ zu
+speichern, ohne es sofort in eine bestimmte Struktur zu analysieren.
+
+#### Was es tut:
+
+1. **Verzögerte Analyse:** Nur der „Wrapper“ der Nachricht kann zuerst
+   analysiert werden und das komplexe Feld später, wenn der erforderliche Typ
+   bekannt ist.
+
+2. **Teildekodierung:** Wir analysieren in diesem Schritt nur die Teile der
+   Nutzlast, die wirklich benötigt werden.
+
+3. **Transparente Neuübertragung:** Ein JSON-Fragment kann erneut übertragen
+   werden, ohne dass die ursprüngliche Darstellung verloren geht.
+
+#### Wenn es besonders nützlich ist:
+
+1. **Polymorphe Nutzlasten:** wenn der Feldtyp vom
+   `type/kind/version`-Diskriminator abhängt.
+
+2. **Ereignisgesteuerte Systeme:** Der Ereignis-Wrapper ist stabil und der
+   Ereignistext weist unterschiedliche Schemata auf.
+
+3. **Integrationsgateways:** müssen die Routing-Metadaten lesen und den „Body“
+   nahezu unverändert weitergeben.
+
+4. **Leistungsoptimierung:** Vermeidung unnötiger vollständiger Unmarshalierung
+   für große oder teilweise unnötige Objekte.
+
+#### Was Sie beachten sollten:
+
+1. `RawMessage` validiert die Semantik nicht automatisch – die Validierung wird
+   Ihrer Logik überlassen, wenn `Unmarshal` folgt.
+
+2. Verzögertes Parsen verkompliziert den Code, wenn es unnötig angewendet wird.
+
+#### Fazit:
+
+`json.RawMessage` ist ein Tool für die verwaltete „späte Bindung“ von
+JSON-Daten. Dies ist besonders wertvoll bei polymorphen und
+Multiformat-Protokollen, bei denen der Typ der internen Nutzlast erst zur
+Laufzeit bestimmt wird.
+
+</details>

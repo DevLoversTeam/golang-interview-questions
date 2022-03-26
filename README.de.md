@@ -5137,3 +5137,62 @@ Multiformat-Protokollen, bei denen der Typ der internen Nutzlast erst zur
 Laufzeit bestimmt wird.
 
 </details>
+
+
+<details>
+<summary>85. Wie implementiert man einen benutzerdefinierten Marshaller für JSON?</summary>
+
+#### Go
+
+Der benutzerdefinierte Marshaller in Go wird über die Methode `MarshalJSON()
+([]byte, error)` für Ihren Typ implementiert. Dies ermöglicht die vollständige
+Kontrolle darüber, wie ein Objekt in JSON serialisiert wird: Feldformat,
+Validierung, berechnete Werte, Maskierung usw.
+
+#### Grundansatz:
+
+1. Methode hinzufügen: `func (t MyType) MarshalJSON() ([]byte, error)`.
+
+2. Erstellen Sie intern eine Zwischendarstellung (häufig eine
+   Alias-/DTO-Struktur).
+
+3. Rufen Sie `json.Marshal` für diese Ansicht an.
+
+4. Bytes oder Fehler zurückgeben.
+
+#### Warum machen sie das:
+
+1. **Nicht standardmäßiges Ausgabeformat:** z. B. Zeitkonvertierung, Aufzählung,
+   Dezimalzahl, Maskenfelder.
+
+2. **Externe Vertragskompatibilität:** wenn eine API ein bestimmtes Schema oder
+   eine bestimmte Namenskonvention erfordert.
+
+3. **Verwaltetes Ausblenden von Daten:** Vertrauliche Felder werden nicht
+   ausgegeben und keine geschwärzte Version generiert.
+
+4. **Berechnete/abgeleitete Felder:** enthalten Werte in JSON, die nicht als
+   „rohe“ Strukturfelder vorhanden sind.
+
+#### Eine typische Technik ohne Rekursion:
+
+Um einen unendlichen Aufruf von `MarshalJSON` zu vermeiden, verwenden Sie den
+Aliastyp (`type alias MyType`) und Marshallen Sie den Alias oder ein separates
+DTO.
+
+#### Wichtige Tipps:
+
+1. Halten Sie die Marshalling-Logik deterministisch und einfach.
+
+2. Schreiben Sie Tests zu Randfällen und zur Abwärtskompatibilität des
+   JSON-Vertrags.
+
+3. Wenn Symmetrie erforderlich ist, implementieren Sie auch `UnmarshalJSON`.
+
+#### Fazit:
+
+Custom `MarshalJSON` ist ein Tool zur Feinabstimmung der öffentlichen Präsenz.
+In der Produktion wird es verwendet, wenn Standard-Tags für Vertrags-,
+Sicherheits- oder Domänensemantik nicht ausreichen.
+
+</details>

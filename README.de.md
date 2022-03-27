@@ -5196,3 +5196,65 @@ In der Produktion wird es verwendet, wenn Standard-Tags für Vertrags-,
 Sicherheits- oder Domänensemantik nicht ausreichen.
 
 </details>
+
+
+<details>
+<summary>86. Wie kann ich JSON mit mehreren Typen analysieren, wenn die Eingabedaten oder eines der Felder entweder ein `[...]`-Array oder ein `{...}`-Objekt sein können?</summary>
+
+#### Go
+
+Wenn das JSON-Feld eine „schwebende“ Form hat (manchmal ein Array, manchmal ein
+Objekt), ist der zuverlässigste Ansatz in Go die verzögerte Dekodierung über
+`json.RawMessage` oder benutzerdefiniertes `UnmarshalJSON` mit tatsächlicher
+Typerkennung.
+
+#### Kanonische Strategie:
+
+1. Dekodieren Sie das problematische Feld in `json.RawMessage`.
+
+2. Sehen Sie sich das erste signifikante Byte an:
+
+- `[` → Dies ist ein Array;
+
+- `{` → Dies ist ein Objekt.
+
+3. Je nach Formular verpflichten Sie `json.Unmarshal` zum entsprechenden
+   Zieltyp.
+
+4. Normalisieren Sie das Ergebnis in ein internes Einzelmodell (damit der Code
+   nicht vom externen „Fluid“-Schema abhängt).
+
+#### Alternative: Benutzerdefiniert `UnmarshalJSON`:
+
+1. Implementieren Sie eine Methode für Ihren eigenen Typ.
+
+2. Versuchen Sie innerhalb der Methode, in `[]T` zu analysieren, und wenn es
+   nicht passt, in `T` (oder umgekehrt).
+
+3. In einheitlicher Darstellung speichern, zB immer als `[]T`.
+
+#### Warum das wichtig ist:
+
+1. Externe APIs sind häufig zwischen Versionen/Endpunkten inkonsistent.
+
+2. Direktes `Unmarshal` in eine harte Struktur führt zu Fehlern wie `cannot
+   unmarshal object into Go value of type []...`.
+
+3. Die Eingabenormalisierung vereinfacht den Rest der Geschäftslogik erheblich.
+
+#### Praktische Tipps:
+
+1. Dokumentieren Sie eindeutig akzeptable Formen der JSON-Eingabe.
+
+2. Protokollieren Sie anomale Nutzlasten, um Vertragsfehler zu diagnostizieren.
+
+3. Cover mit Tests beider Formen (`{}` und `[]`) + Randfälle (null, leere Werte,
+   falscher Typ).
+
+#### Fazit:
+
+Für JSON mit mehreren Typen in Go funktioniert das Muster „RawMessage →
+Formularerkennung → Ziel-Unmarshal → Normalisierung“ am besten. Dies ermöglicht
+eine stabile Abwicklung auch bei einem instabilen externen Vertrag.
+
+</details>

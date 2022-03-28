@@ -5258,3 +5258,67 @@ Formularerkennung → Ziel-Unmarshal → Normalisierung“ am besten. Dies ermö
 eine stabile Abwicklung auch bei einem instabilen externen Vertrag.
 
 </details>
+
+
+<details>
+<summary>87. Wie teste ich die Serialisierung (XML/JSON) in Go, wenn die Reihenfolge der Schlüssel in der Karte nicht deterministisch ist?</summary>
+
+#### Go
+
+Wenn die Reihenfolge der Schlüssel in `map` nicht deterministisch ist, können
+Tests nicht auf einem wörtlichen Vergleich von „rohen“
+Serialisierungszeichenfolgen aufgebaut werden. Der richtige Ansatz besteht
+darin, den Inhalt zu vergleichen, nicht die zufällige Reihenfolge der
+Präsentation.
+
+#### Robuste Strategien für JSON:
+
+1. **Round-Trip-Strukturvergleich:**
+
+- serialize;
+
+- deserialisieren zurück zum Typ/normalisierten Modell;
+
+- Daten als Struktur vergleichen.
+
+2. **Kanonisierung vor dem Vergleich:**
+
+- JSON in Zwischenmodell analysieren;
+
+- sort Schlüssel/Sammlungen;
+
+- vergleiche kanonische Ansicht.
+
+3. **Semantische Behauptungen statt String-Gleichheit:**
+
+- überprüfen Sie bestimmte Felder und Invarianten.
+
+#### Für XML:
+
+1. Ähnliches Prinzip: Element-/Attributbaum vergleichen, nicht Rohzeichenfolge.
+
+2. Leerzeichen, Formatierung und Reihenfolge der Attribute normalisieren (sofern
+   der Vertrag dies zulässt).
+
+3. Überprüfen Sie die semantische Äquivalenz der analysierten Strukturen.
+
+#### Wenn Sie eine goldene Datei benötigen:
+
+1. Form **deterministische Ausgabe**:
+
+- Sortierschlüssel vor der Serialisierung;
+
+- oder serialisieren Sie nicht `map`, sondern eine Struktur/geordnete Liste von
+  Paaren.
+
+2. Der Golden-Test sollte nur bei semantischen Änderungen im Vertrag
+   fehlschlagen, nicht bei zufälliger Reihenfolge der Schlüssel.
+
+#### Praktisches Fazit:
+
+Serialisierungstests für `map` vergleichen nicht „Text eins zu eins“, sondern
+die Datenäquivalenz. Der Determinismus muss entweder explizit eingeführt werden
+(Sortierung) oder es müssen Prüfungen auf semantischer Ebene durchgeführt
+werden.
+
+</details>

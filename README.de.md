@@ -5389,3 +5389,54 @@ klaren schematischen Vertrag gedacht, bei denen Nutzlastgröße, Latenz und
 Stabilität der Entwicklung von entscheidender Bedeutung sind.
 
 </details>
+
+
+<details>
+<summary>89. Warum sollte `http.Client` wiederverwendet werden, anstatt für jede Anfrage ein neues zu erstellen?</summary>
+
+#### Go
+
+In Go verwalten `http.Client` und sein Transport (`http.Transport`)
+TCP-Verbindungspooling, Keep-Alives, TLS-Sitzungen und andere
+Netzwerkoptimierungen. Wenn Sie für jede Anfrage einen neuen Mandanten
+erstellen, gehen diese Vorteile verloren.
+
+#### Warum Wiederverwendung wichtig ist:
+
+1. **Verbindungspooling:** Die Wiederverwendung bereits geöffneter Verbindungen
+   reduziert die Latenz.
+
+2. **Weniger Handshake-Overhead:** weniger TCP/TLS-Setups pro Anfrage.
+
+3. **Besserer Durchsatz:** Stabilerer Durchsatz in Hochlastszenarien.
+
+4. **Ressourcenkontrolle:** Die Massenerstellung neuer Clients/Transporte kann
+   die Anzahl der Sockets erhöhen und Systemressourcen erschöpfen.
+
+#### Was passiert mit „Client pro Anfrage“:
+
+1. Schlechtere Entsorgung von Keep-Alive.
+
+2. Mehr kurzlebige Verbindungen.
+
+3. Höhere Latenzen und zusätzliche Netzwerk-/CPU-Belastung.
+
+#### Empfohlene Vorgehensweise:
+
+1. Verfügen Sie über ein langlebiges `http.Client` (häufig eines pro Dienst oder
+   Richtlinienklasse).
+
+2. Konfigurieren Sie Zeitüberschreitungen und Parameter `Transport` explizit
+   unter Arbeitslast.
+
+3. Für verschiedene SLAs/Routen – separate Wiederverwendungs-Clients, aber nicht
+   „neuer Client pro Anruf“.
+
+#### Fazit:
+
+`http.Client` sollte in Go wiederverwendet werden, da es Netzwerkeffizienz,
+geringere Latenz und bessere Stabilität unter Last bietet. Das Erstellen eines
+neuen Clients für jede Anfrage ist eine typische Anti-Praxis für
+Produktionssysteme.
+
+</details>

@@ -5499,3 +5499,52 @@ _ = body
 ```
 
 </details>
+
+
+<details>
+<summary>91. Wie unterscheidet sich `http.DefaultServeMux` vom benutzerdefinierten `ServeMux`?</summary>
+
+#### Go
+
+`http.DefaultServeMux` ist der globale „Standard“-Router. Ein
+benutzerdefinierter `ServeMux` ist eine separate, explizit erstellte
+Router-Instanz, die Sie lokal auf einem bestimmten Server verwalten.
+
+#### `http.DefaultServeMux`:
+
+1. **Globaler Paketstatus `net/http`:** Registrierung über `http.Handle` /
+   `http.HandleFunc` schreibt genau dort.
+
+2. **Schnellstart:** gut für einfache Beispiele und kleine Hilfsprogramme.
+
+3. **Risiken bei größeren Projekten:** implizite Registrierungen aus
+   verschiedenen Paketen, komplexere Steuerung von Abhängigkeiten und Tests.
+
+#### Benutzerdefiniert `ServeMux`:
+
+1. **Explizite Komposition:** `mux := http.NewServeMux()` und Übergabe an
+   `http.Server{Handler: mux}`.
+
+2. **Routenisolation:** Jeder Server/Test/Instanz kann seine eigene
+   Handlertabelle haben.
+
+3. **Bessere Testbarkeit und Wartbarkeit:** weniger globale Nebenwirkungen,
+   einfachere Durchführung unabhängiger Integrationstests.
+
+4. **Sicherere Architektur für Monolithen und Microservices:** Routing wird Teil
+   des expliziten Bootstrap-Codes.
+
+#### Praktische Wahl:
+
+1. Für Produktionscode ist benutzerdefiniertes `ServeMux` fast immer besser.
+
+2. `DefaultServeMux` eignet sich vor allem für sehr einfache Szenarien oder
+   Tutorials.
+
+#### Fazit:
+
+Der Unterschied zwischen ihnen liegt im Grad der Transparenz und Kontrolle.
+`DefaultServeMux` praktisch, aber global; Das benutzerdefinierte `ServeMux`
+ermöglicht isoliertes, kontrolliertes und architektonisch saubereres Routing.
+
+</details>

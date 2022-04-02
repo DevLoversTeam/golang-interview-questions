@@ -5548,3 +5548,77 @@ Der Unterschied zwischen ihnen liegt im Grad der Transparenz und Kontrolle.
 ermöglicht isoliertes, kontrolliertes und architektonisch saubereres Routing.
 
 </details>
+
+
+<details>
+<summary>92. Wie implementiert man ordnungsgemäß das ordnungsgemäße Herunterfahren des HTTP-Servers und des Hintergrund-Workers in Go?</summary>
+
+#### Go
+
+`Graceful shutdown` in Go ist eine kontrollierte Beendigung des Dienstes ohne
+Verlust von Anfragen und ohne „verwaiste“ Goroutines. Die Idee ist einfach:
+Stoppen Sie den Empfang einer neuen Last, lassen Sie die aktive Arbeit beenden,
+stoppen Sie den Hintergrund korrekt und schließen Sie die Ressourcen in einer
+vorhersehbaren Reihenfolge.
+
+#### Kanonische Reihenfolge:
+
+1. Abfangsignale abfangen (`SIGTERM`, `SIGINT`).
+
+2. Erstellen Sie `context` mit einem Timeout für die Shutdown-Phase.
+
+3. Rufen Sie `server.Shutdown(ctx)` an:
+
+- neue Verbindungen werden nicht mehr akzeptiert;
+
+- aktive Anfragen erhalten Zeit zum Abschließen.
+
+4. Kontext abbrechen/Hintergrundarbeitern signalisieren, dass sie angehalten
+   werden sollen.
+
+5. Warten Sie auf den Abschluss der Worker (`WaitGroup`/`errgroup`).
+
+6. Schließen Sie externe Ressourcen (Datenbank, Warteschlangen, Produzenten,
+   Dateien).
+
+#### So stoppen Sie einen Hintergrundarbeiter:
+
+1. Worker läuft in einer Schleife mit `select`, wo es einen Zweig `case
+   <-ctx.Done(): return` gibt.
+
+2. Beim Herunterfahren ruft der Hauptprozess die Abbruchfunktion auf.
+
+3. Der Worker schließt den aktuellen geschützten Schritt ab, führt eine
+   Spülung/Bereinigung durch und beendet den Vorgang.
+
+#### Kritische Praktiken:
+
+1. **Timeouts sind obligatorisch:** Graceful sollte nicht zu einem ewigen Warten
+   werden.
+
+2. **Idempotentes Herunterfahren:** Wiederholte Signale unterbrechen die
+   Abschaltlogik nicht.
+
+3. **Beobachtbarkeit:** Stoppstufen und Dauermetriken protokollieren.
+
+4. **Klare Reihenfolge:** Zuerst die Ansaugung stoppen, dann während des Fluges
+   ablassen, dann aufräumen.
+
+#### Typische Fehler:
+
+1. Stoppen Sie den Prozess „hart“ ohne `Shutdown`.
+
+2. Geben Sie `ctx` nicht an Worker/externe Anrufe weiter.
+
+3. Warten Sie nicht, bis Goroutines fertig sind.
+
+4. Vergessen Sie das Leeren von Puffern/Warteschlangen vor dem Beenden.
+
+#### Fazit:
+
+Ein ordnungsgemäßes ordnungsgemäßes Herunterfahren in Go ist die Orchestrierung
+über ein Signal, `context`, `server.Shutdown` und das explizite Warten auf alle
+Hintergrundaufgaben. Dieser Ansatz garantiert die Integrität der Anfragen, die
+vorhersehbare Ausgabe und die Zuverlässigkeit des Betriebs.
+
+</details>

@@ -5667,3 +5667,94 @@ Verwenden Sie in der angewandten Timing-Logik `.Equal()`. Der `==`-Operator für
 bei der Prüfung der Momentenäquivalenz beabsichtigt ist.
 
 </details>
+
+
+<details>
+<summary>94. Wie funktionieren Indizes? Wie wähle ich Indizes für Tabellen aus?</summary>
+
+#### Go
+
+Ein Index in einem DBMS ist eine Hilfsdatenstruktur (meist B-Baum-ähnlich), die
+die Suche nach Zeilen nach bestimmten Feldern ohne einen vollständigen
+Tabellenscan beschleunigt. Tatsächlich speichert ein Index eine geordnete
+Darstellung von Schlüsseln und Verweisen auf Zeilen.
+
+#### So funktionieren Indizes:
+
+1. Eine Abfrage mit `WHERE/JOIN/ORDER BY` kann einen Index verwenden, um schnell
+   einen relevanten Schlüsselbereich zu finden.
+
+2. Anstelle von `Seq Scan` (vollständiges Lesen der Tabelle) wählt der
+   Optimierer `Index Scan/Bitmap Scan`, wenn dies vorteilhaft ist.
+
+3. Indizes können auch Eindeutigkeit unterstützen (`UNIQUE`).
+
+#### Indexpreis:
+
+1. Jeder Index belegt Speicherplatz.
+
+2. `INSERT/UPDATE/DELETE` werden teurer, da Sie die Indizes aktualisieren
+   müssen.
+
+3. Redundante Indizes verlangsamen Schreibvorgänge und erschweren die Wartung.
+
+#### So wählen Sie Indizes richtig aus:
+
+1. **Verschieben Sie echte Anfragen**, nicht „nur für den Fall“.
+
+2. Indexfelder, die häufig vorkommen in:
+
+- `WHERE`
+
+- `JOIN ON`
+
+- `ORDER BY`
+
+- `GROUP BY` (falls erforderlich)
+
+3. Berücksichtigen Sie bei zusammengesetzten Indizes die Reihenfolge der Spalten
+   (Regel für das am weitesten links stehende Präfix):
+
+- Die selektivsten/häufigsten Bedingungen stehen am Anfang.
+
+4. Beobachten Sie `EXPLAIN (ANALYZE, BUFFERS)` und bestätigen Sie, dass der
+   Index tatsächlich genutzt wird und profitabel ist.
+
+5. Überprüfen Sie regelmäßig ineffektive/nicht verwendete Indizes.
+
+#### Praktischer Ansatz:
+
+1. Definieren Sie die langsamsten Anfragen.
+
+2. Mindest erforderliche Indizes hinzufügen.
+
+3. Überprüfen Sie den Plan vorher/nachher.
+
+4. Messen Sie die Auswirkungen auf das Lese-/Schreibgleichgewicht unter realer
+   Last.
+
+#### Fazit:
+
+Ein Index ist ein Werkzeug, um das Lesen zu beschleunigen, aber das Schreiben
+teurer zu machen. Die richtige Auswahl der Indizes erfolgt immer
+abfragegesteuert: nur für bestimmte Zugriffsmuster und nur nach Plan- und
+Leistungsvalidierung.
+
+#### Beispiel:
+
+```sql
+-- Перевіряємо план до індексу
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM orders
+WHERE tenant_id = 42
+  AND created_at >= now() - interval '7 days'
+ORDER BY created_at DESC
+LIMIT 100;
+
+-- Додаємо індекс під реальний патерн запиту
+CREATE INDEX CONCURRENTLY idx_orders_tenant_created_at
+  ON orders (tenant_id, created_at DESC);
+```
+
+</details>

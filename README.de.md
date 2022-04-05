@@ -5758,3 +5758,77 @@ CREATE INDEX CONCURRENTLY idx_orders_tenant_created_at
 ```
 
 </details>
+
+
+<details>
+<summary>95. Was ist eine materialisierte Ansicht und wie unterscheidet sie sich von einer regulären Ansicht?</summary>
+
+#### Go
+
+`View` und `Materialized View` stellen beide eine gespeicherte Abfrage dar,
+unterscheiden sich jedoch grundlegend in der Art und Weise, wie das Ergebnis
+gespeichert wird, und den Lesekosten.
+
+#### Normal `View`:
+
+1. Dies ist eine logische „virtuelle Tabelle“, die auf einer SQL-Abfrage
+   basiert.
+
+2. Daten werden nicht physisch separat gespeichert.
+
+3. Jede Anforderung an die Ansicht führt tatsächlich das zugrunde liegende SQL
+   erneut aus.
+
+#### `Materialized View`:
+
+1. Dies ist ein physisch gespeichertes Abfrageergebnis.
+
+2. Das Lesen erfolgt normalerweise viel schneller, da Sie komplexe
+   Verknüpfungen/Aggregationen nicht jedes Mal neu berechnen müssen.
+
+3. Daten sind möglicherweise bis `REFRESH` veraltet.
+
+#### Hauptunterschied:
+
+1. `View` = immer aktuelle Daten, aber höherer Berechnungsaufwand.
+
+2. `Materialized View` = schnelles Lesen, aber Kompromisse bei der Aktualität
+   der Daten.
+
+#### Wann Sie `Materialized View` wählen sollten:
+
+1. Schwere analytische Abfragen und Aggregationen.
+
+2. Lesen Sie häufig Berichte mit selteneren Aktualisierungen.
+
+3. Szenarien, in denen eine kontrollierte Relevanzverzögerung akzeptabel ist.
+
+#### Wenn das übliche `View` ausreicht:
+
+1. Es sind die aktuellsten Echtzeitdaten erforderlich.
+
+2. Die Anfrage ist nicht zu teuer.
+
+3. `View` wird als logische Zugriffsabstraktion und nicht als Cache verwendet.
+
+#### Praktisches Fazit:
+
+`Materialized View` ist im Wesentlichen ein verwalteter SQL-Ergebniscache mit
+einer expliziten Aktualisierung; plain `View` ist eine rein logische Projektion
+ohne Datenspeicherung. Die Wahl zwischen ihnen ist ein Gleichgewicht zwischen
+Frische und Geschwindigkeit.
+
+#### Beispiel:
+
+```sql
+CREATE MATERIALIZED VIEW mv_daily_sales AS
+SELECT date_trunc('day', created_at) AS day,
+       sum(amount) AS total
+FROM payments
+GROUP BY 1;
+
+-- Оновлення знімка даних
+REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
+```
+
+</details>

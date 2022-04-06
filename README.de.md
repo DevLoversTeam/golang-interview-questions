@@ -5832,3 +5832,84 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
 ```
 
 </details>
+
+
+<details>
+<summary>96. Was ist SÄURE? Kommentieren Sie, wie ACID in PostgreSQL implementiert wird.</summary>
+
+#### Go
+
+`ACID` sind vier grundlegende Eigenschaften transaktionaler Systeme, die die
+Korrektheit der Daten auch bei Ausfällen, Konkurrenz und hoher Belastung
+garantieren: Atomarität, Konsistenz, Isolation, Haltbarkeit.
+
+#### ACID-Entschlüsselung:
+
+1. **Atomizität:** Eine Transaktion wird entweder vollständig ausgeführt oder
+   überhaupt nicht ausgeführt.
+
+2. **Konsistenz:** Nach dem Commit bleiben die Daten gemäß den definierten
+   Regeln und Einschränkungen gültig.
+
+3. **Isolation:** Parallele Transaktionen sollten sich nicht gegenseitig
+   beeinträchtigen.
+
+4. **Dauerhaftigkeit:** Festgeschriebene Änderungen bleiben auch nach einem
+   Prozess-/Systemausfall bestehen.
+
+#### Wie PostgreSQL ACID implementiert:
+
+1. **Atomizität:**
+
+- Transaktionsprotokoll der Änderungen + Rollback-Mechanismen;
+
+- Im Fehlerfall werden alle Transaktionsänderungen als Ganzes zurückgesetzt.
+
+2. **Konsistenz:**
+
+- Einschränkungen (`PRIMARY KEY`, `UNIQUE`, `CHECK`, `FOREIGN KEY`) und
+  Auslöser;
+
+- commit ist nur möglich, wenn Invarianten nicht verletzt werden.
+
+3. **Isolierung:**
+
+- MVCC (Multi-Version Concurrency Control): Leser sehen konsistente Versionen
+  von Zeilen ohne grobe Blockierung von Lesevorgängen;
+
+- Unterstützung von Isolationsstufen (`Read Committed`, `Repeatable Read`,
+  `Serializable`) mit unterschiedlichem Gleichgewicht zwischen Leistung und
+  Strenge.
+
+4. **Haltbarkeit:**
+
+- WAL (Write-Ahead Logging): Vor dem Commit werden Änderungen zunächst im
+  Protokoll aufgezeichnet;
+
+- Nach einem Fehler erfolgt die Wiederherstellung gemäß WAL, wodurch der
+  festgeschriebene Zustand erhalten bleibt.
+
+#### Praktisches Fazit:
+
+In PostgreSQL wird ACID nicht per „One-Button“ bereitgestellt, sondern durch
+eine Kombination aus MVCC, WAL, Transaktionsmanager, Sperren und
+Einschränkungsmechanismen. Dies macht PostgreSQL zu einem zuverlässigen DBMS für
+kritische Transaktionssysteme.
+
+#### Beispiel:
+
+```sql
+BEGIN;
+
+UPDATE accounts
+SET balance = balance - 100
+WHERE id = 1;
+
+UPDATE accounts
+SET balance = balance + 100
+WHERE id = 2;
+
+COMMIT; -- або ROLLBACK при помилці
+```
+
+</details>

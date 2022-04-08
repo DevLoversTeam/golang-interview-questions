@@ -5969,3 +5969,68 @@ der Invarianten oder Verfügbarkeit und Skalierbarkeit auf Kosten letztendlicher
 Konsistenz.
 
 </details>
+
+
+<details>
+<summary>98. Benennen Sie die Transaktionsisolationsstufen.</summary>
+
+#### Go
+
+Isolationsstufen bestimmen, wie „sichtbar“ die Änderungen paralleler
+Transaktionen zueinander sind. Je höher der Grad der Isolation, desto weniger
+Anomalien, aber in der Regel mit höheren Kosten für Leistung und
+Wettbewerbsfähigkeit.
+
+#### Klassische Isolationsstufen (SQL):
+
+1. **Lesen, nicht festgeschrieben**
+
+- niedrigste Stufe;
+
+- ermöglicht das Lesen nicht behobener Änderungen (Dirty Read).
+
+2. **Lesen bestätigt**
+
+- nur festgeschriebene Daten werden gelesen;
+
+- Dirty Read ist verboten;
+
+- nicht wiederholbares Lesen und Phantom-Lesen sind möglich.
+
+3. **Wiederholbarer Lesevorgang**
+
+- Das wiederholte Lesen derselben Zeilen innerhalb einer Transaktion führt zum
+  gleichen Ergebnis.
+
+- reduziert einige der Anomalien, aber je nach DBMS können Phantomszenarien
+  bestehen bleiben.
+
+4. **Serialisierbar**
+
+- die strengste Stufe;
+
+- garantiert ein Ergebnis, das der sequentiellen Ausführung von Transaktionen
+  entspricht;
+
+- maximaler Schutz vor Anomalien, aber teurer als die Konkurrenz.
+
+#### Praktisches Fazit:
+
+Die Wahl der Isolationsstufe ist ein Gleichgewicht zwischen Korrektheit und
+Leistung. In der Produktion wird es anhand von Domäneninvarianten bestimmt:
+wobei `Read Committed` ausreichend ist und wo `Repeatable Read` oder
+`Serializable` erforderlich ist.
+
+#### Beispiel:
+
+```sql
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+SELECT balance FROM accounts WHERE id = 1;
+-- ... інші операції в межах тієї ж транзакції
+
+COMMIT;
+```
+
+</details>

@@ -6034,3 +6034,64 @@ COMMIT;
 ```
 
 </details>
+
+
+<details>
+<summary>99. Wozu dienen Graphdatenbanken?</summary>
+
+#### Go
+
+Diagrammdatenbanken werden benötigt, wenn der Hauptwert nicht einzelne
+Datensätze sind, sondern die Verbindungen zwischen ihnen und die schnelle
+Umgehung mehrstufiger Beziehungen.
+
+#### Was für ein Diagrammdatenbankmodell:
+
+1. **Knoten** sind Entitäten.
+
+2. **Kanten** – Beziehungen zwischen Entitäten.
+
+3. **Eigenschaften** von Knoten und Kanten sind Attribute des Domänenmodells.
+
+#### Für welche Aufgaben sind sie besonders nützlich:
+
+1. **Soziale Diagramme:** Freunde, Abonnements, Empfehlungen.
+
+2. **Betrugserkennung:** nicht triviale Transaktionsketten und verdächtige
+   Verbindungen.
+
+3. **Wissensgraph / semantische Suche:** verbundene Darstellung von Wissen.
+
+4. **Netzwerk-/IT-Topologie:** Dienstabhängigkeiten, Routen, Auswirkungen von
+   Vorfällen.
+
+5. **Rollen-/Berechtigungsmodelle:** komplexe Zugriffsrichtlinien mit
+   Rollenvererbung.
+
+#### Warum eine relationale Datenbank nicht immer ausreicht:
+
+1. In mehrstufigen Join-Szenarien können Abfragen umfangreich und umständlich
+   werden.
+
+2. Die Graph-Engine ist speziell für Traversal-Path-Anfragen optimiert.
+
+3. Das Modell „Beziehung als erstklassige Entität“ macht komplexe
+   Beziehungsfälle natürlicher.
+
+#### Wenn eine Diagrammdatenbank optional ist:
+
+1. Wenn Verbindungen einfach sind und selten tiefgreifend abgefragt werden.
+
+2. Wenn klassische CRUD/OLTP-Szenarien ohne komplexe Traversierung dominieren.
+
+3. Wenn das Team und die Infrastruktur bereits effektiv mit dem relationalen
+   Stack arbeiten.
+
+#### Fazit:
+
+Diagrammdatenbanken werden benötigt, wenn der Geschäftswert in der Struktur von
+Verbindungen und der mehrstufigen Navigation durch sie liegt. Es handelt sich um
+ein spezielles Tool für beziehungsorientierte Bereiche, in denen ein
+verbindungsorientierter Ansatz unwirksam oder zu komplex wird.
+
+</details>

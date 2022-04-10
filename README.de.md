@@ -6095,3 +6095,56 @@ ein spezielles Tool für beziehungsorientierte Bereiche, in denen ein
 verbindungsorientierter Ansatz unwirksam oder zu komplex wird.
 
 </details>
+
+
+<details>
+<summary>100. Welche Datenbanken sollte ich verwenden, wenn Daten zeitgebunden sind?</summary>
+
+#### Go
+
+Wenn die Daten einen bestimmten zeitlichen Charakter haben (Metriken,
+Protokolle, Ereignisse, Telemetrie), empfiehlt es sich, ein DBMS entsprechend
+dem Lastprofil auszuwählen: Aufzeichnungshäufigkeit, Art der Anfragen,
+Speicherdauer, Anforderungen an Aggregationen und Latenz.
+
+#### Typische Optionen:
+
+1. **Zeitreihen-DB (TSDB)**
+
+- Beispiele: Prometheus (für Metriken), VictoriaMetrics, InfluxDB, TimescaleDB;
+
+- Stärken: hohe Geschwindigkeit der Aufnahme, Anforderungen für Zeitfenster,
+  Downsampling/Aufbewahrungsrichtlinien.
+
+2. **PostgreSQL + zeitorientierter Ansatz**
+
+- wenn Sie Transaktionalität, das SQL-Ökosystem und komplexe Join-Abfragen mit
+  Zeitdaten benötigen;
+
+- wird oft mit Zeitpartitionierung kombiniert.
+
+3. **Spalten-OLAP-Speicher**
+
+- für die Analyse großer Mengen historischer Ereignisse (ClickHouse usw.);
+
+- stark in Aggregaten und beim Scannen großer Zeitbereiche.
+
+#### Auswahlkriterien:
+
+1. **Telemetrie mit hohem Schreibaufwand** → TSDB.
+
+2. **Betriebstransaktionen + Zeit** → PostgreSQL (mit Partitionierung/Indizes).
+
+3. **Groß angelegte historische Analysen** → Säulen-/OLAP-Ansatz.
+
+4. **Aufbewahrungs- und Kostenmodell**: Heiße Daten in der schnellen Schicht,
+   kalte Daten im günstigeren Speicher.
+
+#### Praktisches Fazit:
+
+Es gibt keine „universelle“ Datenbank für zeitgebundene Daten: Eine Kombination
+von Tools für eine bestimmte Arbeitslast ist optimal. In den meisten Systemen
+funktioniert eine Hot-TSDB/OLTP-Layer-Strategie + eine separate Analyseschicht
+für lange Historien.
+
+</details>

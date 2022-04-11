@@ -6148,3 +6148,71 @@ funktioniert eine Hot-TSDB/OLTP-Layer-Strategie + eine separate Analyseschicht
 für lange Historien.
 
 </details>
+
+
+<details>
+<summary>101. Wie funktioniert die Master-Slave-Replikation?</summary>
+
+#### Go
+
+Die Master-Slave-Replikation (primäres Replikat) ist ein Modell, bei dem ein
+Knoten Schreibvorgänge akzeptiert und ein oder mehrere Replikatknoten diese
+Änderungen replizieren, um Leseskalierung, Redundanz und erhöhte Fehlertoleranz
+zu erreichen.
+
+#### Grundprinzip:
+
+1. **Master (primär)** verwaltet `INSERT/UPDATE/DELETE`.
+
+2. Änderungen werden im Transaktionsprotokoll aufgezeichnet (WAL/binlog je nach
+   DBMS).
+
+3. **Slave (Replikat)** liest das Protokoll und wendet die Änderungen auf seine
+   Kopie der Daten an.
+
+4. Lesevorgänge werden häufig an Replikate verteilt, Schreibvorgänge bleiben auf
+   der Primärseite.
+
+#### Replikationsmodi:
+
+1. **Asynchron**
+
+- primary wartet nicht auf die Bestätigung vom Replikat, bevor es
+  festgeschrieben wird;
+
+- geringere Aufnahmelatenz;
+
+- mögliche Replikationsverzögerung und zeitliche Inkonsistenz.
+
+2. **Synchron/quasi-synchron**
+
+- primary wartet teilweise oder vollständig auf die Bestätigung von Replikaten;
+
+- höhere Konsistenz;
+
+- potenziell höhere Schreiblatenz.
+
+#### Was es tut:
+
+1. Leselast skalieren.
+
+2. Sicherungskopien der Daten für den Failover.
+
+3. Trennung von OLTP-Datensätzen und Heavy-Read-Szenarien.
+
+#### Typische Risiken:
+
+1. **Replikationsverzögerung** (Leser kann „alte“ Daten sehen).
+
+2. Komplexität von Failover/Failback und Knotenrollen.
+
+3. Split-Brain-Risiko bei falsch organisierten Schaltszenarien.
+
+#### Praktisches Fazit:
+
+Die Master-Slave-Replikation ist ein Gleichgewicht zwischen Verfügbarkeit,
+Skalierbarkeit und Konsistenz. Es ist effektiv für die Leseskalierung, erfordert
+jedoch die Disziplin der Verzögerungsüberwachung, ein durchdachtes Failover und
+eine klare Anforderungsrouting-Richtlinie.
+
+</details>

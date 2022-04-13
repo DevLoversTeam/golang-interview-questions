@@ -6300,3 +6300,82 @@ func shardForUser(userID int64, shards int) int {
 ```
 
 </details>
+
+
+<details>
+<summary>103. Erzählen Sie uns von Ihren Erfahrungen mit der Datenbankoptimierung. Welche Tools haben Sie verwendet?</summary>
+
+#### Go
+
+Für ein Interview erwartet diese Frage normalerweise eine **strukturierte
+Fallgeschichte**: Kontext → Problem → Aktionen → Tools →
+Vorher/Nachher-Metriken. Nachfolgend finden Sie ein Beispiel für eine starke
+Reaktion, die Sie an Ihre eigene reale Erfahrung anpassen können.
+
+#### Beispiel:
+
+1. **Kontext**
+
+- Bei einem Dienst mit hoher Lese-/Schreiblast wurde während der Spitzenzeiten
+  eine Verschlechterung der p95/p99-Latenz beobachtet.
+
+2. **Symptome**
+
+- langsame Anfragen;
+
+- CPU-Wachstum auf dem DB-Knoten;
+
+- zunehmende Warte- und Anforderungswarteschlangen für Sperren.
+
+3. **Was hast du getan**
+
+- hat die häufigsten langsamen Anfragen gesammelt;
+
+- haben Ausführungspläne analysiert;
+
+- Indizes zu echtem `WHERE/JOIN/ORDER BY` hinzugefügt/neu erstellt;
+
+- N+1 entfernt und einige schwere Vorgänge auf Batch übertragen;
+
+- Caching für Hot-Read-Fälle hinzugefügt;
+
+- das Schema optimiert (Feldtypen, Partitionierung nach Zeit, Archivierung alter
+  Daten).
+
+4. **Werkzeuge**
+
+- `EXPLAIN (ANALYZE, BUFFERS)` / `EXPLAIN ANALYZE`;
+
+- Anfragestatistiken (`pg_stat_statements` oder ähnlich);
+
+- Anwendungsprofilierung (`pprof`), um den DB-Engpass von der App-Ebene zu
+  trennen;
+
+- Metriken und Dashboards (Prometheus/Grafana);
+
+- Ladetests vor/nach Änderungen.
+
+5. **Ergebnis (Formulierungsbeispiel)**
+
+- p95 wurde bedingt um 40–60 % reduziert;
+
+- Durchsatz erhöht ohne zusätzliche DB-Knoten;
+
+- stabilisierte Spitzenzeiten und reduzierte Sperrkonflikte.
+
+#### So antworten Sie am überzeugendsten:
+
+1. Sprechen Sie die Sprache der Messungen, nicht allgemeine Phrasen.
+
+2. Erklären Sie den Kompromiss: Was wurde beschleunigt und zu welchen Kosten.
+
+3. Betonen Sie einen reproduzierbaren Prozess: „erst gemessen, dann geändert,
+   dann getestet“.
+
+#### Fazit:
+
+Eine überzeugende Antwort auf die DB-Optimierung ist ein
+Proof-of-Concept-Engineering-Fall mit Metriken und Tools. Es ist diese Struktur,
+die Reife und praktische Kompetenz demonstriert.
+
+</details>

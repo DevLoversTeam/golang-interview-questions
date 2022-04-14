@@ -6379,3 +6379,72 @@ Proof-of-Concept-Engineering-Fall mit Metriken und Tools. Es ist diese Struktur,
 die Reife und praktische Kompetenz demonstriert.
 
 </details>
+
+
+<details>
+<summary>104. Wie unterscheidet sich `pgx` von `lib/pq` hinsichtlich Leistung und Funktionalität?</summary>
+
+#### Go
+
+`lib/pq` und `pgx` funktionieren beide mit PostgreSQL, gehören aber
+unterschiedlichen Generationen des Go-Ökosystems an. In modernen
+Produktionsszenarien wird `pgx` im Allgemeinen als praktischere Wahl angesehen.
+
+#### Hauptunterschied:
+
+1. **`lib/pq`**
+
+- klassischer Treiber für `database/sql`;
+
+- stabil, aber funktional konservativ;
+
+- weniger moderne Optimierungen und PostgreSQL-spezifische Funktionen.
+
+2. **`pgx`**
+
+- moderne Treiber/Tools für PostgreSQL;
+
+- kann sowohl als native API als auch über die `database/sql`-kompatible Ebene
+  funktionieren;
+
+- umfangreicherer Funktionsumfang und oft bessere Leistung unter echter Last.
+
+#### Produktivität:
+
+1. `pgx` zeigt häufig einen besseren Durchsatz und eine geringere Latenz,
+   insbesondere in Hochlastszenarien.
+
+2. Gründe: Effizienteres Arbeiten mit dem PostgreSQL-Protokoll, bessere
+   Stapel-/Kopierfunktionen, flexibleres Arbeiten mit Typen.
+
+3. Die endgültige Schlussfolgerung wird immer anhand Ihrer Arbeitsbelastung
+   gemessen.
+
+#### Funktionalität:
+
+1. `pgx` bietet einen umfassenderen Zugriff auf PostgreSQL-Besonderheiten:
+
+- erweitertes typisches System;
+
+- batch/Copy-primitives;
+
+- feinere Kontrolle des Verbindungs- und Abfrageverhaltens.
+
+2. `lib/pq` bleibt aufgrund von `database/sql` meist ein „kaum ausreichender“
+   Treiber für grundlegende Aufgaben.
+
+#### Wann wählen:
+
+1. **`pgx`** – für neue Projekte, hohe Arbeitsbelastung, Bedarf an modernen
+   PostgreSQL-Funktionen und besserer Kontrolle.
+
+2. **`lib/pq`** – meist Legacy-Code, bei dem eine Migration noch nicht
+   gerechtfertigt ist.
+
+#### Fazit:
+
+`pgx` gewinnt normalerweise sowohl in der Funktionalität als auch im
+Leistungspotenzial. `lib/pq` ist historisch wichtig, aber für die meisten neuen
+Go/PostgreSQL-Systeme ist `pgx` die bevorzugte Wahl.
+
+</details>

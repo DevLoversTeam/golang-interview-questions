@@ -6541,3 +6541,46 @@ func TestSum(t *testing.T) {
 ```
 
 </details>
+
+
+<details>
+<summary>106. Was ist der Unterschied zwischen `t.Error` und `t.Fatal` in Tests?</summary>
+
+#### Go
+
+`t.Error` und `t.Fatal` markieren beide den Test als fehlgeschlagen, weisen
+jedoch ein unterschiedliches Verhalten bei der Fortsetzung der Ausführung auf.
+
+#### `t.Error`:
+
+1. Protokolliert einen Fehler und markiert den Test als fehlgeschlagen.
+
+2. **Hört nicht an**, den aktuellen Test auszuführen.
+
+3. Geeignet, wenn wir mehrere unabhängige Schecks in einem Lauf sammeln möchten.
+
+#### `t.Fatal`:
+
+1. Protokolliert einen Fehler und markiert den Test als fehlgeschlagen.
+
+2. **Stoppt** den aktuellen Test sofort (`FailNow`).
+
+3. Angemessen, wenn ohne diese Voraussetzung weitere Prüfungen keinen Sinn
+   ergeben oder zu Lärm/Panik führen können.
+
+#### Faustregel:
+
+1. Verwenden Sie `t.Fatal`, wenn die zugrunde liegende Prämisse fehlerhaft ist
+   (z. B. konnte kein Testobjekt erstellt werden, es wurde `nil` erhalten, wo
+   die Dereferenzierung folgt).
+
+2. Verwenden Sie `t.Error`, wenn Sie mehrere unabhängige Nachbedingungen prüfen
+   und alle Abweichungen auf einmal sehen möchten.
+
+#### Fazit:
+
+Der Unterschied ist einfach und grundlegend: `t.Error` – „reparieren und
+fortfahren“, `t.Fatal` – „reparieren und sofort stoppen“. Die Wahl hängt davon
+ab, ob der Test nach einem bestimmten Fehler weiterhin aussagekräftig ist.
+
+</details>

@@ -6584,3 +6584,51 @@ fortfahren“, `t.Fatal` – „reparieren und sofort stoppen“. Die Wahl häng
 ab, ob der Test nach einem bestimmten Fehler weiterhin aussagekräftig ist.
 
 </details>
+
+
+<details>
+<summary>107. Wie unterscheidet sich `testify/assert` semantisch von `testify/require`?</summary>
+
+#### Go
+
+Der semantische Unterschied zwischen `assert` und `require` ist derselbe wie
+zwischen `t.Error` und `t.Fatal` im Standard-`testing`: Einer ermöglicht die
+Fortsetzung des Tests, der andere stoppt ihn sofort.
+
+#### `testify/assert`:
+
+1. Wenn die Anweisung fehlschlägt, wird der Test als fehlgeschlagen markiert.
+
+2. **Unterbricht** die Ausführung des aktuellen Tests nicht.
+
+3. Nützlich, wenn Sie mehrere unabhängige Inkonsistenzen in einem einzigen Lauf
+   erfassen möchten.
+
+#### `testify/require`:
+
+1. Wenn die Behauptung fehlschlägt, wird der Test als fehlgeschlagen markiert.
+
+2. **Der aktuelle Test wird sofort gestoppt** (jetzt fehlgeschlagen).
+
+3. Erforderlich für Voraussetzungsprüfungen, ohne die die folgenden Schritte
+   falsch sind.
+
+#### Wann wählen:
+
+1. `require` – für kritische Voraussetzungen:
+
+- object ist nicht `nil`;
+
+- error fehlt vor weiteren Aktionen;
+
+- Eingabe ist korrekt vorbereitet.
+
+2. `assert` – für Nachbedingungen und unabhängige Überprüfungen des Ergebnisses.
+
+#### Praktisches Fazit:
+
+`require` steuert den Lebenszyklus des Tests, `assert` – Diagnosedetails. Ein
+guter Test kombiniert normalerweise beides: `require` für „Stoppbedingungen“,
+`assert` für die weitere Inhaltskontrolle.
+
+</details>

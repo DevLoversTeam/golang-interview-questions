@@ -6632,3 +6632,62 @@ guter Test kombiniert normalerweise beides: `require` für „Stoppbedingungen�
 `assert` für die weitere Inhaltskontrolle.
 
 </details>
+
+
+<details>
+<summary>108. Wie können Sie mit `t.Run` Untertests ausführen und filtern?</summary>
+
+#### Go
+
+Mit `t.Run` können Sie einen einzelnen Test in eine Reihe benannter Untertests
+strukturieren. Jeder Unterfall wird als separate logische Einheit ausgeführt,
+was Tabellentests, Diagnosen und selektiven Start vereinfacht.
+
+#### So funktioniert `t.Run`:
+
+1. Im Haupttest wird `t.Run(name, func(t *testing.T) { ... })` aufgerufen.
+
+2. Jeder Aufruf erstellt einen separaten Untertest mit seinem eigenen `t`.
+
+3. Subtests können unterschiedliche Eingaben, Behauptungen und Einstellungen
+   haben.
+
+#### Warum es praktisch ist:
+
+1. **Bessere Lesbarkeit tabellengesteuerter Tests.**
+
+2. **Präzise Diagnose:** Sie können genau sehen, welcher Fall gefallen ist.
+
+3. **Testhierarchie:** kann verschachtelt werden `t.Run`, um Szenarien zu
+   gruppieren.
+
+4. **Parallelitätskontrolle:** Einzelne Unterfälle können über `t.Parallel()`
+   ausgeführt werden.
+
+#### So funktioniert das Filtern:
+
+1. `go test -run <pattern>` führt Tests aus, deren Namen mit dem Muster
+   übereinstimmen.
+
+2. Namenspfad wird für Untertests berücksichtigt (z. B. `TestXxx/case_name`).
+
+3. Dadurch können Sie einen einzelnen Problemfall ohne einen vollständigen Satz
+   gezielt ausführen.
+
+#### Ein praktisches Denkbeispiel:
+
+1. `TestParser` enthält Dutzende Fälle bis `t.Run`.
+
+2. Während des Debuggens wird nur einer ausgeführt: `go test -run
+   'TestParser/invalid_header'`.
+
+3. Erhalten Sie eine schnellere Feedbackschleife und einen saubereren
+   Korrekturzyklus.
+
+#### Fazit:
+
+`t.Run` verwandelt monolithische Tests in ein verwaltetes System von Untertests
+mit granularer Auslösung und Filterung. Dies ist eines der wichtigsten Werkzeuge
+des unterstützten Testdesigns in Go.
+
+</details>

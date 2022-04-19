@@ -6691,3 +6691,82 @@ mit granularer Auslösung und Filterung. Dies ist eines der wichtigsten Werkzeug
 des unterstützten Testdesigns in Go.
 
 </details>
+
+
+<details>
+<summary>109. Wie teste ich HTTP-Handler?</summary>
+
+#### Go
+
+HTTP-Handler in Go werden isoliert, ohne echten Netzwerk-Socket, mit `httptest`
+getestet. Ziel ist es, den HTTP-Layer-Vertrag zu testen: Status, Header,
+Antworttext, Fehlerbehandlung und Edge-Szenarien.
+
+#### Kanonischer Ansatz:
+
+1. Anfrage erstellen über `httptest.NewRequest(...)`.
+
+2. Erstellen Sie einen Rekorder über `httptest.NewRecorder()`.
+
+3. Anrufhandler: `handler.ServeHTTP(rec, req)`.
+
+4. Überprüfen:
+
+- `rec.Code` (Statuscode);
+
+- headers;
+
+- body (JSON/Schema/Nachricht).
+
+#### Was abgedeckt werden muss:
+
+1. **Glücklicher Weg** (richtige Anfrage, erwartete Antwort).
+
+2. **Validierungsfehler** (unvollständige/falsche Nutzdaten, Abfrageparameter).
+
+3. **HTTP-Methoden** (GET/POST/PUT/DELETE + 405, wenn die Methode nicht zulässig
+   ist).
+
+4. **Abhängigkeitsfehler** (Dienst/Repository gibt Fehler zurück).
+
+5. **Kontextbezogene Skripte** (Zeitüberschreitung/Abbruch, wenn die Logik dies
+   unterstützt).
+
+#### Architekturtipps:
+
+1. Geschäftslogik vom Handler in die Serviceschicht exportieren.
+
+2. In Handler-Tests Schein-/Fake-Dienstabhängigkeiten.
+
+3. Testen Sie den HTTP-Vertrag selbst, nicht die interne Implementierung.
+
+#### Praktische Mindestkontrollen:
+
+1. Richtig `Content-Type`.
+
+2. Die Struktur der JSON-Antwort.
+
+3. Entsprechung von Statuscodes zu Domänenfehlern.
+
+4. Kein Verlust vertraulicher Informationen im Fehlertext.
+
+#### Fazit:
+
+Der HTTP-Handler-Test in Go ist ein Test des Endpunktverhaltens als Blackbox:
+eingehende Anfrage → klare HTTP-Ausgabe. `httptest` bietet ein schnelles,
+deterministisches und einigermaßen genaues Tool für solche Vertragstests.
+
+#### Beispiel:
+
+```go
+req := httptest.NewRequest(http.MethodGet, "/health", nil)
+rec := httptest.NewRecorder()
+
+handler.ServeHTTP(rec, req)
+
+if rec.Code != http.StatusOK {
+	t.Fatalf("status=%d", rec.Code)
+}
+```
+
+</details>

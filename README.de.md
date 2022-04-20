@@ -6770,3 +6770,64 @@ if rec.Code != http.StatusOK {
 ```
 
 </details>
+
+
+<details>
+<summary>110. Wie teste ich auf Fehler?</summary>
+
+#### Go
+
+Fehlertests in Go sollten nicht nur die Tatsache überprüfen, dass ein Fehler
+vorliegt, sondern auch seine Semantik: Typ, Kategorie, Wrapper-Kette und
+erwartete Systemreaktion.
+
+#### Was genau überprüft werden muss:
+
+1. **Anwesenheit/Fehlen eines Fehlers** in einem bestimmten Szenario.
+
+2. **Fehlerkategorie** aufgrund von `errors.Is` (Sentinel-Fehler).
+
+3. **Fehlertyp** über `errors.As` (benutzerdefinierter Fehlertyp mit Feldern).
+
+4. **Wrapper-Kontext** (ob die Grundursache mit `%w` verloren geht).
+
+5. **Verhaltenseffekt**: korrekter Statuscode, erneuter Versuch/kein erneuter
+   Versuch, Rollback usw.
+
+#### Empfohlene Vorgehensweisen:
+
+1. Vermeiden Sie fragile Volltextprüfungen `err.Error()`.
+
+2. Für stabile Verträge verwenden Sie `errors.Is/As`, nicht `==` für
+   umschlossene Fehler.
+
+3. Geben Sie bei tabellengesteuerten Tests explizit die erwartete Fehlerklasse
+   und Konsequenz an.
+
+#### Was in negativen Szenarien zu testen ist:
+
+1. Eingabevalidierungsfehler.
+
+2. Fehler externer Abhängigkeiten (DB, HTTP, Warteschlangen).
+
+3. Timeouts/Abbrüche über `context`.
+
+4. Grenzzustände (leere Werte, falsche Formate, überschrittene Grenzwerte).
+
+#### Architektonischer Akzent:
+
+1. Error muss Teil des API-Vertrags der Funktion sein.
+
+2. Tests müssen beweisen, dass die Fehlerbehandlung deterministisch und
+   vorhersehbar ist.
+
+3. Wenn das System Domänenfehler der Transportschicht zuordnet, testen Sie diese
+   Zuordnung separat.
+
+#### Fazit:
+
+Beim qualitativen Fehlertest in Go wird die Semantik überprüft, nicht die
+Nachrichtenzeichenfolge. Diese Art der Überprüfung macht den Code resistent
+gegen Refactoring und zuverlässig in der Produktion.
+
+</details>

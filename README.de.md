@@ -6831,3 +6831,65 @@ Nachrichtenzeichenfolge. Diese Art der Überprüfung macht den Code resistent
 gegen Refactoring und zuverlässig in der Produktion.
 
 </details>
+
+
+<details>
+<summary>111. Wie kann man externe Abhängigkeiten löschen, ohne Frameworks von Drittanbietern zu verwenden?</summary>
+
+#### Go
+
+In Go werden externe Abhängigkeiten am saubersten durch Schnittstellen und
+eigene Test-Double-Implementierungen (Stub/Fake/Spy) gemockt, ohne dass
+umfangreiche Mock-Frameworks erforderlich sind. Es handelt sich um einen
+idiomatischen Ansatz, der sich gut skalieren lässt und transparent bleibt.
+
+#### Grundschema:
+
+1. Heben Sie die minimale Abhängigkeitsschnittstelle in der Verbraucherschicht
+   hervor.
+
+2. Die Produktionsimplementierung funktioniert mit echter DB/HTTP/Warteschlange.
+
+3. Ersetzen Sie im Test Ihre eigene Struktur, die dieselbe Schnittstelle
+   implementiert.
+
+#### Test-Doppeltypen ohne Bibliotheken von Drittanbietern:
+
+1. **Stub** – gibt vordefinierte Daten zurück.
+
+2. **Fake** – eine vereinfachte „funktionierende“ Implementierung (z. B. ein
+   In-Memory-Repo).
+
+3. **Spy** – erfasst Anrufe (Argumente, Nummer, Reihenfolge).
+
+4. **Manueller Mock** – Geführtes Skript mit anpassbaren Antworten/Fehlern.
+
+#### Vorteile dieses Ansatzes:
+
+1. Vollständige Typsicherheit des Compilers.
+
+2. Keine Laufzeitmagie.
+
+3. Bessere Testlesbarkeit und vorhersehbare Codeentwicklung.
+
+4. Keine externen Abhängigkeiten im Test-Stack.
+
+#### Praktische Empfehlungen:
+
+1. Schnittstellen klein machen (nach Verhalten, nicht „bei allen Methoden“).
+
+2. Mot an der Modulgrenze, nicht innerhalb der Domänenlogik.
+
+3. Für Wettbewerbsszenarien Protect State Test-Double (`mutex`, Atomics).
+
+4. Duplizieren Sie die Produktionslogik nicht übermäßig, sonst werden die Tests
+   brüchig.
+
+#### Fazit:
+
+Beim Verspotten ohne Frameworks in Go geht es in erster Linie um gutes
+Abhängigkeitsdesign: kleine Schnittstelle + manueller Test-Double. Dieser Ansatz
+ist einfach, zuverlässig und architektonisch sinnvoll für die langfristige
+Projektunterstützung.
+
+</details>

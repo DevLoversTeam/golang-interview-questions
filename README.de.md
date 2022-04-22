@@ -6893,3 +6893,71 @@ ist einfach, zuverlässig und architektonisch sinnvoll für die langfristige
 Projektunterstützung.
 
 </details>
+
+
+<details>
+<summary>112. Wie verwende ich `TestMain`, um eine Testumgebung einzurichten?</summary>
+
+#### Go
+
+`TestMain(m *testing.M)` ist der Einstiegspunkt für die gesamte Testsuite. Es
+ermöglicht eine globale Initialisierung vor Tests und eine garantierte
+Bereinigung danach.
+
+#### Wenn `TestMain` angemessen ist:
+
+1. Die gemeinsame Testumgebung muss einmal aktiviert werden:
+
+- test Datenbank/Container;
+
+- temporäre Verzeichnisse;
+
+- globale Konfigurationen/Geheimnisse;
+
+- Hintergrunddienstabhängigkeiten.
+
+2. Erfordert einen zentralen Abbau, nachdem alle Pakettests abgeschlossen sind.
+
+#### Grundlegender Lebenszyklus:
+
+1. Setup wird ausgeführt (Initialisierung der Ressourcen).
+
+2. Tests laufen bis `code := m.Run()`.
+
+3. Die Bereinigung wird ausgeführt.
+
+4. Prozess wird über `os.Exit(code)` beendet.
+
+#### Wichtige Regeln:
+
+1. `m.Run()` muss genau einmal aufgerufen werden.
+
+2. Der zurückgegebene Code muss an `os.Exit` übergeben werden, sonst geht der
+   Status der Tests verloren.
+
+3. Die Bereinigung sollte (soweit möglich) auch bei Setup-Fehlern durchgeführt
+   werden.
+
+4. Führen Sie in `TestMain` keine zusätzliche Logik aus, die nichts mit der
+   Umgebung zu tun hat.
+
+#### Praktische Tipps:
+
+1. Verlassen Sie sich nicht ausschließlich auf `TestMain`, um Tests innerhalb
+   eines Pakets zu isolieren – oft ist immer noch ein lokales Setup/Teardown in
+   bestimmten Tests erforderlich.
+
+2. Wenn möglich, bevorzugen Sie leichtere Mechanismen (`t.Cleanup`) auf
+   Testebene; `TestMain` Verwendung für echten Batch-Kontext.
+
+3. Überwachen Sie in parallelen Tests sorgfältig den in `TestMain`
+   initialisierten gemeinsamen Status.
+
+#### Fazit:
+
+`TestMain` – Batch-Orchestrierungstool für Testumgebungen: ein Setup, ein
+Durchlauf aller Tests, eine Bereinigung. Dies ist geeignet, wenn Sie den
+Lebenszyklus gemeinsam genutzter Ressourcen für das gesamte Paket steuern
+müssen.
+
+</details>

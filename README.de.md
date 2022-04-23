@@ -6961,3 +6961,70 @@ Lebenszyklus gemeinsam genutzter Ressourcen für das gesamte Paket steuern
 müssen.
 
 </details>
+
+
+<details>
+<summary>113. Wie verwende ich goldene Dateien?</summary>
+
+#### Go
+
+`Golden files` sind Referenzdateien mit der erwarteten Ausgabe, mit denen der
+Test die tatsächliche Ausgabe vergleicht. Der Ansatz ist besonders nützlich für
+Formatierer, Codegeneratoren, Serialisierung und jede Text-/Strukturausgabe.
+
+#### Grundlegender Arbeitsablauf:
+
+1. Generieren Sie das Ergebnis mit der getesteten Funktion.
+
+2. Lesen Sie die entsprechende `.golden`-Datei.
+
+3. Vergleichen Sie die tatsächliche Ausgabe mit dem Standard.
+
+4. Wenn es einen Unterschied gibt, schlägt der Test mit dem Unterschied fehl.
+
+#### Typischer Aufbau:
+
+1. Testeingabe (`testdata/input/...`).
+
+2. Standards (`testdata/golden/...`).
+
+3. Tabellengesteuerte Tests, bei denen jeder Fall seine eigene goldene Akte hat.
+
+#### Sehr nützliche Übung – Update-Modus:
+
+1. Fügen Sie ein Flag wie `-update` hinzu.
+
+2. Wenn aktiviert, überschreibt der Test die Golden Files mit dem neuen
+   Ergebnis.
+
+3. Dies beschleunigt die Unterstützung für Benchmarks mit legitimen
+   Verhaltensänderungen.
+
+#### Worauf Sie achten sollten:
+
+1. **Determinismus-Ausgabe:** Normalisieren Sie vor dem Vergleich die
+   Reihenfolge der Daten, Zeitstempel und Zufallswerte.
+
+2. **Qualitativer Unterschied:** Im Testabsturz sollte klar sein, was sich genau
+   geändert hat.
+
+3. **Nicht missbrauchen:** Golden Files für große „Black Boxes“ ohne semantische
+   Prüfungen können die Diagnose erschweren.
+
+#### Wenn goldene Dateien am besten geeignet sind:
+
+1. Textwiedergabe/-generierung.
+
+2. JSON/XML/config-Transformation.
+
+3. CLI-Ausgabe.
+
+4. Compiler, Parser, Codegeneratoren.
+
+#### Fazit:
+
+Golden Files ist ein praktisches Tool zum Testen der Vertragsausgabe. Bei
+Determinismus und einem komfortablen Update-Prozess bieten sie einen schnellen
+und eindeutigen Schutz vor unerwünschten Regressionen im Ergebnisformat.
+
+</details>

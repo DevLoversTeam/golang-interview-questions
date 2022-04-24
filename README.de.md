@@ -7028,3 +7028,61 @@ Determinismus und einem komfortablen Update-Prozess bieten sie einen schnellen
 und eindeutigen Schutz vor unerwünschten Regressionen im Ergebnisformat.
 
 </details>
+
+
+<details>
+<summary>114. Wie teste ich Go-Code richtig, der `time.Now()` verwendet, sodass die Tests deterministisch sind?</summary>
+
+#### Go
+
+`time.Now()` macht die Tests nicht deterministisch, da es die tatsächliche
+aktuelle Zeit zurückgibt. Damit die Tests stabil sind, sollte die Zeit in die
+Geschäftslogik eingefügt und nicht direkt gelesen werden.
+
+#### Kanonischer Ansatz:
+
+1. Machen Sie die Zeitquelle abhängig:
+
+- function `now func() time.Time`;
+
+- Schnittstelle `Clock` mit Methode `Now()`.
+
+2. Übertragen Sie in der Produktion die echte Uhr (`time.Now`).
+
+3. Übertragen Sie im Test eine feste Uhrzeit (Fake Clock).
+
+#### Warum es funktioniert:
+
+1. Das Ergebnis hängt nicht vom Zeitpunkt des Teststarts ab.
+
+2. Vorbei sind die unregelmäßigen „Manchmal stürzt ab, manchmal
+   nicht“-Szenarien.
+
+3. Überprüfen Sie ganz einfach Randfälle: Fristen, TTL, Übergangstermine,
+   Zeitzonen.
+
+#### Zusätzliche Praktiken:
+
+1. Vergleichen Sie Zeitwerte nicht mit „harter“ Millisekundengenauigkeit, es sei
+   denn, dies ist für die Domäne erforderlich.
+
+2. Für Tests mit Timern/Verzögerungen verwenden Sie eine gesteuerte Uhr oder
+   ausreichend Zeitpuffer.
+
+3. Fix `Location/UTC` explizit, um Umgebungsabhängigkeiten zu vermeiden.
+
+#### Was Sie nicht tun sollten:
+
+1. Belassen Sie `time.Now()` in der Tiefe der Domänenlogik ohne die Möglichkeit
+   einer Ersetzung.
+
+2. Die Rettung von `time.Sleep`s in Tests führt zu einer Verlangsamung und
+   garantiert keine Stabilität.
+
+#### Fazit:
+
+Deterministische Timing-Tests in Go basieren auf der Abhängigkeitsinversion:
+Timing ist eine Eingabe, kein globaler Nebeneffekt. Die Taktquelleninjektion
+macht Tests schnell, reproduzierbar und architektonisch sauber.
+
+</details>

@@ -7086,3 +7086,64 @@ Timing ist eine Eingabe, kein globaler Nebeneffekt. Die Taktquelleninjektion
 macht Tests schnell, reproduzierbar und architektonisch sauber.
 
 </details>
+
+
+<details>
+<summary>115. Wie beschleunigt `t.Parallel()` die Testsuite und wo kann es sie beschädigen?</summary>
+
+#### Go
+
+`t.Parallel()` ermöglicht die gleichzeitige Ausführung von Tests (oder
+Untertests), was in der Regel die Gesamtlaufzeit in Umgebungen mit mehreren
+Kernen verkürzt. Aber Parallelität ohne Isolation macht aus stabilen Tests
+leicht unzuverlässige Tests.
+
+#### Wie es Läufe beschleunigt:
+
+1. Unabhängige Tests werden gleichzeitig ausgeführt.
+
+2. Bessere Nutzung von CPU und E/A-Wartezeiten.
+
+3. Eine große Anzahl kleiner Tests läuft in CI viel schneller.
+
+#### Wo `t.Parallel()` Tests unterbrechen kann:
+
+1. **Gemeinsamer veränderlicher Zustand:** globale Variablen, gemeinsam genutzte
+   In-Memory-Caches, statische Konfigurationen ohne Synchronisierung.
+
+2. **Externe gemeinsam genutzte Ressourcen:** ein DB-Schema/eine DB-Tabelle, ein
+   Port, eine Datei, ein temporäres Datenverzeichnis.
+
+3. **Abhängigkeit der Ausführungsreihenfolge:** wenn ein Test implizit erwartet,
+   dass ein anderer bereits ausgeführt wurde.
+
+4. **Nebenwirkungen auf die Umgebung:** Änderungen an Umgebungsvariablen,
+   Zeitzone und Arbeitsverzeichnis ohne Isolation.
+
+5. **Fehler in tabellengesteuerten Untertests:** Schleifenvariablenerfassung
+   ohne lokale Kopie im Abschluss.
+
+#### So verwenden Sie es sicher:
+
+1. Parallel nur vollständig isolierte Tests.
+
+2. Vermeiden Sie den globalen veränderlichen Zustand oder schützen Sie ihn durch
+   Synchronisierung.
+
+3. Verwenden Sie einzigartige temporäre Ressourcen (`t.TempDir`, einzelne
+   Geräte).
+
+4. Für DB-Tests – Transaktionsisolation oder ein separater Namespace/Schema pro
+   Test.
+
+5. Führen Sie das Set mit `-race` aus, um Wettbewerbsprobleme frühzeitig zu
+   erkennen.
+
+#### Fazit:
+
+`t.Parallel()` ist ein leistungsstarker Testbeschleuniger, jedoch nur unter
+strikter Fallisolierung. Wenn die Tests einen gemeinsamen Status oder versteckte
+Abhängigkeiten aufweisen, werden diese Mängel durch Parallelität aufgedeckt und
+der Lauf wird instabil.
+
+</details>

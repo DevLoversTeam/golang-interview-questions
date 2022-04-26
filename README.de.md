@@ -7147,3 +7147,54 @@ Abhängigkeiten aufweisen, werden diese Mängel durch Parallelität aufgedeckt u
 der Lauf wird instabil.
 
 </details>
+
+
+<details>
+<summary>116. Wie misst man die Codeabdeckung?</summary>
+
+#### Go
+
+In Go wird die Codeabdeckung durch integrierte `go test`-Tools durch
+Testausführungsinstrumentierung gemessen. Dadurch werden Metriken
+bereitgestellt, die zeigen, welcher Anteil der Codezeilen/-blöcke während des
+Testlaufs ausgeführt wurde.
+
+#### Grundbefehle:
+
+1. Gesamtpaketabdeckung: `go test -cover ./...`
+
+2. Abdeckungsprofilsammlung: `go test -coverprofile=coverage.out ./...`
+
+3. Zusammenfassende Statistiken anzeigen: `go tool cover -func=coverage.out`
+
+4. HTML-Bericht mit Highlights: `go tool cover -html=coverage.out`
+
+#### Was wichtig zu verstehen ist:
+
+1. Coverage zeigt die Tatsache, dass invariante Prüfungen durchgeführt und nicht
+   vollständig sind.
+
+2. Ein hoher Prozentsatz garantiert nicht die Abwesenheit von Fehlern.
+
+3. Niedriger Prozentsatz ist ein Zeichen für blinde Testbereiche.
+
+#### Praktische Tipps:
+
+1. Analysieren Sie die Abdeckung zusammen mit der Code-Kritikalität und streben
+   Sie nicht nach „100 %“.
+
+2. Behandeln Sie Negativ- und Grenzfallszenarien getrennt.
+
+3. Verwenden Sie die Abdeckung als Lückenindikator und nicht als Selbstzweck.
+
+4. Speichern Sie in CI das Profil und verfolgen Sie die Abdeckungsdynamik
+   zwischen PRs.
+
+#### Fazit:
+
+Die Codeabdeckung in Go wird durch die Standardtools (`go test` + `go tool
+cover`) gemessen und ist eine nützliche Metrik für die Qualität der
+Testüberprüfung. Den größten Mehrwert bietet es in Kombination mit semantischen
+Prüfungen und aussagekräftigem Testdesign.
+
+</details>

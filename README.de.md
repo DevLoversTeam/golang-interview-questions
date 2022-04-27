@@ -7198,3 +7198,73 @@ Testüberprüfung. Den größten Mehrwert bietet es in Kombination mit semantisc
 Prüfungen und aussagekräftigem Testdesign.
 
 </details>
+
+
+<details>
+<summary>117. Was ist Benchmarking und wie wird es durchgeführt? Wie implementiert `testing.B` den Benchmark und was setzt `b.ResetTimer` zurück?</summary>
+
+#### Go
+
+`Benchmarking` in Go ist eine Messung der Codeleistung (Zeit, Zuweisungen,
+Durchsatz) unter kontrollierten Bedingungen, um Implementierungen zu vergleichen
+und die Wirkung von Optimierungen zu validieren.
+
+#### So führen Sie den Benchmark durch:
+
+1. Funktionen haben die Form: `func BenchmarkXxx(b *testing.B)`.
+
+2. Basisstart: `go test -bench=.`
+
+3. Nur spezifische Benchmark: `go test -bench=BenchmarkParse`
+
+4. Zuteilungsmaß: `go test -bench=. -benchmem`
+
+#### So funktioniert `testing.B`:
+
+1. Runner selbst wählt `b.N` (Anzahl der Iterationen), um eine stabile Dimension
+   zu erhalten.
+
+2. Ihr Code in der Benchmark-Funktion wird in einer `for i := 0; i < b.N;
+   i++`-Schleife ausgeführt.
+
+3. Daher bewertet der Test die Leistung in `ns/op` und mit `-benchmem` auch in
+   `B/op`, `allocs/op`.
+
+#### Was `b.ResetTimer` macht:
+
+1. Setzen Sie den Timer für die akkumulierte Messung zurück.
+
+2. Zählt nicht den Vorbereitungscode, der vor dem letzten Aufruf von
+   `ResetTimer` ausgeführt wird.
+
+3. Wird nach der Einrichtungsphase verwendet, um nur den „sauberen“ Arbeitsteil
+   zu messen.
+
+#### Verwandte nützliche Methoden:
+
+1. `b.StopTimer()` / `b.StartTimer()` – Zeitmessung vorübergehend
+   deaktivieren/aktivieren.
+
+2. `b.ReportAllocs()` – Zuordnungsstatistiken erzwingen.
+
+#### Praktisches Fazit:
+
+Benchmark in Go ist kein einmaliger Lauf, sondern ein Vergleichstool unter
+gleichen Bedingungen. `testing.B` skaliert Iterationen automatisch und
+`b.ResetTimer` trennt das Training von der tatsächlichen Leistungsmessung.
+
+#### Beispiel:
+
+```go
+func BenchmarkParse(b *testing.B) {
+	input := []byte(`{"x":1}`)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		var v map[string]int
+		_ = json.Unmarshal(input, &v)
+	}
+}
+```
+
+</details>

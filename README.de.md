@@ -7268,3 +7268,67 @@ func BenchmarkParse(b *testing.B) {
 ```
 
 </details>
+
+
+<details>
+<summary>118. Wie führt man Benchmarks mit Kontrolle über Zeit und Anzahl der Iterationen durch?</summary>
+
+#### Go
+
+In Go können Benchmarks mit Kontrolle über die Messdauer und einer festen Anzahl
+von Iterationen über die `go test`-Parameter ausgeführt werden. Dies ist wichtig
+für die Reproduzierbarkeit und den korrekten Vergleich der Ergebnisse.
+
+#### Hauptflags:
+
+1. **`-benchtime`**
+
+- legt die Dauer des Benchmark-Laufs fest (z. B. `-benchtime=5s`);
+
+- runner selbst wählt `b.N` aus, um in diesem Zeitfenster zu laufen.
+
+2. **`-benchtime=Nx`**
+
+- fixiert die genaue Anzahl der Iterationen (z. B. `-benchtime=100000x`);
+
+- praktisch für reproduzierbare A/B-Vergleiche auf demselben `N`.
+
+3. **`-count`**
+
+- Anzahl der Wiederholungen (z. B. `-count=10`);
+
+- hilft bei der Bewertung der Stabilität und Streuung der Ergebnisse.
+
+4. **`-bench`**
+
+- Auswahl spezifischer Benchmark-Funktionen nach Muster.
+
+5. **`-benchmem`**
+
+- gibt zusätzlich Zuordnungen aus (`B/op`, `allocs/op`).
+
+#### Praxisbeispiele für Szenarien:
+
+1. Längerer stabiler Lauf: `go test -bench=. -benchtime=5s -benchmem`
+
+2. Behoben `N`: `go test -bench=BenchmarkFoo -benchtime=200000x -benchmem`
+
+3. Mehrere Wiederholungen für Statistiken: `go test -bench=BenchmarkFoo
+   -benchtime=2s -count=10`
+
+#### Warum ist es notwendig:
+
+1. Reduzieren Sie den Lärm bei kurzen Läufen.
+
+2. Vergleichen Sie Optimierungen unter denselben Bedingungen.
+
+3. Erhalten Sie statistisch aussagekräftige Daten für die `benchstat` Analyse.
+
+#### Fazit:
+
+Die Kontrolle von Zeit und Iterationen in Go-Benchmarks ist eine Voraussetzung
+für eine qualitativ hochwertige Leistungsanalyse. `-benchtime` und `-count`
+sorgen für Messstabilität, und der Modus `Nx` bietet eine strikte Kontrolle über
+die Anzahl der Ausführungen.
+
+</details>

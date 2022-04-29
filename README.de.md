@@ -7332,3 +7332,65 @@ sorgen für Messstabilität, und der Modus `Nx` bietet eine strikte Kontrolle ü
 die Anzahl der Ausführungen.
 
 </details>
+
+
+<details>
+<summary>119. Wie vergleicht das Tool `benchstat` zwei Sätze von Benchmark-Ergebnissen und wie bestimmt es die Bedeutung von Änderungen?</summary>
+
+#### Go
+
+`benchstat` vergleicht zwei (oder mehr) Sätze von Benchmark-Ergebnissen und
+zeigt, ob Änderungen in den Metriken (`ns/op`, `B/op`, `allocs/op`) statistisch
+signifikant und kein zufälliges Laufrauschen sind.
+
+#### So funktioniert der Vergleich:
+
+1. Sammeln Sie mehrere „Vorher“- und „Nachher“-Läufe (normalerweise über
+   `-count`).
+
+2. `benchstat` gruppiert Ergebnisse nach denselben Benchmark-Namen.
+
+3. Berechnet zentrale Werte (normalerweise Median-ähnliche/robuste Schätzungen)
+   und prozentuale Differenz.
+
+4. Führt einen statistischen Test durch und gibt `p-value` aus.
+
+#### So wird die Signifikanz bestimmt:
+
+1. Wenn `p-value` unter einem Schwellenwert liegt (normalerweise 0,05), wird die
+   Änderung als statistisch signifikant angesehen.
+
+2. Wenn `p-value` über dem Schwellenwert liegt, kann der Unterschied auf
+   Umgebungsgeräusche zurückzuführen sein.
+
+3. Deshalb ist es wichtig, **sowohl Delta als auch p-Wert** gleichzeitig zu
+   betrachten.
+
+#### Was für eine korrekte Analyse benötigt wird:
+
+1. Gleiche Startbedingungen (Maschine, Last, Konfiguration).
+
+2. Ausreichende Anzahl an Wiederholungen (`-count`), sonst sind die
+   Schlussfolgerungen brüchig.
+
+3. Keine Fremdgeräusche (Hintergrundprozesse, thermische Drosselung, instabile
+   CI-Umgebung).
+
+#### Faustregel:
+
+1. Vertrauen Sie nicht Einwegartikeln `go test -bench`.
+
+2. Erfassen Sie eine Reihe von Vorher/Nachher-Ergebnissen.
+
+3. Analysieren Sie über `benchstat` und prüfen Sie dann, ob die Änderung für
+   Geschäftsmetriken (Latenz/Durchsatz/SLA) wichtig ist und nicht nur „hübsch“
+   in einer Tabelle.
+
+#### Fazit:
+
+`benchstat` wandelt rohe Benchmark-Zahlen in einen statistisch fundierten
+Vergleich um. Es hilft, einen echten Leistungseffekt von einer zufälligen
+Streuung zu unterscheiden und technische Entscheidungen auf der Grundlage von
+Daten zu treffen.
+
+</details>

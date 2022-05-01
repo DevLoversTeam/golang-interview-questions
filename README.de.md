@@ -7454,3 +7454,76 @@ der leistungsfähigsten Werkzeuge zur Erhöhung der Zuverlässigkeit und Sicherh
 der Datenverarbeitung.
 
 </details>
+
+
+<details>
+<summary>121. Welche Möglichkeiten gibt es, Tests aus der Datenbank in CI auszuführen (Testcontainer, Docker-Compose, GitHub Actions-Dienste)? Was sind die Vorteile jedes Ansatzes?</summary>
+
+#### Go
+
+Für Integrationstests mit DB in CI werden am häufigsten drei Ansätze verwendet:
+`Testcontainers`, `docker-compose` und `GitHub Actions services`. Die Wahl hängt
+vom gewünschten Isolationsgrad, der Komplexität des Stacks und der
+Geschwindigkeit der Pipeline ab.
+
+#### 1) Testcontainer
+
+**Das Wesentliche:** Container werden programmgesteuert aus Tests erstellt und
+sind während des Testlaufs aktiv.
+
+**Vorteile:**
+
+1. Maximale Nähe zum Testcode (unten neben den Tests beschrieben).
+
+2. Hohe Fallisolation und vorhersehbare Umgebung.
+
+3. Flexible Verwaltung des Datenbanklebenszyklus, Versionen, Init-Skripte.
+
+4. Praktisch für die lokale Reproduktion von CI-Skripten.
+
+#### 2) Docker-Compose
+
+**Wesentlich:** Dienste (DB + Abhängigkeiten) werden in `docker-compose.yml`
+beschrieben und vor den Tests als einzelne Zusammensetzung ausgelöst.
+
+**Vorteile:**
+
+1. Eine einfache und visuelle Beschreibung einer Multi-Service-Umgebung.
+
+2. Es ist einfach, Caches, Broker und mehrere DBs gleichzeitig hinzuzufügen.
+
+3. Gleiches Modell für lokale Entwicklung und CI.
+
+4. Gute Wahl für Integrations-/E2E-Kits.
+
+#### 3) GitHub Actions-Dienste
+
+**Gist:** Der DB-Container wird direkt im Workflow-Job als Service-Container
+deklariert.
+
+**Vorteile:**
+
+1. Das einfachste CI-native Skript für Grundbedürfnisse.
+
+2. Minimaler Code in Tests und separate Orchestrierung.
+
+3. Schnellstart für einen oder zwei Dienste (Postgres, Redis usw.).
+
+#### Praxisvergleich:
+
+1. **Flexibilität und Isolation**: Testcontainer > docker-compose > Dienste.
+
+2. **Einfach zu starten**: Dienste > Docker-Compose > Testcontainer.
+
+3. **Multi-Service-Composite steht**: docker-compose / Testcontainers.
+
+4. **Lakonisches CI für einfache Datenbank**: GitHub Actions-Dienste.
+
+#### Fazit:
+
+Es gibt keinen allgemein „besten“ Ansatz. Für ein einfaches CI reichen Dienste
+aus; Docker-Compose eignet sich für eine komplexe Integrationsumgebung. Für die
+am besten verwaltbaren und reproduzierbaren Tests auf Codeebene ist
+Testcontainers der stärkste Ansatz.
+
+</details>

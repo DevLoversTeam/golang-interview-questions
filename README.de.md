@@ -7581,3 +7581,71 @@ Codezuverlässigkeit durch Ergänzung des Compilers und der Tests, insbesondere 
 Go-Codebasen großer Teams.
 
 </details>
+
+
+<details>
+<summary>123. Wie profiliere ich eine Go-Anwendung (`pprof`)?</summary>
+
+#### Go
+
+`pprof` ist ein standardmäßiges Go-Profiling-Tool, das anzeigt, wohin CPU,
+Speicher, Zuweisungen, Sperren und Timeouts gehen. Dies ist eine grundlegende
+Möglichkeit, echte Engpässe vor Optimierungen zu finden.
+
+#### Was profiliert werden kann:
+
+1. **CPU-Profil** – wo CPU-Zeit verbracht wird.
+
+2. **Heap / allocs** – wer Speicher zuweist und was „am Leben“ bleibt.
+
+3. **Goroutine-Profil** – Status und Anzahl der Goroutines.
+
+4. **Block-/Mutex-Profil** – Konflikt, Blockierung,
+   Synchronisierungsverzögerungen.
+
+#### So verbinden Sie sich mit dem Dienst:
+
+1. Import `net/http/pprof` (normalerweise über Nebeneffektimport).
+
+2. Öffnen Sie den Debug-Endpunkt (häufig ein separater Port oder eine geschützte
+   Route).
+
+3. Profil unter realer/repräsentativer Last entfernen.
+
+#### Typischer Analyse-Workflow:
+
+1. CPU/Heap-Profil sammeln.
+
+2. Öffnen über `go tool pprof` (Top/Liste/Web).
+
+3. Hot-Pfade/Zuordnungsknoten finden.
+
+4. Nehmen Sie eine Punktänderung vor.
+
+5. Wiederholen Sie die Profilerstellung und vergleichen Sie sie vorher/nachher.
+
+#### Praxisteams (allgemeine Idee):
+
+1. Sammlung des Profils vom Endpunkt.
+
+2. Lokale Analyse: `go tool pprof <profile>`
+
+3. Grafik-/flammenähnliche Visualisierung über den Webmodus.
+
+#### Wichtige Grundsätze:
+
+1. Optimieren Sie nicht „nach Gefühl“ – sondern nur nach Profildaten.
+
+2. Profil unter produktionsnahen Bedingungen.
+
+3. Überprüfen Sie, ob die Optimierung andere Metriken (Tail-Latenz, Speicher)
+   nicht beeinträchtigt hat.
+
+#### Fazit:
+
+`pprof` ist das Haupttool für die Proof-of-Concept-Optimierung von
+Go-Anwendungen: Es zeigt das tatsächliche Bild der Kosten und ermöglicht es
+Ihnen, technische Entscheidungen auf der Grundlage von Messungen und nicht von
+Intuition zu treffen.
+
+</details>

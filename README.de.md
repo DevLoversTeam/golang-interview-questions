@@ -7649,3 +7649,62 @@ Ihnen, technische Entscheidungen auf der Grundlage von Messungen und nicht von
 Intuition zu treffen.
 
 </details>
+
+
+<details>
+<summary>124. Wie funktionieren `go build` und Cross-Compilation?</summary>
+
+#### Go
+
+`go build` kompiliert Go-Pakete/Programme in eine Binärdatei (oder überprüft die
+Assembly) unter Verwendung von Modulabhängigkeiten, dem Build-Cache und den
+aktuellen Zielplattformeinstellungen.
+
+#### So funktioniert `go build`:
+
+1. Liest `go.mod` und löst Abhängigkeiten auf.
+
+2. Kompiliert die erforderlichen Pakete (unter Berücksichtigung von Build-Tags
+   und bedingten Dateien).
+
+3. Verwendet den Build-Cache, um Neuerstellungen zu beschleunigen.
+
+4. Verknüpft die endgültige ausführbare Datei für das Zielbetriebssystem/die
+   Zielarchitektur.
+
+#### Was ist Cross-Compilation:
+
+Bei der Cross-Compilierung wird eine Binärdatei für eine andere Plattform
+erstellt als die, auf der Sie den Compiler ausführen.
+
+#### Hauptparameter:
+
+1. `GOOS` ist das Zielbetriebssystem (z. B. `linux`, `darwin`, `windows`).
+
+2. `GOARCH` ist die Zielarchitektur (`amd64`, `arm64` usw.).
+
+#### Beispiel:
+
+1. Arbeiten unter macOS.
+
+2. Will Linux/amd64-Binärdatei.
+
+3. Kompiliert mit dem entsprechenden `GOOS/GOARCH` erhalten Sie ein Artefakt für
+   die Linux-Bereitstellung.
+
+#### Praktische Nuancen:
+
+1. Für Pure-Go-Code ist die Kreuzkompilierung normalerweise unkompliziert.
+
+2. Die `cgo`-Abhängigkeiten erfordern eine kompatible Cross-Toolchain
+   (C-Compiler für die Zielplattform).
+
+3. CI führt häufig einen Matrixaufbau für die Menge `GOOS/GOARCH` durch.
+
+#### Fazit:
+
+`go build` ist ein standardisierter Build mit Caching und modularer Auflösung.
+Cross-Compilation in Go wird nativ durch `GOOS/GOARCH` unterstützt, was die
+Sprache sehr praktisch für Multiplattform-Releases macht.
+
+</details>

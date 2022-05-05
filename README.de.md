@@ -7708,3 +7708,74 @@ Cross-Compilation in Go wird nativ durch `GOOS/GOARCH` unterstützt, was die
 Sprache sehr praktisch für Multiplattform-Releases macht.
 
 </details>
+
+
+<details>
+<summary>125. Wie kann ich eine Go-Anwendung in Docker containerisieren?</summary>
+
+#### Go
+
+Beim Containerisieren einer Go-Anwendung wird eine Binärdatei erstellt und in
+ein Docker-Image gepackt, damit sie in jeder Umgebung (lokal, CI, Kubernetes,
+Cloud) vorhersehbar gestartet werden kann.
+
+#### Kanonischer Ansatz:
+
+1. Mehrstufige Docker-Datei verwenden:
+
+- stage build: Binäre Kompilierung starten;
+
+- stage-Laufzeit: Mindestabbild für die Ausführung.
+
+2. In der Build-Phase:
+
+- copy `go.mod/go.sum`, Abhängigkeiten laden;
+
+- Code kopieren;
+
+- kompilieren Sie die Binärdatei (`go build`).
+
+3. Zur Laufzeit:
+
+- Legen Sie nur die endgültigen Binärdateien und erforderlichen Laufzeitdateien
+  ab.
+
+- set `ENTRYPOINT/CMD`.
+
+#### Warum es richtig ist:
+
+1. Kleinere endgültige Bildgröße.
+
+2. Bessere Sicherheit (weniger redundante Pakete zur Laufzeit).
+
+3. Reproduzierbare Builds in CI/CD.
+
+4. Schnellere Bereitstellung und Kaltstart.
+
+#### Praktische Empfehlungen:
+
+1. Fügen Sie `.dockerignore` hinzu, um zu vermeiden, dass zusätzliche Dateien in
+   den Build-Kontext gezogen werden.
+
+2. Führen Sie den Prozess als Nicht-Root-Benutzer im Laufzeit-Image aus.
+
+3. Legen Sie `EXPOSE`, Integritätsprüfung (falls erforderlich) und
+   Umgebungsvariablen explizit fest.
+
+4. Verwenden Sie angeheftetes Basisbild/Tag zur Vorhersehbarkeit.
+
+#### Typischer Lebenszyklus:
+
+1. `docker build` → hat ein Bild erhalten.
+
+2. `docker run` → lokal geprüft.
+
+3. Push in die Registrierung → Bereitstellung in der Zielumgebung.
+
+#### Fazit:
+
+Das Containerisieren einer Go-Anwendung in Docker funktioniert am besten über
+einen mehrstufigen Ansatz: separat kompilieren, separat ausführen. Dadurch
+ergibt sich ein kompaktes, sicheres und bedienungsfreundliches Produktionsbild.
+
+</details>

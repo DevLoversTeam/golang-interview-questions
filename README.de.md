@@ -7779,3 +7779,71 @@ einen mehrstufigen Ansatz: separat kompilieren, separat ausführen. Dadurch
 ergibt sich ein kompaktes, sicheres und bedienungsfreundliches Produktionsbild.
 
 </details>
+
+
+<details>
+<summary>126. Wie kann die Größe eines Docker-Images für eine Go-Anwendung reduziert werden (mehrstufiger Build)?</summary>
+
+#### Go
+
+Der effektivste Weg, das Image einer Go-Anwendung zu reduzieren, ist ein
+mehrstufiger Build: Kompilieren Sie in einem „schweren“ Build-Image und führen
+Sie es im minimalsten Laufzeit-Image nur mit der endgültigen Binärdatei aus.
+
+#### Wichtige Optimierungsschritte:
+
+1. **Mehrstufige Docker-Datei**
+
+- Stufe 1: `golang` für die Montage;
+
+- Stufe 2: schlanke Laufzeit (`distroless`/`scratch`/minimale Basis).
+
+2. **Nur zum Kopieren zur Laufzeit erforderlich**
+
+- binary;
+
+- ggf. CA-Zertifikate / Zeitzonendaten / Konfiguration.
+
+3. **Statische Binärdatei (falls zutreffend)**
+
+- reduziert Laufzeitabhängigkeiten;
+
+- ist gut für minimalistische Looks.
+
+4. **Optimieren Sie die Binärdatei selbst**
+
+- Linker-Flags (`-ldflags="-s -w"`) zur Reduzierung von Dienstinformationen.
+
+5. **Lese- und Schreibkenntnisse `.dockerignore`**
+
+- Entfernen Sie Tests, `.git`, Artefakte und lokale Caches aus dem
+  Build-Kontext.
+
+6. **Abhängigkeits-Caching in der Build-Phase**
+
+- kopieren Sie `go.mod/go.sum` separat, bevor Sie den gesamten Code kopieren.
+
+#### Zusätzliche Praktiken:
+
+1. Schaumbasisbilder nach Digest/Tag zur Reproduzierbarkeit.
+
+2. Arbeiten Sie unter einem Nicht-Root-Benutzer.
+
+3. Überprüfen Sie regelmäßig die Bildgröße und Schwachstellen in CI.
+
+#### Was Sie vermeiden sollten:
+
+1. Laufzeit auf einem vollständigen `golang`-Image ist nicht erforderlich.
+
+2. Kopieren des Quellcodes in die letzte Ebene.
+
+3. Redundante Debugging-Tools im Produktionsimage.
+
+#### Fazit:
+
+Ein kompaktes Go-Image ist das Ergebnis einer ordnungsgemäßen Trennung der
+Build-/Laufzeitebenen. Mehrstufig, minimale Laufzeit und sauberer Build-Kontext
+sorgen für das beste Gleichgewicht zwischen Größe, Sicherheit und
+Bereitstellungsgeschwindigkeit.
+
+</details>

@@ -7847,3 +7847,77 @@ sorgen für das beste Gleichgewicht zwischen Größe, Sicherheit und
 Bereitstellungsgeschwindigkeit.
 
 </details>
+
+
+<details>
+<summary>127. Welche Tools werden üblicherweise zum Sammeln von Metriken und Protokollen verwendet? Wie funktioniert Prometheus?</summary>
+
+#### Go
+
+Moderne Systeme kombinieren in der Regel mehrere Werkzeugklassen: Metriken,
+Protokolle, Nachverfolgung, Visualisierung und Alarmierung. Dies liefert ein
+vollständiges Bild des Verhaltens des Dienstes und beschleunigt die Diagnose von
+Vorfällen.
+
+#### Typischer Tool-Stack:
+
+1. **Metriken**
+
+- Prometheus, VictoriaMetrics, Graphite (seltener in neueren Systemen).
+
+2. **Visualisierung**
+
+- Grafana (Dashboards, SLOs, Metrikkorrelation).
+
+3. **Protokolle**
+
+- Loki, Elasticsearch/OpenSearch + Kibana, Fluent Bit/Fluentd, Vector.
+
+4. **Ablaufverfolgung**
+
+- OpenTelemetry + Jaeger/Tempo/Zipkin.
+
+5. **Alarm**
+
+- Alertmanager (oft mit Prometheus verbunden).
+
+#### So funktioniert Prometheus:
+
+1. **Pull-Sammlungsmodell:** Prometheus „scrapt“ regelmäßig die HTTP-Endpunkte
+   von Diensten (normalerweise `/metrics`) und übernimmt die aktuellen Werte der
+   Metriken.
+
+2. **Zeitreihenspeicher:** Jede Metrik mit einem Satz Labels wird als Zeitreihe
+   gespeichert.
+
+3. **PromQL-Abfragen:** Aggregation, Ratenfunktionen, perzentilartige Analysen,
+   Korrelationen.
+
+4. **Regel-Engine:**
+
+- Aufzeichnungsregeln für vorläufige Berechnungen;
+
+- alerting-Regeln zum Generieren von Warnungen.
+
+5. **Integration mit Alertmanager:** Deduplizierung, Routing, Gruppierung und
+   Benachrichtigungen (Slack, E-Mail, PagerDuty).
+
+#### Warum Prometheus beliebt ist:
+
+1. Einfaches Betriebsmodell (Pull + Konfigurationsdateien).
+
+2. Leistungsstarkes PromQL.
+
+3. Ein großes Ökosystem von Exporteuren.
+
+4. Gute Integration mit Kubernetes und einer Cloud-nativen Umgebung.
+
+#### Fazit:
+
+Für Metriken und Protokolle verwendet die Produktion normalerweise einen
+kombinierten Stack: Prometheus + Grafana für Metriken, eine separate
+Protokollplattform für Protokolle und Tracing für dienstübergreifende Diagnosen.
+Prometheus fungiert in diesem Stack als Zeitreihenüberwachungs- und
+Alarmierungskern.
+
+</details>

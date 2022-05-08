@@ -7921,3 +7921,69 @@ Prometheus fungiert in diesem Stack als Zeitreihenüberwachungs- und
 Alarmierungskern.
 
 </details>
+
+
+<details>
+<summary>128. Was ist der Unterschied zwischen Microservices und einem Monolithen? Was sind die Vor- und Nachteile?</summary>
+
+#### Go
+
+Monolith und Microservices sind keine „Mode“, sondern unterschiedliche
+Strategien der Systemzerlegung. Die Wahl zwischen ihnen hängt von der Teamgröße,
+der Domänenkomplexität, den Anforderungen an die Release-Autonomie und der
+betrieblichen Reife ab.
+
+#### Monolith:
+
+**Das Wesentliche:** eine Anwendung, eine Codebasis (oder eine eng gekoppelte
+Laufzeit), normalerweise ein Bereitstellungspunkt.
+
+**Vorteile:**
+
+1. Einfacher Start und geringere betriebliche Komplexität.
+
+2. Einfacheres lokales Debugging und prozessinterne Transaktionsintegrität.
+
+3. Schnellere Entwicklung für kleine Teams/Produkte in der Frühphase.
+
+**Nachteile:**
+
+1. Es ist schwieriger, einzelne „heiße“ Module unabhängig voneinander zu
+   skalieren.
+
+2. Mit zunehmendem Code wachsen auch die Konnektivität und das Risiko langsamer
+   Releases.
+
+3. Eine große Bereitstellung erschwert häufige unabhängige Änderungen.
+
+#### Microservices:
+
+**Das Wesentliche:** Das System ist in autonome Dienste mit eigenen
+Verantwortungsgrenzen, API-Verträgen und unabhängigem Lebenszyklus unterteilt.
+
+**Vorteile:**
+
+1. Unabhängige Veröffentlichungen von Teams und Diensten.
+
+2. Punktskalierung einzelner Komponenten.
+
+3. Technologische Flexibilität auf Serviceebene (mit Governance).
+
+**Nachteile:**
+
+1. Hohe betriebliche Komplexität (Netzwerk, Erkennung, Beobachtbarkeit,
+   Sicherheit).
+
+2. Verteilte Konsistenz und komplexe Transaktionen zwischen Diensten.
+
+3. Aufwendigeres Debuggen aufgrund von Netzwerkinteraktion und mehr beweglichen
+   Teilen.
+
+#### Praktisches Fazit:
+
+Ein Monolith ist oft der beste Anfang und kann über einen langen Zeitraum sehr
+effektiv sein. Microservices sind dann gerechtfertigt, wenn die Größe der Domäne
+und Organisation wirklich die Autonomie von Teams, unabhängige Skalierung und
+klare Servicezerlegung erfordert.
+
+</details>

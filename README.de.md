@@ -7987,3 +7987,92 @@ und Organisation wirklich die Autonomie von Teams, unabhängige Skalierung und
 klare Servicezerlegung erfordert.
 
 </details>
+
+
+<details>
+<summary>129. Wie implementiert man die Authentifizierung in einer Microservice-Architektur?</summary>
+
+#### Go
+
+In Microservices basiert die Authentifizierung normalerweise auf einem zentralen
+Identitätsanbieter (IdP) und einem tokenorientierten Modell (meistens
+OAuth2/OIDC + JWT). Dadurch können Sie den Zugriff skalieren, ohne die
+Anmeldelogik in jedem Dienst zu duplizieren.
+
+#### Kanonisches Diagramm:
+
+1. Der Client meldet sich beim IdP (oder Authentifizierungsdienst) an.
+
+2. Erhält ein Zugriffstoken (und ggf. ein Aktualisierungstoken).
+
+3. Übergibt Zugriffstoken in Anfragen an API Gateway/Dienste.
+
+4. Services validieren das Token (Signatur, Gültigkeitsdauer, Aussteller,
+   Zielgruppe, Bereiche).
+
+#### Wo zu überprüfen:
+
+1. **Auf API-Gateway**
+
+- erste Token-Validierung und Blockierung von nicht autorisiertem Datenverkehr.
+
+2. **In jedem Dienst (Verteidigung in der Tiefe)**
+
+- erneute Überprüfung kritischer Ansprüche/Zugriffsrechte;
+
+- verlassen Sie sich nicht nur auf den Umfang.
+
+#### Was im Token enthalten sein sollte:
+
+1. Benutzer-/Betreff-ID (`sub`).
+
+2. Rollen/Bereiche/Rechte (mindestens erforderlich).
+
+3. `iss`, `aud`, `exp`, `iat` für die sichere Kontextvalidierung.
+
+#### Wichtige Sicherheitspraktiken:
+
+1. Kurze TTL für Zugriffstoken.
+
+2. Regelmäßige Rotation der Signaturschlüssel (JWKS).
+
+3. TLS überall (Nord-Süd- und Ost-West-Verkehr).
+
+4. Prinzip der geringsten Berechtigung für Bereiche/Rollen.
+
+5. Klare Trennung von Authentifizierung (wer Sie sind) und Autorisierung (was
+   Sie tun können).
+
+#### Für Service-to-Service:
+
+1. Verwenden Sie separate Anmeldeinformationen für den Computer
+   (Client-Anmeldeinformationen, mTLS, Dienstidentität).
+
+2. Leeren Sie Benutzertoken nicht unnötig tief in das System.
+
+#### Fazit:
+
+Zuverlässige Authentifizierung in Microservices ist ein zentralisierter IdP,
+Token mit korrekter Validierung an allen kritischen Grenzen und
+Sicherheitsdisziplin (TTL, Schlüsselrotation, geringste Privilegien, TLS,
+Tiefenverteidigung).
+
+#### Beispiel:
+
+```go
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tok := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+		claims, err := verifyJWT(tok)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), userClaimsKey{}, claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+```
+
+</details>

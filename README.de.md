@@ -8076,3 +8076,93 @@ func AuthMiddleware(next http.Handler) http.Handler {
 ```
 
 </details>
+
+
+<details>
+<summary>130. Wie entwirft und implementiert man ein API-Gateway in einer Microservice-Architektur und welche Aufgaben soll es lösen?</summary>
+
+#### Go
+
+API Gateway ist der einzige externe Einstiegspunkt zum Microservice-System.
+Seine Aufgabe besteht darin, den Perimeter zu standardisieren: Sicherheit,
+Routing, Verkehrsrichtlinien, Beobachtbarkeit und teilweise Orchestrierung von
+Anfragen.
+
+#### Welche Aufgaben soll Gateway lösen:
+
+1. **Routing** zu den erforderlichen Diensten (Pfad-/Host-/Methodenregeln).
+
+2. **Authentifizierung und Basisautorisierung** am Perimeter.
+
+3. **Ratenbegrenzung/Drosselung** und Überlastschutz.
+
+4. **TLS-Terminierung**, CORS, grundlegende Sicherheitsheader.
+
+5. **Anfrage-/Antworttransformationen** (falls erforderlich) und
+   API-Versionierung.
+
+6. **Beobachtbarkeit**: zentralisierte Protokolle, Metriken, Tracing-Kontext.
+
+7. **Resilienzrichtlinien**: Zeitüberschreitung, Wiederholung (Vorsicht),
+   Schutzschalter.
+
+#### Wichtige Designprinzipien:
+
+1. **Thin Gateway:** Übertragen Sie keine schwere Geschäftslogik hinein.
+
+2. **Explizites Eigentum an Verträgen:** Wer ist für Endpunkte und Richtlinien
+   verantwortlich?
+
+3. **Sicherheit standardmäßig:** standardmäßig verweigern, geringste
+   Berechtigung.
+
+4. **Idempotenz- und Wiederholungsversuchskontrolle:** um doppelte
+   Nebenwirkungen zu vermeiden.
+
+5. **Degradationsplan:** Fallback/Fehler sollten für den Client vorhersehbar
+   sein.
+
+#### Implementierungsmodell:
+
+1. Wählen Sie eine Technologie (Ingress-/API-Gateway-Produkt oder eigener
+   Edge-Service).
+
+2. Definieren Sie Richtlinien als Code (Ratenbegrenzungen,
+   Authentifizierungsregeln, Routing-Tabellen).
+
+3. Konfigurieren Sie die Integration mit Diensterkennung und Zertifikaten.
+
+4. End-to-End-Tracing (Korrelations-IDs) implementieren.
+
+5. SLOs/Warnungen auf Gateway-Ebene hinzufügen (Latenz, Fehlerrate, Sättigung).
+
+#### Typische Fehler:
+
+1. „Thick“ Gateway als neuer Monolith.
+
+2. Fehlendes konsistentes Fehlermodell.
+
+3. Übermäßige Transformationen am Umfang, die das Debuggen erschweren.
+
+4. Single Point of Failure ohne HA-Konfiguration.
+
+#### Fazit:
+
+Ein starkes API-Gateway ist kein „Ort für alles“, sondern eine disziplinierte
+Perimeterschicht: Sicherheit, Verkehrsrichtlinien, Beobachtbarkeit und
+verwaltetes Routing. Gleichzeitig sollte die Geschäftslogik in den
+Domänendiensten verbleiben.
+
+#### Beispiel:
+
+```yaml
+routes:
+  - path: /api/orders/*
+    upstream: orders-service
+    auth: required
+    rateLimit:
+      requestsPerMinute: 600
+    timeoutMs: 2000
+```
+
+</details>

@@ -8166,3 +8166,79 @@ routes:
 ```
 
 </details>
+
+
+<details>
+<summary>131. Wie funktioniert Service Discovery in einer Microservice-Architektur und wie finden Services einander ohne statische IPs/Hosts?</summary>
+
+#### Go
+
+`Service discovery` ist ein Mechanismus zur dynamischen Suche nach verfügbaren
+Dienstinstanzen unter Bedingungen, bei denen sich IPs/Pods ständig ändern
+(Autoscaling, Rolling Update, Neustarts).
+
+#### Grundprinzip:
+
+1. Die Dienstinstanz wird in der Erkennungsregistrierung registriert (oder
+   automatisch vom Orchestrator veröffentlicht).
+
+2. Client oder Zwischen-Proxy fordert aktuelle Dienstendpunkte an.
+
+3. Die Anfrage wird gemäß den Ausgleichsregeln an die Live-Instanz
+   weitergeleitet.
+
+#### Wie Dienste einander „finden“:
+
+1. **DNS-basierte Erkennung**
+
+- service bezieht sich auf einen stabilen Namen (`service-name.namespace`) und
+  DNS gibt aktuelle IPs zurück.
+
+2. **Registrierungsbasierte Erkennung**
+
+- Eine separate Dienstregistrierung (oder Plattform-API) stellt eine Liste
+  fehlerfreier Instanzen bereit.
+
+3. **Service Mesh / Sidecar**
+
+- Auf application wird lokal zugegriffen, und Sidecar übernimmt die Erkennung,
+  Wiederholung, Lastverteilung und TLS.
+
+#### Clientseitige vs. serverseitige Erkennung:
+
+1. **Client-seitig**
+
+- Der Client selbst erhält die Liste der Instanzen und wählt das Ziel aus.
+
+2. **Serverseitig**
+
+- Der Client greift auf den stabilen Endpunkt (LB/Proxy) zu und die
+  Instanzauswahl erfolgt durch die Infrastrukturschicht.
+
+#### Kritische Elemente der Zuverlässigkeit:
+
+1. Gesundheitsprüfungen und schneller Ausschluss „toter“ Instanzen.
+
+2. TTL/Caching mit Datensatzalterungskontrolle.
+
+3. Beobachtbarkeit der Erkennungsschicht (Latenz, Fehlerrate, Abwanderung).
+
+#### Fazit:
+
+Die Diensterkennung macht statische IPs/Hosts überflüssig, indem eine dynamische
+Dienstadressierung über Registrierung, DNS oder Mesh bereitgestellt wird. Dies
+ist eine Grundvoraussetzung für die Skalierbarkeit und Elastizität eines
+Microservice-Systems.
+
+#### Beispiel:
+
+```go
+// У Kubernetes сервіс звертається за DNS-іменем, а не за статичним IP.
+resp, err := http.Get("http://orders-service.default.svc.cluster.local/health")
+if err != nil {
+	return err
+}
+defer resp.Body.Close()
+```
+
+</details>

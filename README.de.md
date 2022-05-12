@@ -8242,3 +8242,74 @@ defer resp.Body.Close()
 ```
 
 </details>
+
+
+<details>
+<summary>132. Wie kann eine enge Kopplung in der Microservice-Architektur vermieden werden, damit das System skalierbar und leicht änderbar bleibt?</summary>
+
+#### Go
+
+`Tight coupling` tritt in Microservices auf, wenn die Änderung eines Dienstes
+andere zur Änderung zwingt. Damit das System skalierbar und entwicklungsfähig
+bleibt, sind klare Verträge, autonome Domänengrenzen und Abhängigkeitskontrolle
+erforderlich.
+
+#### Wichtigste Entkopplungspraktiken:
+
+1. **Begrenzte Kontexte und klare Diensteigentümerschaft**
+
+- jeder Dienst ist für seine Domain und seine Daten verantwortlich;
+
+- Vermeiden Sie eine „gemeinsame“ Basis als Integrationskanal.
+
+2. **Vertragsorientierte Interaktion**
+
+- versionierte APIs/Schemas;
+
+- Abwärtskompatibilität als obligatorische Richtlinie.
+
+3. **Event-Integration wo möglich**
+
+- publish/subscribe reduziert die synchrone Anfrage-Antwort-Abhängigkeit.
+
+4. **Antikorruptionsschicht**
+
+- Adapter zwischen Domänen, damit die Modelle anderer Leute nicht in Ihren
+  Dienst „durchsickern“.
+
+5. **Stabile Schnittstellen, instabile Implementierung**
+
+- interne Dienständerungen sollten Verbraucher nicht beeinträchtigen.
+
+6. **Idempotenz und Retroresistenz**
+
+- für asynchrone Skripte ist der Schlüssel zu einer lockereren Bindung.
+
+#### Organisatorische und technische Sicherheitsmaßnahmen:
+
+1. Verbrauchergesteuerte Vertragstests.
+
+2. API-Governance (Regeln für die Vertragsentwicklung).
+
+3. Eindeutige Beobachtbarkeit zwischen Diensten (Trace-ID,
+   Abhängigkeitsmetriken).
+
+4. Einschränkungen hinsichtlich Fanout und Tiefe von Synchronketten.
+
+#### Was Sie vermeiden sollten:
+
+1. Gemeinsame Tabellen/Schemata zwischen Teams.
+
+2. „Intelligentes“ API-Gateway, das die Geschäftslogik vieler Dienste kapselt.
+
+3. Undefinierte Verträge und implizite Abhängigkeiten durch interne
+   Nutzlastfelder.
+
+#### Fazit:
+
+Die Vermeidung einer engen Kopplung ist eine Disziplin der Grenzen, Verträge und
+Entwicklung. Dienste müssen in Bezug auf Daten und Releases autonom sein, sich
+über stabile Verträge integrieren lassen und benachbarten Änderungen
+standhalten, ohne dass es zu kaskadierenden Ausfällen kommt.
+
+</details>

@@ -8313,3 +8313,62 @@ Entwicklung. Dienste müssen in Bezug auf Daten und Releases autonom sein, sich
 standhalten, ohne dass es zu kaskadierenden Ausfällen kommt.
 
 </details>
+
+
+<details>
+<summary>133. Wie organisiere ich die Abwärtskompatibilität?</summary>
+
+#### Go
+
+`Backward compatibility` bedeutet, dass die neue Version des Dienstes/der API
+bestehende Clients nicht beeinträchtigt. In verteilten Systemen ist dies von
+entscheidender Bedeutung, da Verbraucher nicht gleichzeitig aktualisiert werden.
+
+#### Grundprinzipien der Kompatibilität:
+
+1. **Kündigen Sie niemals einen bestehenden Vertrag abrupt.**
+
+2. **Additive Änderungen gegenüber Breaking Changes:** Fügen Sie neue
+   Felder/Endpunkte hinzu, ohne alte zu entfernen.
+
+3. **Stabile Semantik vorhandener Felder:** Der Wert/Typ eines Feldes mit
+   demselben Namen wird nicht geändert.
+
+4. **Explizite Versionierungsrichtlinie:** URL/Versionsheader/Schemaversion.
+
+#### Praktische Techniken:
+
+1. Zusätzliche Felder sollten mit sicheren Standardwerten optional gemacht
+   werden.
+
+2. Nutzen Sie den Verfallszeitraum, um die alte Funktionalität zu entfernen.
+
+3. Behalten Sie während der Migration parallele alte und neue Verträge bei.
+
+4. Verwenden Sie Feature-Flags für den kontrollierten Rollout.
+
+#### Für Veranstaltungen und Programme:
+
+1. Schemata müssen sich additiv weiterentwickeln.
+
+2. Verbraucher sollten unbekannte Felder ignorieren.
+
+3. Wiederverwendung „alter“ Feldbezeichner verbieten (relevant für
+   schemabasierte Protokolle).
+
+#### Kompatibilitätsqualitätskontrolle:
+
+1. Verbrauchergesteuerte Vertragstests.
+
+2. Schema-Kompatibilitätsprüfungen in CI.
+
+3. Canary-Releases und Client-Fehlerüberwachung.
+
+#### Fazit:
+
+Die Organisation der Abwärtskompatibilität ist eine Kombination aus technischen
+Regeln und Release-Disziplin: additive Weiterentwicklung von Verträgen,
+verwaltete Abwertung, automatische Kompatibilitätsprüfungen und schrittweise
+Einführung.
+
+</details>

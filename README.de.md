@@ -8451,3 +8451,84 @@ Rollback bei Fehler. Mit diesem Ansatz können Sie das Verhalten des Dienstes
 ohne Ausfallzeiten und ohne Verlust der Kontrollierbarkeit ändern.
 
 </details>
+
+
+<details>
+<summary>135. Wie kann eine Drosselung (Begrenzung der Häufigkeit von Anfragen) im Go-Dienst implementiert werden, um das System vor Überlastung zu schützen?</summary>
+
+#### Go
+
+`Throttling` im Go-Dienst ist ein verwaltetes Anforderungsintensitätslimit, um
+CPU, Datenbank, externe APIs und kritische Ressourcen vor Überlastung und
+kaskadierender Verschlechterung zu schützen.
+
+#### Hauptdrosselungsmodelle:
+
+1. **Token-Bucket / Leaky Bucket**
+
+- ermöglicht kurze Bursts innerhalb der Kapazität;
+
+- stabilisiert die Durchschnittsrate.
+
+2. **Festes / Schiebefenster**
+
+- Limits für Zeitfenster (pro Sekunde/Minute).
+
+3. **Parallelitätslimit**
+
+- Begrenzung der Anzahl gleichzeitig verarbeiteter Anfragen
+  (Semaphore/Worker-Pool).
+
+#### Wo Sie sich bewerben können:
+
+1. Am Perimeter (Gateway/Ingress) – globaler Schutz.
+
+2. Innerhalb des Dienstes – Schutz teurer Handler/Vorgänge.
+
+3. Bei Abhängigkeitsaufrufen – lokales Limit für DB/externe APIs.
+
+#### Einschränkende Abschnitte:
+
+1. Global pro Dienst.
+
+2. Pro Route / pro Endpunkt.
+
+3. Pro Client / pro API-Schlüssel / pro Mandant / pro Benutzer.
+
+#### Praktische Lösungen in Go:
+
+1. Middleware mit einem Begrenzer (häufig ein Token-Bucket).
+
+2. Für eine Umgebung mit mehreren Instanzen – ein zentralisiertes oder
+   verteiltes Limit (z. B. über Redis).
+
+3. Eine klare Antwort an den Kunden:
+
+- HTTP `429 Too Many Requests`;
+
+- `Retry-After` und eine eindeutige Fehlernutzlast.
+
+#### Wichtige Nuancen:
+
+1. Der Grenzwert muss mit den tatsächlichen Funktionen des Backends
+   übereinstimmen.
+
+2. Erforderliche Metriken:
+
+- Prozentsatz der abgelehnten Anfragen;
+
+- Warteschlangentiefe;
+
+- Latenz vor/nach der Drosselung.
+
+3. Es lohnt sich, eine Richtlinie für vorrangigen Datenverkehr (z. B.
+   Systemclients) zu haben.
+
+#### Fazit:
+
+Die Drosselung in Go ist nicht nur ein 429-Schalter, sondern Teil einer
+Resilienzstrategie: Geschwindigkeits- und Konfliktgrenzen, transparente
+Failover-Richtlinien und Metriken zur Anpassung von Parametern an die
+tatsächliche Auslastung.
+
+</details>

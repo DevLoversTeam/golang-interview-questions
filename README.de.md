@@ -8532,3 +8532,70 @@ Failover-Richtlinien und Metriken zur Anpassung von Parametern an die
 tatsächliche Auslastung.
 
 </details>
+
+
+<details>
+<summary>136. Wie funktioniert die Caching-Ebene in Go und welches Problem löst `singleflight.Group` bei gleichzeitigen Anfragen?</summary>
+
+#### Go
+
+`Caching layer` in Go ist eine Zwischenschicht zwischen der Geschäftslogik und
+der „teuren“ Datenquelle (DB, externe API, Berechnung), die bei wiederholten
+Abfragen ein vorgespeichertes Ergebnis zurückgibt und die Belastung des Backends
+reduziert.
+
+#### So funktioniert ein typischer Cache-Fluss:
+
+1. Anfrage mit Schlüssel `K` erhalten.
+
+2. Cache prüfen:
+
+- **Cache-Treffer** → wir geben den Wert schnell zurück;
+
+- **Cache-Fehler** → Aus der Quelle lesen, in den Cache stellen, Ergebnis
+  zurückgeben.
+
+3. TTL/Invalidierungskontrolle der Aktualität der Daten.
+
+#### Welches Problem entsteht beim Wettbewerb:
+
+Während `cache miss` kann der beliebte Schlüssel viele Anfragen gleichzeitig
+erhalten. Ohne zusätzliche Kontrolle gelangen sie alle parallel zum Backend –
+das ist `cache stampede` (donnernde Herde).
+
+#### Was `singleflight.Group` macht:
+
+1. Dedupliziert gleichzeitige identische Abfragen nach Schlüssel.
+
+2. Nur die erste Anfrage führt die „teure“ Funktion aus.
+
+3. Andere konkurrierende Anfragen warten und erhalten das gleiche Ergebnis.
+
+#### Welches Problem wird dadurch gelöst:
+
+1. Reduziert doppelte Anfragen an die Datenbank/API bei Fehlschlägen drastisch.
+
+2. Stabilisiert die Latenz unter Spitzenlast.
+
+3. Schützt das Backend vor Spitzen bei massiven gleichzeitigen Zugriffen.
+
+#### Wichtige Praktiken:
+
+1. Verwenden Sie `singleflight` mit dem Cache, nicht anstelle des Caches.
+
+2. Timeout über `context`/timeout begrenzen.
+
+3. Gehen Sie sorgfältig mit Fehlern um (um vorübergehende Fehler nicht zu
+   reproduzieren).
+
+4. Fügen Sie Jitter zu TTL hinzu, um zu verhindern, dass mehrere Schlüssel
+   synchron geflasht werden.
+
+#### Fazit:
+
+Die Caching-Schicht beschleunigt das Lesen und verringert den Druck auf
+Datenquellen, und `singleflight.Group` eliminiert den Stampede-Effekt im
+Vergleich zu konkurrierenden `cache miss`. Zusammen sorgen sie für ein
+wesentlich stabileres und effizienteres Serviceverhalten.
+
+</details>

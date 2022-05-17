@@ -8599,3 +8599,83 @@ Vergleich zu konkurrierenden `cache miss`. Zusammen sorgen sie für ein
 wesentlich stabileres und effizienteres Serviceverhalten.
 
 </details>
+
+
+<details>
+<summary>137. Wie entwerfe ich eine mandantenfähige Architektur mit Datenisolation zwischen Clients im Go-Dienst?</summary>
+
+#### Go
+
+Multi-Tenant-Architektur bedeutet, dass eine Plattform viele Kunden (Mandanten)
+bedient, aber die Isolation ihrer Daten, Zugriffe und Ressourcen gewährleistet.
+Der Schlüssel zum Erfolg besteht darin, den Mandantenkontext zu einem
+obligatorischen Bestandteil des gesamten Abfragepfads zu machen.
+
+#### Grundlegende Datenisolationsmodelle:
+
+1. **Freigegebene Datenbank, gemeinsames Schema + Tenant_ID**
+
+- günstigster Start;
+
+- obligatorische Hartfilter pro Anfrage.
+
+2. **Freigegebene Datenbank, separates Schema pro Mandant**
+
+- stärkere logische Isolation;
+
+- komplexere Betriebsunterstützung.
+
+3. **Datenbank pro Mandant**
+
+- maximale Isolation und Compliance;
+
+- höchster Infrastrukturwert.
+
+#### Was Sie in den Go-Dienst einfügen müssen:
+
+1. **Mandantenkontext**
+
+- Mieter aus Authentifizierungstoken/Header extrahieren;
+
+- durch `context.Context` an alle Ebenen weitergegeben.
+
+2. **Durchsetzung standardmäßig**
+
+- repository-Schicht sollte keine Anfragen ohne Mandantenfilter ausführen;
+
+- „kein Mandant, keine Abfrage“ als Invariante.
+
+3. **Autorisierung**
+
+- Überprüfen Sie, ob der Benutzer/Schlüssel das Recht auf einen bestimmten
+  Mandanten hat.
+
+4. **Cache-Isolierung**
+
+- Cache-Schlüssel müssen die Mandanten-ID enthalten.
+
+5. **Isolierung von Warteschlangen/Ereignissen**
+
+- Tenant-Tags in Ereignissen, Verbraucherfilterung, Routing-Steuerung.
+
+#### Operative Aspekte:
+
+1. Kontingente und Ratenlimits pro Mieter.
+
+2. Metrics/logs/traces mit Mandantenattribut.
+
+3. Sicherungs-/Wiederherstellungsstrategie unter Berücksichtigung der
+   Mandantengrenzen.
+
+4. Migrationsmechanismen zwischen Isolationsmodellen während des Wachstums (z.
+   B. von gemeinsam genutzten zu dedizierten für Unternehmenskunden).
+
+#### Praktisches Fazit:
+
+Multi-Tenant in Go ist nicht nur ein DB-Schema, sondern eine
+End-to-End-Disziplin: Mandantenidentität, Zugriffsrichtlinien,
+Cache-/Ereignisisolierung und Betriebskontrolle. Je früher dies in die
+Architektur integriert wird, desto einfacher ist es, das Produkt ohne Lecks
+zwischen Clients zu skalieren.
+
+</details>

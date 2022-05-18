@@ -8679,3 +8679,93 @@ Architektur integriert wird, desto einfacher ist es, das Produkt ohne Lecks
 zwischen Clients zu skalieren.
 
 </details>
+
+
+<details>
+<summary>138. Wie organisiert man die Verarbeitung von Aufgaben mit langer Laufzeit (Langzeitaufgaben) richtig, um HTTP-Anfragen nicht zu blockieren?</summary>
+
+#### Go
+
+Langfristige Aufgaben sollten nicht synchron im HTTP-Handler ausgeführt werden,
+da dies die Latenz erhöht, den Durchsatz verringert und das Risiko von
+Client-Timeouts/-Unterbrechungen erhöht. Der richtige Ansatz ist die asynchrone
+Ausführung über eine Warteschlange/Worker.
+
+#### Kanonische Architektur:
+
+1. HTTP-Endpunkt akzeptiert Anfrage, validiert Nutzlast.
+
+2. Erstellt einen Job (mit `job_id`, Status, Metadaten).
+
+3. Stellt den Job in die Warteschlange (Broker-/Aufgabentabelle).
+
+4. Gibt eine schnelle Antwort (`202 Accepted` + `job_id`) an den Client zurück.
+
+5. Hintergrundarbeiter verarbeiten die Aufgabe außerhalb des HTTP-Kontexts.
+
+#### Was für die Produktionssicherheit benötigt wird:
+
+1. **Idempotenz**
+
+- Job-Neuzustellung sollte den Status nicht unterbrechen.
+
+2. **Wiederholungsrichtlinie**
+
+- backoff, maximale Versuche, Klassifizierung von wiederholbaren/nicht
+  wiederholbaren Fehlern.
+
+3. **Aufgabenstatus**
+
+- `queued`, `running`, `succeeded`, `failed`, `canceled`.
+
+4. **Beobachtbarkeit**
+
+- Warteschlangenmetriken, Ausführungszeit, Fehlerrate, Worker-Verzögerung.
+
+5. **Stornierung / Zeitüberschreitung**
+
+- Kontrolle der Ausführungsfristen und korrekte Stornierung.
+
+6. **Gegendruck**
+
+- Einschränkung des Worker-Wettbewerbs, um eine Überlastung der
+  Datenbank/Abhängigkeiten zu vermeiden.
+
+#### Wie der Kunde zum Ergebnis kommt:
+
+1. Abfrageendpunkt für `job_id`.
+
+2. Webhook/Rückruf.
+
+3. Push-Kanal (SSE/WebSocket) – UX nahezu in Echtzeit, falls erforderlich.
+
+#### Typische Fehler:
+
+1. Führen Sie einen schweren Geschäftsvorgang direkt im Handler durch.
+
+2. Haben keinen dauerhaften Jobstatus.
+
+3. Mangel an Wiederholungsversuchen und Skript für unzustellbare Nachrichten.
+
+4. Kein Worker-Limit und Warteschlangenkontrolle.
+
+#### Fazit:
+
+Um HTTP-Anfragen nicht zu blockieren, sollten lang laufende Aufgaben in das
+Modell `accept -> enqueue -> async process -> observe result` zerlegt werden.
+Dies sorgt für eine stabile API, einen überschaubaren Durchsatz und eine
+vorhersehbare Leistung unter Last.
+
+#### Beispiel:
+
+```go
+func (h *Handler) StartReport(w http.ResponseWriter, r *http.Request) {
+	jobID := uuid.NewString()
+	_ = h.queue.Publish(r.Context(), Job{ID: jobID, Type: "build_report"})
+
+	w.WriteHeader(http.StatusAccepted)
+	_ = json.NewEncoder(w).Encode(map[string]string{"job_id": jobID})
+}
+```
+
+</details>

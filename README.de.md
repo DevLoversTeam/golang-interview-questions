@@ -8769,3 +8769,86 @@ func (h *Handler) StartReport(w http.ResponseWriter, r *http.Request) {
 ```
 
 </details>
+
+
+<details>
+<summary>139. Wie erstelle ich eine Interservice-Transaktion?</summary>
+
+#### Go
+
+Bei Microservices ist eine klassische ACID-Transaktion zwischen mehreren
+DBs/Services meist unpraktisch. Daher wird eine dienstübergreifende
+„Transaktion“ durch ein vereinbartes Geschäftsverfahren mit Kompensationen und
+letztendlicher Konsistenz aufgebaut.
+
+#### Hauptansätze:
+
+1. **Saga (am häufigsten)**
+
+- Sequenz lokaler Transaktionen in Diensten;
+
+- Im Fehlerfall werden Ausgleichsmaßnahmen ausgelöst.
+
+2. **Orchestration Saga**
+
+- zentraler Orchestrator verwaltet Schritte und Rollbacks.
+
+3. **Choreografie-Saga**
+
+- Dienste reagieren ohne einen zentralen Leiter auf die Ereignisse des anderen.
+
+4. **2PC/XA**
+
+- ist theoretisch möglich, wird jedoch in Microservices aufgrund der Komplexität
+  und der Verschlechterung der Verfügbarkeit normalerweise vermieden.
+
+#### Kanonisches Design einer Interservice-Transaktion:
+
+1. Unterteilen Sie den Prozess in lokale atomare Schritte.
+
+2. Definieren Sie für jeden Schritt eine Entschädigung.
+
+3. Stellen Sie die Idempotenz von Befehlen und Ereignissen sicher.
+
+4. Implementieren Sie eine zuverlässige Zustellung über
+   Postausgangs-/Posteingangsmuster.
+
+5. Korrelationales `transaction/saga id` für die Ablaufverfolgung hinzufügen.
+
+#### Kritische Anforderungen:
+
+1. **Idempotenz** an allen Grenzen.
+
+2. **Wiederholen/Backoff** für vorübergehende Fehler.
+
+3. **Deduplizierung** erneut übermittelter Ereignisse.
+
+4. **Zeitüberschreitung und Richtlinie für unzustellbare Nachrichten** für
+   „hängende“ Schritte.
+
+5. **Beobachtbarkeit**: Saga-Status, Metriken, Prüfung.
+
+#### Fazit:
+
+Interservice-Transaktionen in Microservices sind keine globale ACID, sondern ein
+verwalteter Konsistenzprozess: lokale Transaktionen + Ereignisse +
+Kompensationen. Das praktischste Modell hierfür ist Saga mit klaren Invarianten
+und robuster Fehlerbehandlung.
+
+#### Beispiel:
+
+```go
+// Спрощений оркестратор Saga
+func (s *Saga) Run(ctx context.Context, cmd CreateOrder) error {
+	if err := s.reserveInventory(ctx, cmd); err != nil {
+		return err
+	}
+	if err := s.chargePayment(ctx, cmd); err != nil {
+		_ = s.compensateInventory(ctx, cmd)
+		return err
+	}
+	return s.confirmOrder(ctx, cmd)
+}
+```
+
+</details>

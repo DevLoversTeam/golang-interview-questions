@@ -8852,3 +8852,65 @@ func (s *Saga) Run(ctx context.Context, cmd CreateOrder) error {
 ```
 
 </details>
+
+
+<details>
+<summary>140. Welche Probleme löst das Saga-Muster?</summary>
+
+#### Go
+
+Das `Saga`-Muster befasst sich mit dem Problem eines konsistenten
+Geschäftsbetriebs, der mehrere Microservices mit separaten Datenbanken umfasst,
+bei denen es nicht möglich oder praktisch ist, eine einzige globale
+ACID-Transaktion anzuwenden.
+
+#### Welche Probleme deckt Saga ab:
+
+1. **Fehlende verteilte ACID zwischen Diensten**
+
+- ersetzt die globale Transaktion durch eine Folge lokaler Transaktionen.
+
+2. **Anforderung für Teilausfallkompensation**
+
+- Wenn einer der Schritte fehlschlägt, werden kompensierende Maßnahmen
+  durchgeführt.
+
+3. **Eventuelles Konsistenzmanagement**
+
+- ermöglicht das asynchrone Erreichen des vereinbarten Geschäftsstatus.
+
+4. **Verringerte Konnektivität zwischen Diensten**
+
+- steps können über Ereignisse/Befehle ohne harten 2PC interagieren.
+
+5. **Resistenz gegenüber vorübergehenden Ausfällen**
+
+- retry/backoff und idempotence machen den Prozess zuverlässiger.
+
+#### Was Saga nicht automatisch „heilt“:
+
+1. Entfernt nicht die Notwendigkeit einer expliziten Domänenmodellierung von
+   Kompensationen.
+
+2. Beseitigt nicht die Komplexität der Beobachtbarkeit und
+   Prozesszustandsüberwachung.
+
+3. Garantiert keine sofortige Konsistenz, sondern nur verwaltete Konsistenz über
+   einen längeren Zeitraum.
+
+#### Wo Saga besonders relevant ist:
+
+1. Checkout/Bestell-Workflow (Produktreservierung, Zahlung, Lieferung).
+
+2. Reservieren/Stornieren von Ressourcen in mehreren Systemen.
+
+3. Alle mehrstufigen Geschäftsprozesse mit dienstübergreifenden Auswirkungen.
+
+#### Fazit:
+
+Saga löst das zentrale Problem der Microservice-Konsistenz: wie man einen
+komplexen Cross-Service-Vorgang ohne einen globalen Sperrkoordinator mit
+kontrollierter Wiederherstellung durch Offsets und akzeptabler
+Betriebsstabilität durchführt.
+
+</details>

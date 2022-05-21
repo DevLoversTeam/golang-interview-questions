@@ -8914,3 +8914,72 @@ kontrollierter Wiederherstellung durch Offsets und akzeptabler
 Betriebsstabilität durchführt.
 
 </details>
+
+
+<details>
+<summary>141. Was ist Event-Sourcing?</summary>
+
+#### Go
+
+`Event Sourcing` ist ein Ansatz, bei dem das System nicht den „aktuellen
+Zustand“ der Entität speichert, sondern die Abfolge von Ereignissen, die diesen
+Zustand geändert haben. Der aktuelle Zustand wird durch die Wiedergabe von
+Ereignissen reproduziert.
+
+#### Schlüsselidee:
+
+1. Die Quelle der Wahrheit ist ein unveränderliches Domänenereignisprotokoll.
+
+2. Der Zustand des Aggregats ist das abgeleitete Ergebnis der Reduzierung dieser
+   Ereignisse in der zeitlichen Reihenfolge.
+
+3. Zustandsänderungen erfolgen durch Hinzufügen eines neuen Ereignisses, nicht
+   durch „Überschreiben“.
+
+#### Was Event Sourcing bietet:
+
+1. **Vollständiger Prüfpfad**: Sie können sehen, wer/wann/warum den Domainstatus
+   geändert hat.
+
+2. **Zustandsreproduzierbarkeit** zu jedem Zeitpunkt.
+
+3. **Flexible Projektionen** (Lesemodelle) für verschiedene Leseszenarien.
+
+4. **Natürliche Integration mit ereignisgesteuerter Architektur**.
+
+#### Typische Komponenten:
+
+1. Ereignisspeicher (nur anhängen).
+
+2. Aggregate mit Befehlsvalidierungsregeln.
+
+3. Projektions-/Lesemodell-Builder.
+
+4. Mechanismen zur Ereignisversionierung und Upcaster.
+
+#### Wichtige Herausforderungen:
+
+1. Die Komplexität der Entwicklung von Ereignismustern.
+
+2. Benötigt werden Snapshots für die schnelle Wiederherstellung langer Streams.
+
+3. Betriebliche Komplexität der Konsistenz zwischen Schreib-/Lesemodellen
+   (häufig CQRS).
+
+#### Falls zutreffend:
+
+1. Domänen mit hohen Anforderungen an die Prüfung und den Änderungsverlauf.
+
+2. Komplexe Geschäftsprozesse, bei denen es auf Ursache-Wirkungs-Transparenz
+   ankommt.
+
+3. Systeme, in denen Ereignisse ein natürlicher Integrationsvertrag sind.
+
+#### Fazit:
+
+Bei Event Sourcing handelt es sich um ein Modell, bei dem „Ereignisfakten und
+nicht der Endzustand gespeichert werden“. Es bietet hohe historische Transparenz
+und architektonische Flexibilität, erfordert jedoch eine ausgereifte Disziplin
+der Ereignismodellierung, Versionierung und Betriebsunterstützung.
+
+</details>

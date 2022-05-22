@@ -8983,3 +8983,48 @@ und architektonische Flexibilität, erfordert jedoch eine ausgereifte Disziplin
 der Ereignismodellierung, Versionierung und Betriebsunterstützung.
 
 </details>
+
+
+<details>
+<summary>142. Formulieren Sie das CAP-Theorem.</summary>
+
+#### Go
+
+Das CAP-Theorem besagt: In einem verteilten System ist es während der
+Netzwerktrennung (`Partition`) unmöglich, gleichzeitig sowohl starke Konsistenz
+(`Consistency`) als auch vollständige Verfügbarkeit (`Availability`) für alle
+Anforderungen zu gewährleisten.
+
+#### Drei Eigenschaften von CAP:
+
+1. **Konsistenz (C)** Alle Knoten sehen nach einem Schreibvorgang denselben
+   aktuellen Datenstatus.
+
+2. **Verfügbarkeit (A)** Jede Anfrage erhält eine Antwort (Erfolg/Misserfolg
+   ohne unendliche Wartezeit).
+
+3. **Partitionstoleranz (P)** Das System funktioniert auch dann weiter, wenn es
+   zu Netzwerkunterbrechungen oder Kommunikationsverzögerungen zwischen Knoten
+   kommt.
+
+#### Praktischer Schwerpunkt:
+
+1. In realen verteilten Systemen ist `P` fast immer erforderlich (das Netzwerk
+   ist von Natur aus unzuverlässig).
+
+2. Deshalb müssen Sie zum Zeitpunkt der Partitionierung eine Priorität wählen:
+
+- **CP**: Bewahren Sie die Konsistenz, indem Sie einen Teil der Verfügbarkeit
+  opfern.
+
+- **AP**: Erhalten Sie die Verfügbarkeit, indem Sie eine vorübergehende
+  Nichtübereinstimmung akzeptieren.
+
+#### Fazit:
+
+CAP sagt nicht „Wähle für immer nur zwei Eigenschaften“. Sie sagt: **Wenn eine
+Partition auftritt, sind die maximalen C- und A-Werte gleichzeitig
+unerreichbar**; Der Architekt muss bewusst festlegen, was das System im
+Notbetrieb opfert.
+
+</details>

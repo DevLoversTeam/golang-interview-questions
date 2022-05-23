@@ -9028,3 +9028,73 @@ unerreichbar**; Der Architekt muss bewusst festlegen, was das System im
 Notbetrieb opfert.
 
 </details>
+
+
+<details>
+<summary>143. Erzählen Sie uns etwas über den Raft-Konsensalgorithmus.</summary>
+
+#### Go
+
+Raft ist ein Konsensalgorithmus für ein repliziertes Protokoll (repliziertes
+Protokoll), der es einer Gruppe von Knoten ermöglicht, auch bei teilweisen
+Netzwerk- oder Knotenausfällen konsistent dieselbe Befehlsfolge zu speichern.
+
+#### Die Hauptidee von Raft:
+
+1. Der Cluster hat **einen Anführer** und mehrere Follower.
+
+2. Kundendatensätze werden vom Leiter akzeptiert.
+
+3. Leader repliziert Journaleinträge an Follower.
+
+4. Der Datensatz gilt nach Bestätigung durch die Mehrheit (Quorum) als
+   bestätigt.
+
+5. Alle Knoten wenden festgeschriebene Datensätze in derselben Reihenfolge an.
+
+#### Knotenrollen:
+
+1. **Leader** – Verwaltet die Replikation und verarbeitet Client-Befehle.
+
+2. **Follower** – akzeptiert passiv die Replikation vom Anführer.
+
+3. **Kandidat** – eine Rolle bei der Wahl eines neuen Anführers.
+
+#### Führungswahlen:
+
+1. Die Zeit ist in Begriffe unterteilt (`term`).
+
+2. Wenn der Follower keinen Heartbeat erhält, wird er zum Kandidaten und leitet
+   eine Wahl ein.
+
+3. Der Knoten mit den meisten Stimmen wird zum Anführer der aktuellen Amtszeit.
+
+#### Sicherheitsgarantien:
+
+1. **Protokollabgleich** – gleicher Index/Begriff bedeutet gleicher Verlauf bis
+   zu diesem Punkt.
+
+2. **Vollständigkeit der Führungskraft** – festgeschriebene Datensätze werden in
+   den Protokollen zukünftiger Führungskräfte gespeichert.
+
+3. **Zustandsmaschinensicherheit** – Befehle werden in einer konsistenten
+   Reihenfolge auf allen Knoten angewendet.
+
+#### Praktische Aspekte:
+
+1. Quorumabhängigkeit bedeutet: Ohne Mehrheit kann der Cluster keine neuen
+   Einträge festschreiben.
+
+2. Snapshot/Protokollkomprimierung wird verwendet, um das Protokollwachstum zu
+   begrenzen.
+
+3. Korrekte Heartbeat-/Wahl-Timeouts sind entscheidend für die Stabilität.
+
+#### Fazit:
+
+Raft bietet ein klares und zuverlässiges Konsensmodell: leiterbasierte
+Replikation, Quorumswahlen und starke Garantien für die Protokollkonsistenz. Aus
+diesem Grund wird es häufig in Konfigurations-, Koordinations- und verteilten
+Stateful-Services-Systemen eingesetzt.
+
+</details>

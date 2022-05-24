@@ -9098,3 +9098,75 @@ diesem Grund wird es häufig in Konfigurations-, Koordinations- und verteilten
 Stateful-Services-Systemen eingesetzt.
 
 </details>
+
+
+<details>
+<summary>144. Wie organisiere ich CI/CD für Go?</summary>
+
+#### Go
+
+Effektives CI/CD für Go ist als konsistente Pipeline aufgebaut: schnelle
+Codevalidierung, reproduzierbare Erstellung, automatisierte Tests, sichere
+Bereitstellung und kontrolliertes Rollback.
+
+#### Typische CI-Pipeline-Struktur:
+
+1. **Lint + statische Prüfungen**
+
+- `go vet`, Linters, grundlegende Sicherheitsüberprüfungen.
+
+2. **Unit-Tests**
+
+- `go test ./...` (ggf. `-race` für kritische Zweige).
+
+3. **Integrationstests**
+
+- services/DB in Containern oder Testumgebung.
+
+4. **Build-Phase**
+
+- reproduzierbarer Artefakt-Build (binär/Container).
+
+5. **Artefaktveröffentlichung**
+
+- Image in die Registrierung übertragen und mit Version/Commit markieren.
+
+#### Typische CD-Struktur:
+
+1. Bereitstellung im Staging.
+
+2. Automatische Rauch-/Kontrollkontrollen.
+
+3. Zur Produktion hochstufen (manuelles Gate oder richtlinienbasiert).
+
+4. SLO-/Fehlerraten-/Latenzüberwachung nach der Bereitstellung.
+
+#### Wichtige Zuverlässigkeitspraktiken:
+
+1. **Unveränderliche Artefakte** (die gleiche Version nicht zweimal neu
+   erstellen).
+
+2. **Anheften von Toolchain-/Abhängigkeitsversionen**.
+
+3. **Geheimnisverwaltung** über CI-Tresor/Geheimspeicher.
+
+4. **Umgebungsparität** zwischen Staging und Produktion.
+
+5. **Canary/Blue-Green-Rollout** zur Reduzierung von Release-Risiken.
+
+#### Was speziell für Go wichtig ist:
+
+1. Schnelle Tests und Builds ermöglichen eine kurze Feedbackschleife.
+
+2. Matrix-Build für mehrere `GOOS/GOARCH` nach Bedarf.
+
+3. Früherkennung von Wettbewerbsmängeln (`-race`) in relevanten Jobs.
+
+#### Fazit:
+
+CI/CD für Go sollte schnell, wiederholbar und risikogesteuert sein: prüfen,
+erstellen, testen, inkrementell bereitstellen und über einen garantierten
+Rollback-Pfad verfügen. Es ist diese Disziplin, die stabile Releases produziert,
+ohne dass die Entwicklungsgeschwindigkeit verloren geht.
+
+</details>

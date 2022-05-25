@@ -9170,3 +9170,72 @@ Rollback-Pfad verfügen. Es ist diese Disziplin, die stabile Releases produziert
 ohne dass die Entwicklungsgeschwindigkeit verloren geht.
 
 </details>
+
+
+<details>
+<summary>145. Wie organisiere ich ein Rollback in CI/CD für den Go-Dienst, um ein fehlgeschlagenes Release schnell und sicher zurückzusetzen?</summary>
+
+#### Go
+
+Ein zuverlässiges Rollback ist kein „Plan B“, sondern Teil der Gestaltung des
+Release-Prozesses. Um einen Go-Dienst schnell und sicher zurückzusetzen,
+benötigen Sie im Voraus reproduzierbare Artefakte, einen kontrollierten Rollout
+und klare Rollback-Trigger.
+
+#### Grundprinzipien des Rollback-Ready-Prozesses:
+
+1. **Unveränderliche Artefakte**
+
+- jede Veröffentlichung hat ein eindeutiges Tag/Sha;
+
+- rollback = Neuausgabe des zuvor überprüften Artefakts.
+
+2. **Bereitstellung ohne destruktive Schritte**
+
+- Änderungen müssen rückgängig gemacht werden;
+
+- DB-Migrationen sind abwärtskompatibel oder mit einem separaten Rollback-Plan.
+
+3. **Schnelle Verkehrsumschaltung**
+
+- canary/blue-green/rolling mit der Möglichkeit, den Anteil einer neuen Version
+  sofort zu reduzieren oder zurückzusetzen.
+
+#### Was sollte in CI/CD enthalten sein:
+
+1. Automatische Smoke/Checks nach dem Einsatz.
+
+2. SLO-Gates (Fehlerrate, p95/p99-Latenz, Sättigung).
+
+3. Einstufigen Rollback-Befehl/-Prozedur löschen.
+
+4. Warnungen werden eher früh als nach einem Massenvorfall ausgelöst.
+
+#### Rollback-Strategie in der Produktion:
+
+1. Verschlechterung der Metriken erkannt.
+
+2. Der Rollout wurde automatisch oder manuell gestoppt.
+
+3. Der Datenverkehr wurde auf die vorherige stabile Version umgestellt.
+
+4. Wiederherstellung von SLO überprüft.
+
+5. Postmortal und Ursache der Regression aufgezeichnet.
+
+#### Der entscheidende Aspekt ist die Datenbank:
+
+1. Änderungsschemata nach dem Expand/Contract-Prinzip.
+
+2. Vermeiden Sie Migrationen, die den alten Code sofort beschädigen.
+
+3. Separate Codebereitstellung und gefährliche DDL-Schritte.
+
+#### Fazit:
+
+Ein schnelles und sicheres Rollback in Go CI/CD ist nur möglich, wenn es im
+Voraus entworfen wurde: unveränderliche Releases, verwalteter Rollout,
+Metrik-Gates, reversible Änderungen und ein bewährtes operatives
+Rollback-Verfahren.
+
+</details>

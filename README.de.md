@@ -9239,3 +9239,69 @@ Metrik-Gates, reversible Änderungen und ein bewährtes operatives
 Rollback-Verfahren.
 
 </details>
+
+
+<details>
+<summary>146. Wie funktioniert die Blau-Grün-Bereitstellung?</summary>
+
+#### Go
+
+`Blue-green deployment` ist eine Release-Strategie, bei der zwei identische
+Produktionsumgebungen gleichzeitig existieren:
+
+1. **Blau** ist die aktuelle Kampfversion.
+
+2. **Green** ist eine neue Version, die für den Empfang von Datenverkehr
+   vorbereitet ist.
+
+#### So funktioniert es Schritt für Schritt:
+
+1. Die neue Version wird in `green` bereitgestellt, ohne Auswirkungen auf
+   `blue`.
+
+2. In `green` führen sie Gesundheitschecks, Rauchtests und grundlegende
+   Validierungen durch.
+
+3. Nach erfolgreicher Validierung wird der Datenverkehr von `blue` auf `green`
+   umgeschaltet (über LB/Ingress/Router).
+
+4. Die alte Version (`blue`) bleibt als „Hot“-Rollback-Option verfügbar.
+
+#### Vorteile:
+
+1. **Minimale Ausfallzeit** bei Veröffentlichung.
+
+2. **Schnelles Rollback** – es reicht aus, den Datenverkehr in die vorherige
+   Umgebung zurückzuführen.
+
+3. **Sichere Validierung vor dem Wechsel** ohne Risiko für alle Benutzer.
+
+4. **Klares Betriebsmodell** für das Release-Management.
+
+#### Risiken und Einschränkungen:
+
+1. Erfordert zwei Ressourcen (zwei Umgebungen gleichzeitig).
+
+2. Komplikationen mit zustandsbehafteten Komponenten und Datenbankmigrationen.
+
+3. Erfordert eine gründliche Synchronisierung von Konfiguration, Geheimnissen
+   und externen Abhängigkeiten.
+
+#### Praktische Empfehlungen:
+
+1. Kombinieren Sie Blau-Grün mit automatischer SLO-Prüfung vor der Umstellung.
+
+2. Verwenden Sie für die Datenbank abwärtskompatible Migrationen
+   (Erweitern/Verkleinern).
+
+3. Verfügen Sie nach dem Wechsel über ein formalisiertes Rollback- und
+   Überprüfungsverfahren.
+
+#### Fazit:
+
+Die Blau-Grün-Bereitstellung ermöglicht eine kontrollierte und schnelle Freigabe
+mit nahezu sofortigem Rollback. Dies ist eine der zuverlässigsten Strategien für
+die Produktion, solange das System für eine duale Umgebung und eine
+disziplinierte Zustandsverwaltung bereit ist.
+
+</details>

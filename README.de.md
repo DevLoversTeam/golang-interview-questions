@@ -183,12 +183,14 @@ ausgeführt wird, das zweite – **was genau** als Ergebnis erzielt werden soll.
 
 #### Praktisches Fazit:
 
-- In realen Systemen werden Paradigmen häufig kombiniert. - Go ist meist
-  zwingender Natur, einige deklarative Elemente kommen jedoch in
-  Konfigurationen, Schemabeschreibungen, DSLs und Datenabfragen vor. - Für das
-  Interview ist es wichtig zu betonen: Die Wahl eines Paradigmas ist keine Frage
-  von „besser oder schlechter“, sondern eine Frage der Übereinstimmung mit der
-  Aufgabe, dem Team und den Anforderungen an die Codeunterstützung.
+- In realen Systemen werden Paradigmen häufig kombiniert.
+
+- Go ist überwiegend imperativ; einige deklarative Elemente kommen jedoch in
+  Konfigurationen, Schemabeschreibungen, DSLs und Datenabfragen vor.
+
+- Für das Interview ist wichtig zu betonen: Die Wahl eines Paradigmas ist keine
+  Frage von „besser oder schlechter“, sondern eine Frage der Eignung für die
+  Aufgabe, das Team und die Anforderungen an die Wartbarkeit des Codes.
 
 </details>
 
@@ -205,7 +207,7 @@ betriebliche Einfachheit.
 
 #### Warum Go in einer Cloud Native-Umgebung effektiv ist:
 
-1. **Leichtes Competitive Computing:** `goroutine` und `channel` vereinfachen
+1. **Leichtgewichtige Nebenläufigkeit:** `goroutine` und `channel` vereinfachen
    den Aufbau von Diensten, die eine große Anzahl von Anfragen gleichzeitig
    verarbeiten.
 
@@ -288,12 +290,19 @@ lokalen Kopie.
 #### So verhindern Sie `shadowing`:
 
 - Unterscheiden Sie bewusst zwischen `=` und `:=` in allen verschachtelten
-  Blöcken. - Halten Sie variable Sichtverhältnisse kurz und vermeiden Sie zu
-  lange Funktionen. - Verwenden Sie klare, semantisch korrekte Namen,
-  insbesondere für Zustände und Fehler. - Verbinden Sie die statische Analyse
-  (`go vet`, `golangci-lint`) mit Regeln zur Schattierungserkennung. - Fügen Sie
-  an kritischen Stellen der Logik Tests für negative Szenarien und
-  Randbedingungen hinzu.
+  Blöcken.
+
+- Halten Sie den Gültigkeitsbereich von Variablen klein und vermeiden Sie zu
+  lange Funktionen.
+
+- Verwenden Sie klare, semantisch passende Namen, insbesondere für Zustände und
+  Fehler.
+
+- Ergänzen Sie die statische Analyse (`go vet`, `golangci-lint`) um Regeln zur
+  Erkennung von Shadowing.
+
+- Fügen Sie an kritischen Stellen der Logik Tests für Negativ- und Grenzfälle
+  hinzu.
 
 #### Fazit:
 
@@ -345,9 +354,11 @@ Tatsache der Existenz eines Werts oder Ereignisses auf.
 
 #### Wann nicht verwendet werden sollte:
 
-– Wenn der tatsächliche Zustand oder die tatsächlichen Attribute einer Entität
-erforderlich sind. - Wenn `bool` eine klarere Geschäftssemantik liefert (z. B.
-ein explizites Bedingungsflag anstelle einer festgelegten Tatsache).
+- Wenn der tatsächliche Zustand oder die tatsächlichen Attribute einer Entität
+  erforderlich sind.
+
+- Wenn `bool` eine klarere Geschäftssemantik liefert (z. B. ein explizites
+  Bedingungsflag anstelle der bloßen Information über das Vorhandensein).
 
 #### Zusammenfassung:
 
@@ -364,7 +375,7 @@ eine leere Struktur eine elegante und effiziente Lösung im Go-Code.
 #### Go
 
 In Go ist `slice` nicht das Array selbst, sondern ein leichter
-„Add-on“-Deskriptor über einem Abschnitt des Arrays. Aus diesem Grund
+Slice-Deskriptor über einem Abschnitt des Arrays. Aus diesem Grund
 unterscheidet sich das Verhalten von `slice` vom normalen Array-Kopieren und
 führt häufig zu Fehlern in Interviews und echtem Code.
 
@@ -446,7 +457,7 @@ func main() {
 
 
 <details>
-<summary>9. Warum ist `make([]T, 0, n)` angesichts der bekannten Abmessungen besser als `var s []T`?</summary>
+<summary>9. Warum ist `make([]T, 0, n)` bei bekannter Größe besser als `var s []T`?</summary>
 
 #### Go
 
@@ -909,7 +920,7 @@ führt zu Datenwettläufen und undefiniertem Verhalten.
 
 Nicht-Flow-Sicherheit `map` „out of the box“ ist kein Mangel, sondern ein
 bewusster Kompromiss Go: minimaler Overhead im allgemeinen Fall und volle
-Kontrolle der Wettbewerbssicherheit in den Händen des Ingenieurs.
+Kontrolle der sicheren Nebenläufigkeit in den Händen des Engineers.
 
 </details>
 
@@ -1971,7 +1982,7 @@ verringern, die Latenz erhöhen und die Laufzeit verkomplizieren.
 #### Wenn Goroutines das System verlangsamen können:
 
 1. **Übermäßige Anzahl von Goroutines (Goroutines-Explosion):** Tausende oder
-   Hunderttausende Aufgaben ohne Einschränkung des Wettbewerbs belasten den
+   Hunderttausende Aufgaben ohne Begrenzung der Nebenläufigkeit belasten den
    Planer und den Speicher.
 
 2. **Feingranulare Aufgaben:** Wenn die Arbeit sehr klein ist, kann der
@@ -1994,7 +2005,7 @@ verringern, die Latenz erhöhen und die Laufzeit verkomplizieren.
 
 #### So vermeiden Sie eine Verschlechterung:
 
-1. Begrenzter Wettbewerb (Arbeiterpool, Semaphor, begrenzte Warteschlangen).
+1. Begrenzte Nebenläufigkeit (Worker-Pool, Semaphore, begrenzte Warteschlangen).
 
 2. Profile (`pprof`, Trace) statt sich auf die Intuition zu verlassen.
 
@@ -2094,7 +2105,7 @@ buf <- 2
 
 Der Kanal `nil` in Go ist ein Kanal ohne initialisierten internen Puffer und
 Synchronisierungsmechanismen. Sein Verhalten ist streng definiert und für die
-Wettbewerbslogik sehr wichtig.
+Nebenläufigkeitslogik sehr wichtig.
 
 #### Verhalten des Kanals `nil`:
 
@@ -2422,7 +2433,7 @@ zulässigen Anzahl gleichzeitiger Operationen (Parallelität).
 2. **Transparente Synchronisierung:** Laufzeit Go führt Sperre/Aufwecken ohne
    manuelle Steuerung von Bedingungsvariablen durch.
 
-3. **Liest sich gut im Code:** Die Absicht, „den Wettbewerb einzuschränken“, ist
+3. **Liest sich gut im Code:** Die Absicht, „die Nebenläufigkeit zu begrenzen“, ist
    sofort erkennbar.
 
 #### Praktische Vorsichtsmaßnahmen:
@@ -2439,7 +2450,7 @@ zulässigen Anzahl gleichzeitiger Operationen (Parallelität).
 
 Der gepufferte Kanal in Go ist eine kanonische Implementierung des
 Zählsemaphors: einfach, zuverlässig und gut in das Goroutine-Modell integriert.
-Dies ist eine der besten Möglichkeiten, den Wettbewerb in
+Dies ist eine der besten Möglichkeiten, die Nebenläufigkeit in
 Produktionsdienstleistungen zu kontrollieren.
 
 #### Beispiel:
@@ -2575,7 +2586,7 @@ Nutzlasten – über geeignetere Speicherstrukturen.
 #### Go
 
 Eine Routine kann einen Wert nicht direkt über `return` an den Aufrufer
-„zurückgeben“. Daher wird der Fehler aus der Wettbewerbsaufgabe explizit
+„zurückgeben“. Daher wird der Fehler aus der nebenläufigen Aufgabe explizit
 übertragen: über den Fehlerkanal oder über `errgroup`, der dieses Muster
 kapselt.
 
@@ -2691,7 +2702,7 @@ untergeordneten Goroutine separat entworfen werden.
 
 
 <details>
-<summary>46. Erzählen Sie uns von Wettbewerbsmustern in Go.</summary>
+<summary>46. Erläutern Sie Nebenläufigkeitsmuster in Go.</summary>
 
 #### Go
 
@@ -2718,7 +2729,7 @@ bereitzustellen.
 
 - Daten durchlaufen aufeinanderfolgende Verarbeitungsstufen;
 
-- jede Stufe kann ihre eigene Wettbewerbsfähigkeit und ihren eigenen Gegendruck
+- jede Stufe kann ihre eigene Nebenläufigkeit und ihren eigenen Backpressure
   haben.
 
 4. **Semaphor über gepufferten Kanal**
@@ -2757,7 +2768,7 @@ bereitzustellen.
 
 1. Explizite Regeln für Ressourcenbesitz und Kanalschließung.
 
-2. Wettbewerbsbeschränkungen (nicht „unendliche“ Goroutines).
+2. Begrenzung der Nebenläufigkeit (keine „unendlichen“ Goroutines).
 
 3. Erforderlicher Beendigungspfad (`context`, `done`, `WaitGroup`).
 
@@ -2960,7 +2971,7 @@ denselben Speicher ohne Synchronisierung bezieht.
 1. Klassische Lese-/Schreib- und Schreib-/Schreibrennen auf gemeinsam genutzten
    Variablen.
 
-2. Sperren/Entsperren in Wettbewerbsbereichen verpasst.
+2. Vergessene Lock-/Unlock-Aufrufe in nebenläufigen Bereichen.
 
 3. Ein Teil von Abstimmungsfehlern in Testszenarien mit realer Konkurrenz.
 
@@ -2970,7 +2981,7 @@ denselben Speicher ohne Synchronisierung bezieht.
    Interaktionsprotokoll ohne direkten Daten-Race.
 
 2. **Nicht ausgeführter Code wird nicht angezeigt:** Wenn Tests keinen
-   Wettbewerbspfad abdecken, kann das Rennen unbemerkt bleiben.
+   nebenläufigen Ausführungspfad abdecken, kann der Race unbemerkt bleiben.
 
 3. **Erweist sich nicht als fehlerfrei:** Ein „sauberer“ Lauf bedeutet nur, dass
    das Tool während dieses Laufs keine Verstöße festgestellt hat.
@@ -2989,12 +3000,12 @@ Synchronisierungsdisziplin.
 
 
 <details>
-<summary>51. Welche Vorteile haben atomare Operationen im Vergleich zu Mutex für einfache Wettbewerbsoperationen?</summary>
+<summary>51. Welche Vorteile bieten atomare Operationen gegenüber einem Mutex bei einfachen nebenläufigen Operationen?</summary>
 
 #### Go
 
 Die `atomic`-Operationen in Go eignen sich für sehr einfache
-Wettbewerbsszenarien, in denen Sie eine einfache Operation für einen einzelnen
+Nebenläufigkeitsszenarien, in denen Sie eine einfache Operation für einen einzelnen
 Wert (Inkrementierung, Lesen eines Flags, CAS) sicher ausführen müssen. In
 solchen Fällen können sie leichter sein als `mutex`.
 
@@ -3049,7 +3060,7 @@ Geschäftsinvarianten ist `mutex` normalerweise das zuverlässigere Tool.
 
 #### Go
 
-`sync.WaitGroup` ist ein Zähler für aktive Wettbewerbsaufgaben. Sein Zweck
+`sync.WaitGroup` ist ein Zähler für aktive nebenläufige Aufgaben. Sein Zweck
 besteht darin, einer Goroutine (`Wait`) zu ermöglichen, darauf zu warten, dass
 die anderen ihre Arbeit abschließen.
 
@@ -3161,7 +3172,7 @@ nur, während `errgroup` zusätzlich Fehler und Abbrüche über `context` behand
 
 1. Benötigt ein klares „Fehler in einer Aufgabe → Stoppe den Rest“-Modell.
 
-2. Muss eine Wettbewerbsorchestrierung schnell und sauber implementieren.
+2. Eine Nebenläufigkeitsorchestrierung muss schnell und sauber implementiert werden.
 
 3. Lesbarkeit und kurzer, wartbarer Code sind wichtig.
 
@@ -3308,7 +3319,7 @@ der Datentransport.
 
 #### Go
 
-`sync.Map` ist eine spezielle Wettbewerbskarte aus dem Paket `sync`, die
+`sync.Map` ist eine spezielle nebenläufige Map aus dem Paket `sync`, die
 hauptsächlich für leseintensive Workloads und Szenarien optimiert ist, in denen
 Schlüssel häufig gelesen und selten geändert werden.
 
@@ -3364,7 +3375,7 @@ einfaches `map + mutex` oft transparenter und effizienter.
 
 
 <details>
-<summary>57. Was sind Wettbewerbstests in Go und warum werden sie verwendet?</summary>
+<summary>57. Was sind Nebenläufigkeitstests in Go und warum werden sie eingesetzt?</summary>
 
 #### Go
 
@@ -3383,11 +3394,11 @@ linearen Szenario nicht auftreten.
 
 4. Ordentliche Fertigstellung von Goroutines (keine Lecks).
 
-5. Beobachtung von Invarianten unter Wettbewerbslast.
+5. Beobachtung von Invarianten unter Nebenläufigkeitslast.
 
 #### Warum werden sie benötigt:
 
-1. **Frühzeitige Erkennung von Wettbewerbsfehlern:** Viele von ihnen
+1. **Frühzeitige Erkennung von Nebenläufigkeitsfehlern:** Viele von ihnen
    manifestieren sich nur unter dem Druck der Parallelität.
 
 2. **Verringerung des unzuverlässigen Verhaltens in der Produktion:** Tests
@@ -3397,7 +3408,7 @@ linearen Szenario nicht auftreten.
 3. **Durchsetzung architektonischer Garantien:** wie zum Beispiel, dass das
    System keine Ereignisse verliert und die Zustandskonsistenz nicht verletzt.
 
-4. **Sichereres Refactoring:** Wettbewerbsinvarianten bleiben durch den
+4. **Sichereres Refactoring:** Nebenläufigkeitsinvarianten bleiben durch den
    Regressionssatz geschützt.
 
 #### Tools und Praktiken in Go:
@@ -3414,7 +3425,7 @@ linearen Szenario nicht auftreten.
 
 #### Fazit:
 
-Wettbewerbstests sind kein „Extra-Luxus“, sondern ein notwendiges
+Nebenläufigkeitstests sind kein „Extra-Luxus“, sondern ein notwendiges
 Qualitätselement für Go-Dienstleistungen. Sie prüfen nicht nur die
 Funktionalität, sondern auch die Korrektheit des Zusammenspiels von Goroutines
 unter realen Parallelitätsbedingungen.
@@ -4094,7 +4105,7 @@ Last.
 
 - feste Eingabe;
 
-- bekanntes Wettbewerbsprofil;
+- bekanntes Nebenläufigkeitsprofil;
 
 - stabile Startumgebung.
 
@@ -4862,7 +4873,7 @@ wiederverwendbare Verpackungen.
    der Bibliothek weiß möglicherweise nicht, dass es irgendwo einen globalen
    Zustand gibt, der das Verhalten beeinflusst.
 
-2. **Wettbewerbsprobleme:** Globale Unternehmen werden leicht zu einer Quelle
+2. **Nebenläufigkeitsprobleme:** Globale Zustände werden leicht zu einer Quelle
    von Rassenkonflikten.
 
 3. **Komplexe Tests:** Tests beginnen, von der Ausführungsreihenfolge und den
@@ -5979,7 +5990,7 @@ Konsistenz.
 Isolationsstufen bestimmen, wie „sichtbar“ die Änderungen paralleler
 Transaktionen zueinander sind. Je höher der Grad der Isolation, desto weniger
 Anomalien, aber in der Regel mit höheren Kosten für Leistung und
-Wettbewerbsfähigkeit.
+Nebenläufigkeit.
 
 #### Klassische Isolationsstufen (SQL):
 
@@ -6233,7 +6244,7 @@ einen einzelnen Server hinaus zu skalieren.
 
 2. Erhöhen Sie den Schreib-/Lesedurchsatz durch parallelen Betrieb von Shards.
 
-3. Lokalisieren Sie heiße Datensätze und reduzieren Sie den Wettbewerb um
+3. Lokalisieren Sie Hot Data und reduzieren Sie die Konkurrenz um
    Ressourcen.
 
 #### Die wichtigsten Sharding-Typen:
@@ -6880,7 +6891,8 @@ idiomatischen Ansatz, der sich gut skalieren lässt und transparent bleibt.
 
 2. Mot an der Modulgrenze, nicht innerhalb der Domänenlogik.
 
-3. Für Wettbewerbsszenarien Protect State Test-Double (`mutex`, Atomics).
+3. Schützen Sie den Zustand von Test-Doubles in Nebenläufigkeitsszenarien
+   (`mutex`, atomare Operationen).
 
 4. Duplizieren Sie die Produktionslogik nicht übermäßig, sonst werden die Tests
    brüchig.
@@ -7136,7 +7148,7 @@ leicht unzuverlässige Tests.
 4. Für DB-Tests – Transaktionsisolation oder ein separater Namespace/Schema pro
    Test.
 
-5. Führen Sie das Set mit `-race` aus, um Wettbewerbsprobleme frühzeitig zu
+5. Führen Sie die Tests mit `-race` aus, um Nebenläufigkeitsprobleme frühzeitig zu
    erkennen.
 
 #### Fazit:
@@ -7567,7 +7579,7 @@ Fehler handelt, die jedoch möglicherweise nicht vom Compiler erkannt werden.
 
 #### Praktische Rolle im Projekt:
 
-1. Vor dem Festschreiben regelmäßig lokal ausführen.
+1. Vor dem Commit regelmäßig lokal ausführen.
 
 2. Zum CI als obligatorisches Quality Gate hinzufügen.
 
@@ -8557,7 +8569,7 @@ reduziert.
 
 3. TTL/Invalidierungskontrolle der Aktualität der Daten.
 
-#### Welches Problem entsteht beim Wettbewerb:
+#### Welches Problem entsteht bei Nebenläufigkeit:
 
 Während `cache miss` kann der beliebte Schlüssel viele Anfragen gleichzeitig
 erhalten. Ohne zusätzliche Kontrolle gelangen sie alle parallel zum Backend –
@@ -8728,7 +8740,7 @@ Ausführung über eine Warteschlange/Worker.
 
 6. **Gegendruck**
 
-- Einschränkung des Worker-Wettbewerbs, um eine Überlastung der
+- Begrenzung der Worker-Nebenläufigkeit, um eine Überlastung der
   Datenbank/Abhängigkeiten zu vermeiden.
 
 #### Wie der Kunde zum Ergebnis kommt:
@@ -9160,7 +9172,7 @@ Bereitstellung und kontrolliertes Rollback.
 
 2. Matrix-Build für mehrere `GOOS/GOARCH` nach Bedarf.
 
-3. Früherkennung von Wettbewerbsmängeln (`-race`) in relevanten Jobs.
+3. Früherkennung von Nebenläufigkeitsfehlern (`-race`) in relevanten Jobs.
 
 #### Fazit:
 

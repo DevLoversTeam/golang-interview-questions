@@ -91,3 +91,51 @@ disciplines style, encourages clarity of thought in code, and provides a good
 balance between simplicity and efficiency.
 
 </details>
+
+
+<details>
+<summary>3. What are the key features of Go compared to other languages?</summary>
+
+#### Go
+
+Go stands out because it combines concise syntax with a very practical
+engineering model of execution: the language does not overload the developer
+with unnecessary complexity, but provides tools for building fast and reliable
+systems.
+
+#### Key features of Go:
+
+1. **Simple and strict syntax:** code is easy to read and stylistic uniformity
+   is maintained automatically via `go fmt`.
+
+2. **Compile to a native binary:** an application is usually compiled into a
+   single executable without heavy external dependencies at startup.
+
+3. **Static typing with high predictability:** a large number of errors are
+   detected at the compilation stage, which increases reliability in production.
+
+4. **Built-in concurrency:** `goroutine` and `channel` make parallel programming
+   a natural rather than an auxiliary mechanism.
+
+5. **Fast development cycle:** relatively fast compilation and standard tools
+   accelerate testing and delivery of changes.
+
+6. **Strong standard library:** networking, HTTP, cryptography, file
+   manipulation, profiling, and testing available out of the box.
+
+7. **Explicit error model:** In Go, errors are handled explicitly via `error`,
+   making state control transparent and controllable.
+
+8. **GC and Managed Memory:** The language simplifies system backend development
+   without forcing you to manually manage the lifecycle of most objects.
+
+9. **A practical modular approach:** `go mod` standardizes dependency management
+   and build reproducibility.
+
+#### Conclusion:
+
+Unlike many languages that gravitate toward either maximum abstraction or
+low-level controllability, Go purposefully maintains an engineering balance:
+simplicity, performance, scalability, and team development convenience.
+
+</details>

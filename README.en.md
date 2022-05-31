@@ -139,3 +139,50 @@ low-level controllability, Go purposefully maintains an engineering balance:
 simplicity, performance, scalability, and team development convenience.
 
 </details>
+
+
+<details>
+<summary>4. What is the difference between imperative and declarative programming paradigm? Give examples of languages.</summary>
+
+#### Go
+
+Imperative and declarative paradigms differ primarily in the focus of the
+description: the first explains **how** to perform the task step by step, the
+second — **what exactly** should be obtained as a result.
+
+#### Imperative paradigm:
+
+1. **Essence:** The programmer explicitly specifies the instruction sequence,
+   state transitions, loops, branches, and execution order.
+
+2. **Focus:** algorithm control and execution flow control.
+
+3. **Typical traits:** variables, assignments, `for`, `if`, data mutation.
+
+4. **Examples of languages:** Go, C, C++, Rust (in most practices), Java.
+
+#### Declarative paradigm:
+
+1. **Essence:** describes the desired result or properties of the system without
+   detailing the implementation steps.
+
+2. **Focus:** data model, rules and constraints, not algorithmic mechanics.
+
+3. **Typical features:** higher-level expressions, minimization of explicit
+   mutation, abstraction from execution order.
+
+4. **Examples of languages/approaches:** SQL, HCL (Terraform), HTML/CSS,
+   functional styles in Haskell and partly in Elixir.
+
+#### Practical conclusion:
+
+- In real systems, paradigms are often combined.
+
+- Go is mostly imperative in nature, but some elements of declarativeness appear
+  in configurations, schema descriptions, DSLs, and data queries.
+
+- For the interview, it is important to emphasize that the choice of paradigm is
+  not a question of "better or worse", but a question of matching the task, the
+  team and the code support requirements.
+
+</details>

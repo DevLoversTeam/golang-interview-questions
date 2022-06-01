@@ -186,3 +186,54 @@ second — **what exactly** should be obtained as a result.
   team and the code support requirements.
 
 </details>
+
+
+<details>
+<summary>5. Why is Go good for writing Cloud Native services?</summary>
+
+#### Go
+
+It is not by chance that Go is considered one of the most natural languages for
+Cloud Native: its architectural properties match well with the requirements for
+modern distributed systems — scalability, observability, reliability and
+operational simplicity.
+
+#### Why Go is effective in a Cloud Native environment:
+
+1. **Lightweight concurrent computing:** `goroutine` and `channel` simplify the
+   construction of services that handle large numbers of requests
+   simultaneously.
+
+2. **High performance and predictable runtime:** The Go compiler and optimized
+   scheduler work well in busy network scenarios.
+
+3. **Quick Start and Deploy:** typically the result of a build is a single
+   binary that is easy to containerize and deploy to Kubernetes or other
+   orchestrators.
+
+4. **Low operational overhead:** Simple Docker images, fast build, less startup
+   dependency issues.
+
+5. **Powerful standard library:** `net/http`, `context`, `crypto`, `encoding`
+   and other packages allow you to build production solutions without excessive
+   dependence on third-party frameworks.
+
+6. **Convenience of observability practitioners:** In Go, it is easy to
+   integrate metrics, tracing and profiling, which is critical for cloud
+   exploitation.
+
+7. **Resistant ecosystem of infrastructure tools:** Much of the Cloud Native
+   stack is written specifically in Go (e.g. Kubernetes, Prometheus, Helm,
+   Terraform), which simplifies integrations and command context.
+
+8. **Code clarity in team development:** Go encourages straightforward
+   solutions, which reduces the cognitive load of supporting a microservice
+   architecture.
+
+#### Summary:
+
+Go is well suited for Cloud Native services because it combines engineering
+predictability with performance and practical convenience: from writing code to
+its deployment, monitoring and long-term support.
+
+</details>

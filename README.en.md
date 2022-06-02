@@ -237,3 +237,61 @@ predictability with performance and practical convenience: from writing code to
 its deployment, monitoring and long-term support.
 
 </details>
+
+
+<details>
+<summary>6. What are `shadowing` variables and how can they cause errors in business logic?</summary>
+
+#### Go
+
+`Shadowing` (shadowing) is when a new variable is declared in the inner scope
+with the same name as the outer one. As a result, the code does not work with
+the "expected" variable, but with its local copy by name.
+
+#### How it occurs most often:
+
+1. **Short declaration `:=` in a nested block:** the developer expects an
+   assignment, and in fact a new variable is created.
+
+2. **Error handling (`err`) in `if`/`for`/`switch`:** local `err` overshadows
+   the external one, causing subsequent state checks to fail.
+
+3. **Working with state in long functions:** shading of intermediate variables
+   makes reading more difficult and increases the risk of logical defects.
+
+#### Why this is dangerous for business logic:
+
+1. **False condition checks:** the system may jump to the wrong execution branch
+   because the "wrong" variable is being checked.
+
+2. **Lost or incorrect state:** for example, the calculation result remained in
+   the local block and the external state was not updated.
+
+3. **Complex debugging:** visually the name is the same, but semantically they
+   are different objects; the error manifests itself inconspicuously and often
+   only in combat cases.
+
+4. **Quiet defects without panic:** a program may compile and run, but return a
+   business-incorrect result.
+
+#### How to prevent `shadowing`:
+
+- Deliberately distinguish between `=` and `:=` in all nested blocks.
+
+- Keep variable visibility short and avoid excessively long functions.
+
+- Use clear, semantically accurate names, especially for states and errors.
+
+- Connect static analysis (`go vet`, `golangci-lint`) with shading detection
+  rules.
+
+- In critical places of the logic, add tests for negative scenarios and boundary
+  conditions.
+
+#### Conclusion:
+
+`Shadowing` is not a syntactic quirk, but a source of insidious logic errors. In
+production Go code, the discipline of variable declaration directly affects the
+correctness of the system's business behavior.
+
+</details>

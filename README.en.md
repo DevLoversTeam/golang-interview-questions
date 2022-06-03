@@ -295,3 +295,54 @@ production Go code, the discipline of variable declaration directly affects the
 correctness of the system's business behavior.
 
 </details>
+
+
+<details>
+<summary>7. Why use `struct{}` (an empty struct) and in what scenarios is it effective?</summary>
+
+#### Go
+
+`struct{}` in Go is an empty struct, i.e. a fieldless type. Its key property: it
+does not carry a data payload, but only records the very fact of the existence
+of a value or event.
+
+#### Why `struct{}` is effective:
+
+1. **Null information volume:** type contains no fields, so it is used as a
+   token, not a data container.
+
+2. **Clear Intent Semantics:** the code explicitly shows that the "is/isn't"
+   fact is important, not the payload.
+
+3. **Reducing redundant allocations in service structures:** in many patterns
+   this is a more practical choice than `bool` or arbitrary values ​​when data
+   is not needed.
+
+#### Typical usage scenarios:
+
+1. **Set via `map[K]struct{}`:** `map` in Go is a key-value, and for a set we
+   only need unique keys. `struct{}` here ideally means "key present".
+
+2. **Signal channels `chan struct{}`:** are used for "event happened"
+   notification (stop/done/shutdown) when no data needs to be transmitted.
+
+3. **Token Types and API Contracts:** An empty structure can act as a
+   lightweight semantic token in the application's internal protocols.
+
+4. **Behavior Composition Embedding:** `struct{}` is sometimes used as a
+   composition technical element when a stateless structure is required.
+
+#### When not to use:
+
+- When the actual state or attributes of an entity are required.
+
+- When `bool` gives clearer business semantics (eg an explicit condition flag
+  rather than a set fact).
+
+#### Summary:
+
+`struct{}` is a tool for precise intent: if data is not needed, but a fact,
+presence, or signal needs to be indicated, an empty structure is an elegant and
+efficient solution in Go code.
+
+</details>

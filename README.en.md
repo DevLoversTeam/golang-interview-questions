@@ -346,3 +346,83 @@ presence, or signal needs to be indicated, an empty structure is an elegant and
 efficient solution in Go code.
 
 </details>
+
+
+<details>
+<summary>8. How does the `slice` internal structure work and what happens when you pass it to a function?</summary>
+
+#### Go
+
+In Go, `slice` is not the array itself, but a lightweight “add-on” descriptor
+over a section of the array. This is why the behavior of `slice` differs from
+normal array copying and often causes errors in interviews and real code.
+
+#### Internal model `slice`:
+
+`slice` conceptually consists of three parts:
+
+1. **Pointer to base array** (`ptr`)
+
+2. **Length** (`len`) - how many items are available now
+
+3. **Capacity** (`cap`) — how many elements are available up to the limit of the
+   base array
+
+That is, `slice` stores metadata about the region in memory, rather than
+duplicating all elements.
+
+#### What happens when you pass `slice` to a function:
+
+1. **The `slice` header (ptr/len/cap) is copied, not the entire array.**
+
+2. **Both parties (caller and callee) initially look at the same base array.**
+
+3. **Changing elements via index** (`s[i] = ...`) in the function is usually
+   visible from the outside, because the data of the shared array is changed.
+
+4. **Changing the header itself** (`s = s[:n]`, `s = append(...)`) in a function
+   does not change the header in the caller unless you return a new `slice`.
+
+#### Key nuance with `append`:
+
+- If there is enough `cap` during `append`, the entry goes to the same base
+  array.
+
+- If `cap` is missing, the runtime allocates a new array, copies the data there,
+  and the local `slice` in the function starts referring to another memory.
+
+So, after `append` the function can already work with the new array, while the
+old `slice` will remain outside if the new value is not returned.
+
+#### Practical conclusion:
+
+- Want to change elements - you can pass `slice` as is.
+
+- Want to change the length/capacity or result of `append` - return the updated
+  `slice` from the function (or pass a pointer to `slice` when truly
+  architecturally justified).
+
+#### Example:
+
+```go
+package main
+
+import "fmt"
+
+func grow(s []int) {
+	s = append(s, 99) // змінюємо локальний заголовок slice
+}
+
+func mutate(s []int) {
+	s[0] = 42 // змінюємо спільний базовий масив
+}
+
+func main() {
+	s := []int{1, 2, 3}
+	mutate(s)
+	grow(s)
+	fmt.Println(s) // [42 2 3], append у grow не змінив заголовок у викликачі
+}
+```
+
+</details>

@@ -426,3 +426,61 @@ func main() {
 ```
 
 </details>
+
+
+<details>
+<summary>9. Why is `make([]T, 0, n)` better than `var s []T` given the known dimensions?</summary>
+
+#### Go
+
+When you know the approximate or exact number of elements in advance, the
+`make([]T, 0, n)` construct is almost always more practical than `var s []T`
+because it immediately reserves the required capacity and reduces the number of
+memory reallocations.
+
+#### What distinguishes these two approaches:
+
+1. **`var s []T`**
+
+- creates `nil`-slice from `len=0`, `cap=0`;
+
+- the first `append` causes the runtime to allocate memory;
+
+- as data grows, new reallocations and copies occur.
+
+2. **`make([]T, 0, n)`**
+
+- creates a slice from `len=0`, but already from `cap=n`;
+
+- elements are added via `append` without reallocation until `cap` is exhausted;
+
+- fewer data copies and more stable performance.
+
+#### Why it is important in practice:
+
+1. **Less allocations in the heap:** reduces GC load.
+
+2. **Better latency-behavior:** less "jumps" in reallocation time.
+
+3. **Higher throughput in hot paths:** especially in loops, parsing,
+   aggregation, serialization.
+
+4. **Resource predictability:** easier to estimate memory for a specific
+   scenario.
+
+#### When the difference is particularly noticeable:
+
+- Large number of `append` in loops.
+
+- Processing of data streams in backend services.
+
+- Frequently called functions where even small allocations accumulate into
+  significant costs.
+
+#### Conclusion:
+
+If the size of the collection is known or well estimated in advance, `make([]T,
+0, n)` is an engineering-mature choice: it gives fewer allocations, better
+performance, and more stable behavior under load.
+
+</details>

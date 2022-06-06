@@ -484,3 +484,71 @@ If the size of the collection is known or well estimated in advance, `make([]T,
 performance, and more stable behavior under load.
 
 </details>
+
+
+<details>
+<summary>10. How does a slice expression `a[low:high:max]` control `cap` a new slice?</summary>
+
+#### Go
+
+In Go, the full slice form `a[low:high:max]` allows you to control not only the
+length (`len`) but also the capacity (`cap`) of the new `slice`. This is an
+important tool for controlling side effects during `append`.
+
+#### Formulas:
+
+For `s := a[low:high:max]`:
+
+1. `len(s) = high - low`
+
+2. `cap(s) = max - low`
+
+Under the condition of correct limits:
+
+- `0 <= low <= high <= max <= cap(a)` (for slice base)
+
+#### What it gives practically:
+
+1. **Visible capacity limitation:** you can "cut off" access to the tail of the
+   underlying array even if it physically exists.
+
+2. **Safer `append`:** if `cap` is artificially reduced, `append` will
+   reallocate memory faster instead of overwriting adjacent data in the shared
+   array.
+
+3. **Better isolation between pieces of code:** this is especially useful when
+   one slice is passed to another function or system layer and you don't want it
+   to "grow" into someone else's area.
+
+#### Conceptual example:
+
+- `a[2:5]` gives `len=3`, `cap` extends to the end of the base array.
+
+- `a[2:5:5]` gives `len=3`, `cap=3` - further `append` is out of stock and
+  forces a new array.
+
+#### Conclusion:
+
+The third index in `a[low:high:max]` is the precision control lever `cap`. It is
+needed when it is important to control the growth of `slice`, avoid unexpected
+overwriting of shared memory, and make code behavior predictable.
+
+#### Example:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	a := []int{0, 1, 2, 3, 4, 5}
+	s := a[2:4:4] // len=2 (2,3), cap=2
+	fmt.Println(len(s), cap(s)) // 2 2
+
+	s = append(s, 99) // новий backing array, а не розширення в a
+	fmt.Println(a)    // [0 1 2 3 4 5]
+	fmt.Println(s)    // [2 3 99]
+}
+```
+
+</details>

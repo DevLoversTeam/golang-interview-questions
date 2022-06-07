@@ -552,3 +552,53 @@ func main() {
 ```
 
 </details>
+
+
+<details>
+<summary>11. Is a pointer to a slice element guaranteed to remain valid after calling `append`?</summary>
+
+#### Go
+
+Short answer: **no, not guaranteed**. After `append`, a pointer to an element of
+the old `slice` may lose its relevance to the new `slice` if the underlying
+array has been reallocated.
+
+#### Why this happens:
+
+1. `append` adds elements within the existing `cap` if there is enough space.
+
+2. If `cap` is exhausted, the runtime creates a new array, copies the data, and
+   returns `slice`, which already refers to the new address.
+
+3. Previously taken pointers remain bound to the old array, not the updated
+   `slice`.
+
+#### Practical consequences:
+
+1. **Pointer aliasing becomes dangerous:** logic can "look" into an outdated
+   memory area.
+
+2. **Unexpected bugs in modifications:** changes through the old pointer do not
+   affect the new `slice` after relocation.
+
+3. **Difficult Debugging:** code compiles and often runs, but exhibits
+   unpredictable behavior under load or on other data volumes.
+
+#### How to write safely:
+
+- Do not store long-lived pointers to `slice` elements that will potentially
+  grow through `append`.
+
+- If the pointer is really needed, ensure memory stability: pre-reserve capacity
+  (`make(..., 0, n)`) or do not execute `append` after taking addresses.
+
+- It is often safer to pass an index or return a new `slice` and bind all
+  derived references.
+
+#### Conclusion:
+
+After `append`, the validity of pointers to `slice` elements is not a Go
+contract. Secure code must assume that `append` can change the base address of
+the data.
+
+</details>

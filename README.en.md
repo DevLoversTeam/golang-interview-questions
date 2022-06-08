@@ -602,3 +602,58 @@ contract. Secure code must assume that `append` can change the base address of
 the data.
 
 </details>
+
+
+<details>
+<summary>12. How to efficiently remove elements from a slice without preserving order in Go?</summary>
+
+#### Go
+
+If the order of the elements does not matter, the most efficient removal
+strategy is to replace the element being removed with the last element of
+`slice` and then shorten `slice` by one.
+
+#### The idea of the approach:
+
+1. Find the index `i` of the element to delete.
+
+2. Assign `s[i] = s[len(s)-1]`.
+
+3. Reduce length: `s = s[:len(s)-1]`.
+
+#### Why it is effective:
+
+1. **O(1) in time** (without shifting all subsequent elements).
+
+2. **Minimum copies** compared to in-order deletion.
+
+3. **Scales well** on large collections and hot loops.
+
+#### What to pay attention to:
+
+- The order of elements changes after the operation.
+
+- Checking the correctness of the index is required.
+
+- For `slice` with pointer types, it is sometimes appropriate to null the tail
+  element before truncation to avoid keeping redundant references in memory.
+
+#### Conclusion:
+
+When stable order is not a business logic requirement, "swap with last +
+truncate" is the canonical and fastest way to remove an element from `slice` in
+Go.
+
+#### Example:
+
+```go
+func removeUnordered[T any](s []T, i int) []T {
+	last := len(s) - 1
+	s[i] = s[last]
+	var zero T
+	s[last] = zero // опційно: щоб не тримати зайве посилання
+	return s[:last]
+}
+```
+
+</details>

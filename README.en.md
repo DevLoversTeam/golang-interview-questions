@@ -657,3 +657,64 @@ func removeUnordered[T any](s []T, i int) []T {
 ```
 
 </details>
+
+
+<details>
+<summary>13. What is the key iteration order in `map` and can it be relied upon? How does this affect tests and serialization?</summary>
+
+#### Go
+
+In Go, the iteration order of the keys in `map` is **non-deterministic**. This
+means that during `for range` the key sequence can vary between program runs and
+even between individual iterations within a single run.
+
+#### Can you rely on the order:
+
+1. **No, you can't.**
+
+2. The order in `map` is not part of the language contract.
+
+3. Any logic that implicitly relies on a "stable" order is potentially flawed.
+
+#### How it affects the tests:
+
+1. **Flaky tests:** comparisons of strings/arrays formed with `map` may randomly
+   fail due to different order of elements.
+
+2. **False regressions:** there are no changes in the business logic, but the
+   test fails due to unstable output.
+
+3. **Correct approach:** tests require either:
+
+- compare structures as sets/associative collections;
+
+- or presort the keys and build a deterministic result.
+
+#### How this affects serialization:
+
+1. If the serialization is built on a direct `map` bypass, the text result may
+   have a different order of fields/key-value pairs.
+
+2. This makes it difficult:
+
+- snapshot/golden-tests;
+
+- hashing of payloads;
+
+- artifact comparison in CI.
+
+3. For a stable output, you should:
+
+- get keys separately;
+
+- sort them;
+
+- form the result in a fixed sequence.
+
+#### Conclusion:
+
+`map` in Go is optimized for fast access by key, not order-preserving.
+Therefore, tests, logging, data signing, and serialization need to deliberately
+introduce determinism through key sorting or other canonical rules.
+
+</details>

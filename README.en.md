@@ -718,3 +718,58 @@ Therefore, tests, logging, data signing, and serialization need to deliberately
 introduce determinism through key sorting or other canonical rules.
 
 </details>
+
+
+<details>
+<summary>14. How to iterate over `map` in a predictable order?</summary>
+
+#### Go
+
+Since `map` in Go does not guarantee a stable traversal order, the intended
+iteration must be organized explicitly: first collect the keys, then sort them,
+and only then read the values in this fixed order.
+
+#### Canonical approach (Go 1.23+):
+
+1. Use `maps.Keys` to get a key iterator.
+
+2. Use `slices.Sorted` (`slices.SortedFunc`) to get a sorted key slice.
+
+3. Iterate over the sorted slice.
+
+#### Why it's right:
+
+1. **Determinism:** the same input gives the same order of output.
+
+2. **Stable tests:** random crashes due to different sequence disappear.
+
+3. **Predicted serialization:** easier to do golden tests, signatures, compare
+   artifacts.
+
+#### Important nuances:
+
+- An explicit sort criterion must be defined for structure keys or custom types.
+
+- Difficulty increases due to sorting (`O(n log n)`), but that's the price of
+  predictability.
+
+- If order is critical in a hotpath, it is sometimes appropriate to consider a
+  different data structure (eg maintaining a separate ordered list of keys).
+
+#### Conclusion:
+
+The intended iteration of `map` in Go is always a conscious three-phase
+strategy: "collect keys → sort → traverse". This pattern is considered the
+production standard for stable output. A compact form via
+`slices.Sorted(maps.Keys(m))` is available since Go 1.23.
+
+#### Example:
+
+```go
+keys := slices.Sorted(maps.Keys(m))
+for _, k := range keys {
+	fmt.Printf("%v=%v\n", k, m[k])
+}
+```
+
+</details>

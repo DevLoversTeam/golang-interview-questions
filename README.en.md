@@ -773,3 +773,53 @@ for _, k := range keys {
 ```
 
 </details>
+
+
+<details>
+<summary>15. Why can't I get the address of the map element?</summary>
+
+#### Go
+
+In Go, you cannot take the address of the `map` element (for example,
+`&m[key]`), because the value in `map` does not have a stable address in memory.
+During growth, rebalancing, or internal reorganization, the `map` runtime may
+move items between buckets.
+
+#### Key reason for limitation:
+
+1. **Placement Instability:** `map` changes the internal structure dynamically.
+
+2. **Danger of "dangling" pointers:** the address obtained today may become
+   invalid after subsequent operations with `map`.
+
+3. **Guarantee of language safety:** the compiler prohibits this operation to
+   avoid hidden memory bugs.
+
+#### Practical consequences:
+
+1. You cannot modify a structure field directly via `m[key].Field = ...` if the
+   map value is a structure.
+
+2. The update pattern for map-value-struct looks like this:
+
+- read value into temporary variable;
+
+- change it;
+
+- write back to `map`.
+
+#### When mutability is needed at:
+
+- Use `map[K]*T` instead of `map[K]T` if you need to work with the same object
+  via pointer.
+
+- But be aware of the trade-offs: additional allocations, object lifecycle
+  issues, and the need for synchronization with concurrent access.
+
+#### Conclusion:
+
+The prohibition against taking the address of the `map` element is a deliberate
+Go design in favor of memory-safety. If "in-place" changes are required, choose
+either a read-modify-write loop or `map` with pointer values.
+
+</details>

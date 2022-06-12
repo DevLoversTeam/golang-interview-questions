@@ -823,3 +823,52 @@ Go design in favor of memory-safety. If "in-place" changes are required, choose
 either a read-modify-write loop or `map` with pointer values.
 
 </details>
+
+
+<details>
+<summary>16. Why is `map` not thread-safe out of the box in Go?</summary>
+
+#### Go
+
+`map` in Go is not thread-safe by design: simultaneous access from multiple
+goroutines without synchronization (especially when there is a record) leads to
+data races and undefined behavior.
+
+#### Why is this done:
+
+1. **Performance in base scenario:** most `map` are used locally in a single
+   goroutine; a built-in lock for each operation would make these scenarios
+   slower.
+
+2. **Explicit model of competition:** Go puts control of synchronization on the
+   developer, so that he chooses a mechanism for a specific workload.
+
+3. **Architecture flexibility:** different tasks require different strategies
+   (mutex, sharding, actor-approach, `sync.Map`), and a "one-size-fits-all"
+   autolock is not optimal for all cases.
+
+#### What this means in practice:
+
+1. **Concurrent read + write without protection is prohibited.**
+
+2. **Write + write without protection is prohibited.**
+
+3. **Read + read only** can be safe if no one modifies `map`.
+
+#### How to do it right:
+
+- `map` + `sync.Mutex` or `sync.RWMutex` for managed synchronization.
+
+- `sync.Map` for specific access patterns (many reads, rare writes, or
+  independent keys).
+
+- Architectural state isolation through one "proprietary" goroutine and
+  channels.
+
+#### Conclusion:
+
+`map` non-flow safety out of the box is not a flaw, but a conscious compromise
+of Go: minimal overhead in the general case and full control of concurrency in
+the hands of the engineer.
+
+</details>

@@ -872,3 +872,70 @@ of Go: minimal overhead in the general case and full control of concurrency in
 the hands of the engineer.
 
 </details>
+
+
+<details>
+<summary>17. Can a struct be a key in `map` and what are the restrictions on that? How is it better than nested maps?</summary>
+
+#### Go
+
+Yes, in Go a structure can be a key in `map` **if it is compared**
+(`comparable`). This means that all its fields must also be comparable.
+
+#### Restrictions for the struct key:
+
+1. **All fields of the structure must be comparable.**
+
+- Permitted, in particular: numbers, strings, bool, pointers, arrays (with
+  comparable elements), other comparable structures.
+
+- Prohibited fields of types in the key: `slice`, `map`, `func` (they are not
+  comparable).
+
+2. **The comparison is based on the value of all fields.**
+
+- Two keys are considered equal only if all corresponding fields are equal.
+
+3. **Key must be stable after insertion.**
+
+- Changing the "sense" of a key through external mutable state is a bad practice
+  because it destroys the predictability of access.
+
+#### Why struct-key is often better than nested `map`:
+
+1. **A simpler data model:**
+
+- Instead of `map[A]map[B]V`, you can use `map[CompositeKey]V`, where
+  `CompositeKey` is a structure with fields `A`, `B`.
+
+2. **Less boilerplate and checks on `nil`:**
+
+- In nested `map` internal maps must be initialized and intermediate missing
+  keys handled.
+
+3. **Better logic locality:**
+
+- All key dimensions are collected in one type, which improves readability and
+  maintainability.
+
+4. **Less room for error:**
+
+- Easier to avoid partially initialized structures and inconsistent access
+  paths.
+
+#### When nested `map` may be appropriate:
+
+- When hierarchical data semantics are required.
+
+- When frequently operating with intermediate slices at the level of the first
+  key.
+
+- When different tiers have separate lifecycle rules.
+
+#### Conclusion:
+
+Go's struct key is a powerful and clean tool for composite addressing. If the
+key type is correctly designed and is `comparable`, this solution is often more
+elegant and reliable than nested `map`.
+
+</details>

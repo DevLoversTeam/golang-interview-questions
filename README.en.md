@@ -939,3 +939,52 @@ key type is correctly designed and is `comparable`, this solution is often more
 elegant and reliable than nested `map`.
 
 </details>
+
+
+<details>
+<summary>18. How to compare two structures - when it compiles and when it doesn't?</summary>
+
+#### Go
+
+In Go, two structures can be compared with the `==` or `!=` operator only when
+the type of the structure is `comparable`. Practically, this means: **all fields
+of the structure must be compared**.
+
+#### When the comparison is compiled:
+
+1. The structures have the same type.
+
+2. Each field in the structure is comparable-type.
+
+3. Comparison is performed on the value of all fields.
+
+#### When the comparison does not compile:
+
+1. If at least one field has a noncomparable type:
+
+- `slice`
+
+- `map`
+
+- `func`
+
+2. If trying to compare different structure types, even with similar fields.
+
+#### Important clarifications:
+
+1. **Arrays are compared** if their elements are compared.
+
+2. **Pointers are compared** (addresses are compared).
+
+3. **Interfaces are compared** if the dynamic value inside is also compared;
+   otherwise runtime panic during comparison is possible.
+
+#### Practical conclusion:
+
+- If the structure is entirely of comparable-fields, feel free to use `==`.
+
+- If the structure is `slice/map/func`, use explicit field comparison or
+  separate approaches (such as specialized comparison logic) rather than a
+  direct equality operator.
+
+</details>

@@ -988,3 +988,69 @@ of the structure must be compared**.
   direct equality operator.
 
 </details>
+
+
+<details>
+<summary>19. How to implement a comparison of two structures if they contain slices or maps? What is `reflect.DeepEqual()`?</summary>
+
+#### Go
+
+If the structure contains `slice` or `map`, a direct comparison via `==` does
+not compile. In such cases, the comparison should be implemented separately:
+either manually or with the help of deep comparison utilities.
+
+#### Basic approaches:
+
+1. **Explicit field comparison (recommended for critical logic):**
+
+- compare simple fields directly;
+
+- for `slice` check length and elements;
+
+- for `map` check the number of keys and matching values.
+
+2. **`reflect.DeepEqual(a, b)`:**
+
+- performs recursive ("deep") comparison of complex structures;
+
+- handy for quick checks, prototypes and part of test scenarios.
+
+#### What is `reflect.DeepEqual()`:
+
+`reflect.DeepEqual()` is a function of the standard package `reflect` that
+attempts to determine the deep equality of two values by traversing nested
+fields, collection elements, and data structures recursively.
+
+#### Nuances `reflect.DeepEqual` that are important to remember:
+
+1. **Semantics may not match business equality:**
+
+- for example, `nil`-slice and empty `[]T{}` are often treated differently.
+
+2. **Less transparent diagnostics:**
+
+- when falling, it is more difficult to understand which field is different
+  without additional tools.
+
+3. **Performance:**
+
+- reflection is slower than specialized manual comparison in hotpaths.
+
+#### When to choose:
+
+1. **Production-business-rules:** explicit domain comparison (clear semantics).
+
+2. **Tests and auxiliary checks:** `reflect.DeepEqual` or more specialized test
+   libraries.
+
+3. **Critical scenarios:** avoid reflection "magic" where strict equivalence
+   checking is required.
+
+#### Conclusion:
+
+For structures with `slice/map`, the correct comparison is primarily a matter of
+semantics, not technique. `reflect.DeepEqual()` is a useful tool, but an
+explicit, domain-based comparison method remains the most reliable engineering
+method.
+
+</details>

@@ -1054,3 +1054,53 @@ explicit, domain-based comparison method remains the most reliable engineering
 method.
 
 </details>
+
+
+<details>
+<summary>20. What happens when casting between named types with the same structure if they have different methods?</summary>
+
+#### Go
+
+In Go, casting between named types with the same child structure applies **only
+to data values**, but does not "port" methods. That is, after conversion, you
+get a new value of another named type with its own method set.
+
+#### The main principle:
+
+1. **The conversion changes the type of the value rather than unifying the
+   behavior of the types.**
+
+2. **Methods belong to the specific named type** on which they are declared.
+
+3. After `T2(vT1)`, the `T2` methods are available, and the `T1` methods are no
+   longer directly accessible.
+
+#### What is saved during conversion:
+
+1. Bit/Boolean representation of fields (according to type compatibility rules).
+
+2. Data value.
+
+#### What is not saved:
+
+1. Method-set of the original type.
+
+2. Automatic interface matching provided by the original type.
+
+#### Practical consequences:
+
+1. Two types with the same fields can have different behavior in the API.
+
+2. After conversion, code may fail to compile in places where an interface
+   implemented only by the source type was expected.
+
+3. This is useful for domain modeling: same data structure but different
+   semantic roles and contracts.
+
+#### Conclusion:
+
+In Go, converting between named types is changing the "identity" of the type,
+not copying behavior. The data may be the same, but the methods and interface
+capabilities are defined solely by the target type.
+
+</details>

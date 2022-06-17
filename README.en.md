@@ -1104,3 +1104,52 @@ not copying behavior. The data may be the same, but the methods and interface
 capabilities are defined solely by the target type.
 
 </details>
+
+
+<details>
+<summary>21. What is `Memory Alignment` (alignment) and how does it affect the size of structures?</summary>
+
+#### Go
+
+`Memory Alignment` (alignment) is a rule for placing data in memory at addresses
+multiples of a certain step (alignment requirement) for a specific type. The
+processor and runtime read such data faster and more safely when these
+requirements are met.
+
+#### How it works in frameworks:
+
+1. Each field has its own alignment requirement (eg `int64` usually requires
+   stricter alignment than `byte`).
+
+2. Between the fields, the compiler can add **padding** (placeholder service
+   bytes) so that the next field starts at the correct address.
+
+3. There can also be tail-padding at the end of a structure so that an array of
+   such structures preserves the correct alignment of each element.
+
+#### Impact on structure size:
+
+1. **The structure size is often larger than the sum of the field sizes** due to
+   padding.
+
+2. **Field order matters:** bad placement (`byte`, `int64`, `byte`, ...) can
+   significantly increase the total size.
+
+3. **Optimal grouping of fields** (from larger aligned to smaller) usually
+   reduces memory usage.
+
+#### Why it is important in practice:
+
+1. Smaller structure size = better cache locality.
+
+2. Less RAM consumption in large arrays/caches/indexes.
+
+3. Higher throughput in hot paths due to reduced memory pressure.
+
+#### Engineering conclusion:
+
+Alignment is not a "low-level exotic", but a practical performance factor. In
+Go, the correct order of fields in a structure directly affects its size, and
+therefore memory efficiency and system speed.
+
+</details>

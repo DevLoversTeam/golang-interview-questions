@@ -1153,3 +1153,52 @@ Go, the correct order of fields in a structure directly affects its size, and
 therefore memory efficiency and system speed.
 
 </details>
+
+
+<details>
+<summary>22. Why is passing a large structure "by value" often slower than passing a pointer?</summary>
+
+#### Go
+
+Passing a large structure by value means copying its entire contents each time
+the function is called. For bulk types, this can be significantly more expensive
+than passing a single pointer to the same data.
+
+#### Why there is a difference in performance:
+
+1. **Memory copy cost:** the larger the structure, the more bytes need to be
+   copied on I/O calls.
+
+2. **Load on processor cache:** massive copies increase memory traffic and can
+   degrade cache locality in hot code areas.
+
+3. **Cascading effect in loops and pipelines:** if a structure is passed
+   multiple times, overhead accumulates.
+
+4. **Potential Impact on Allocations:** In some scenarios, copy and escape
+   behavior can increase runtime and GC pressure.
+
+#### When a pointer is often better:
+
+1. When the structure is large and often passed between functions.
+
+2. When you need to change the shared state without additional copying.
+
+3. When stable latency behavior under load is important.
+
+#### But not always a pointer is automatically better:
+
+1. For small structures, passing by value can be simpler and quite efficient.
+
+2. Value gives better state isolation (no implicit shared mutable state).
+
+3. Pointer adds aliasing risks and the need for more careful synchronization in
+   competing code.
+
+#### Practical conclusion:
+
+In Go, the choice between value and pointer is not made dogmatically, but based
+on the data profile: large structures and frequent calls favor the pointer;
+small immutable-like data is often appropriate to pass by value.
+
+</details>

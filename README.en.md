@@ -1202,3 +1202,56 @@ on the data profile: large structures and frequent calls favor the pointer;
 small immutable-like data is often appropriate to pass by value.
 
 </details>
+
+
+<details>
+<summary>23. Why is `map` slower than `slice` with sequential access and when to choose what?</summary>
+
+#### Go
+
+For sequential access (`sequential access`), `slice` is usually faster than
+`map` because the elements of `slice` are compact and read linearly, while `map`
+performs key hashing and access to a more complex internal structure.
+
+#### Why `slice` is faster in a sequential pass:
+
+1. **Linear placement in memory:** elements are next to each other, which
+   matches well with CPU caches.
+
+2. **Simple access by index:** minimum auxiliary operations per element.
+
+3. **Better predictability for the processor:** linear pattern reduces the
+   number of cache misses.
+
+#### Why `map` is slower in this scenario:
+
+1. **Hashing keys** adds computational overhead.
+
+2. **Uneven bucket placement** is worse for memory locality.
+
+3. **More complex access logic** (search in buckets, collisions, service
+   checks).
+
+#### When to choose `slice`:
+
+1. Data is passed sequentially.
+
+2. Requires iterations, sorting, batch processing.
+
+3. The key is actually a position (index), not an arbitrary identifier.
+
+#### When to choose `map`:
+
+1. Requires fast key access (`id`, `name`, composite key).
+
+2. Set/dictionary semantics are important.
+
+3. Search by key value dominates full linear traversal.
+
+#### Practical conclusion:
+
+`slice` — a tool for orderly, dense iterations; `map` — for address access by
+key. If the workload is mostly sequential, `slice` usually gives better
+performance and lower overhead.
+
+</details>

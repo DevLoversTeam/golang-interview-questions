@@ -1255,3 +1255,61 @@ key. If the workload is mostly sequential, `slice` usually gives better
 performance and lower overhead.
 
 </details>
+
+
+<details>
+<summary>24. How to check if a variable implements an interface?</summary>
+
+#### Go
+
+In Go, the implementation of an interface is implicit: a type is considered to
+implement an interface if it has the entire required set of methods. Therefore,
+verification is possible both at the compilation stage and at runtime.
+
+#### 1) Verification at the compilation stage (recommended):
+
+The most reliable approach is to add a compile-time assertion:
+
+```go
+var _ MyInterface = (*MyType)(nil)
+```
+
+What this means:
+
+1. If `*MyType` does not implement `MyInterface`, the code will not compile.
+
+2. This documents the type contract directly in the codebase.
+
+3. Especially useful for public APIs, adapters, and large commands.
+
+#### 2) Check during execution (runtime):
+
+When there is a value of type `any`/interface, type assertion is used:
+
+```go
+v, ok := x.(MyInterface)
+```
+
+1. `ok == true` — the value implements the interface.
+
+2. `ok == false` — does not implement.
+
+3. Variant without `ok` can cause panic, so production code usually uses the
+   safe form with `ok`.
+
+#### Pointer vs value receiver — a critical nuance:
+
+1. The `T` and `*T` method sets are different.
+
+2. Often it is `*T` that implements the interface and `T` does not.
+
+3. In the interview, it is important to talk about this point clearly, because
+   it is a typical source of mistakes.
+
+#### Conclusion:
+
+The best practice is to fix the implementation of the interface with a
+compile-time assertion, and to use runtime verification via assertion where the
+type of the value is known only at runtime.
+
+</details>

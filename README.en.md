@@ -1313,3 +1313,92 @@ compile-time assertion, and to use runtime verification via assertion where the
 type of the value is known only at runtime.
 
 </details>
+
+
+<details>
+<summary>25. What are `type assertion` and `type switch` - what are their benefits and how to handle assertion without panic?</summary>
+
+#### Go
+
+`type assertion` and `type switch` in Go are mechanisms for working with
+interface values when the actual (dynamic) type needs to be specified at
+runtime.
+
+#### What is `type assertion`:
+
+`type assertion` has the form:
+
+```go
+v, ok := x.(T)
+```
+
+1. `x` — interface type value.
+
+2. `T` is the type we are trying to lead to.
+
+3. `ok == true` means that the dynamic type is compatible with `T`.
+
+#### Benefit `type assertion`:
+
+1. Allows access to specific behavior of a specific type.
+
+2. Enables safe work with `any`/interfaces in adapters, decoders, middleware.
+
+3. Useful when one specific type is expected.
+
+#### How to avoid panic:
+
+Dangerous form:
+
+```go
+v := x.(T) // panic, якщо x не є T
+```
+
+Safe form:
+
+```go
+v, ok := x.(T)
+if !ok {
+    // обробити невідповідність типу
+}
+```
+
+It is the two-digit form with `ok` that is the production standard.
+
+#### What is `type switch`:
+
+`type switch` is a convenient way to handle several possible types at once:
+
+```go
+switch v := x.(type) {
+case string:
+    // ...
+case int:
+    // ...
+default:
+    // ...
+}
+```
+
+#### Benefit `type switch`:
+
+1. Makes type branching readable.
+
+2. Reduces the cascade of multiple assertions.
+
+3. Gives an explicit `default` path for unknown types.
+
+#### When to use what:
+
+1. **`type assertion`** — when checking one expected type.
+
+2. **`type switch`** — when we allow several types and need different logic for
+   each.
+
+#### Conclusion:
+
+`type assertion` and `type switch` are a controlled way to "expose" a dynamic
+interface value type. To avoid crashes, assertion should be made in safe form
+`v, ok := ...` and always have a processing script `ok == false`.
+
+</details>

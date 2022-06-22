@@ -1402,3 +1402,54 @@ interface value type. To avoid crashes, assertion should be made in safe form
 `v, ok := ...` and always have a processing script `ok == false`.
 
 </details>
+
+
+<details>
+<summary>26. Why are `interface{}` and `any` identical, but `*interface{}` is almost always a mistake?</summary>
+
+#### Go
+
+In Go, `any` is just an alias (`alias`) for `interface{}`. That is, from the
+point of view of a typical system, they are absolutely the same: the difference
+is only stylistic and semantic for code readability.
+
+#### Why `interface{}` == `any`:
+
+1. `any` is introduced for better clarity, especially in generics code.
+
+2. The compiler interprets `any` and `interface{}` as the same type.
+
+3. The behavior during assignment, assertion, switch is identical.
+
+#### Why `*interface{}` is almost always an error:
+
+1. **An interface is already a "reference container" for value + type.** Adding
+   another pointer level usually doesn't make sense.
+
+2. **Complication of nil semantics:** with `*interface{}` another layer of
+   states appears (`nil` pointer, non-zero pointer on nil-interface, etc.),
+   which generates non-obvious bugs.
+
+3. **Poor readability and API design:** this type almost always signals that the
+   data model or function signature is poorly designed.
+
+4. **Instead of `*interface{}` usually suffices:**
+
+- or pass `interface{}`/`any` by value;
+
+- or use a specific pointer type (`*T`) if the mutability of the `T` object is
+  required.
+
+#### When `*interface{}` can happen:
+
+- In narrow technical scenarios (where exactly an interface variable like a cell
+  needs to be changed), but in applied production code, this is a rare and
+  mostly undesirable pattern.
+
+#### Conclusion:
+
+`any` and `interface{}` are identical. Instead, `*interface{}` is in most cases
+an unnecessary abstraction that complicates the code and increases the risk of
+logic errors.
+
+</details>

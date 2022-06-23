@@ -1453,3 +1453,59 @@ an unnecessary abstraction that complicates the code and increases the risk of
 logic errors.
 
 </details>
+
+
+<details>
+<summary>27. When should `interface{}` (`any`) be used, and when is it considered bad tone?</summary>
+
+#### Go
+
+`any` (ie `interface{}`) is appropriate where the type of the value is
+objectively unknown at the API boundary. However, excessive use of `any` in
+domain logic usually degrades type safety and makes maintenance difficult.
+
+#### When `any` is truly justified:
+
+1. **Infrastructure layers and universal containers:** logging, generic
+   wrappers, middleware, low-level libraries.
+
+2. **Decoding weakly typed formats:** such as JSON parts with unpredictable
+   schema.
+
+3. **Integration points with external APIs:** when the contract is dynamic and
+   the strict type cannot be fixed in advance.
+
+4. **Transitional refactoring steps:** as a temporary compromise with a
+   subsequent return to concrete types.
+
+#### When it's a bad tone:
+
+1. **In a business model where the type is known:** `any` hides errors until
+   runtime instead of compile-time.
+
+2. **When `any` replaces normal API design:** multiple assertions and type
+   switches in every other place are a symptom of undefined contracts.
+
+3. **When you can use generics or an interface with a minimal method:** this
+   gives stricter and more readable constraints.
+
+4. **When `any` gets "all over the place" by inertia:** code becomes fragile,
+   harder to test, and harder to evolve.
+
+#### Rule of thumb:
+
+- Default choose **specific type**.
+
+- If behavior abstraction is required — **interface with clear contract**.
+
+- If data generalization is required — **generics**.
+
+- `any` leave for truly dynamic system boundaries.
+
+#### Conclusion:
+
+`any` is a useful tool, but not a one-size-fits-all answer. In mature Go code,
+it is used point-wise: where type ambiguity is natural, and not where a strict
+contract can and should be expressed.
+
+</details>

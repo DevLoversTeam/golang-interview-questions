@@ -1509,3 +1509,60 @@ it is used point-wise: where type ambiguity is natural, and not where a strict
 contract can and should be expressed.
 
 </details>
+
+
+<details>
+<summary>28. What is the advantage of accepting interfaces and returning specific structures?</summary>
+
+#### Go
+
+In Go, there is a common and extremely practical principle: **accept interfaces,
+return structures**. Its strength lies in keeping input dependencies flexible
+and output contracts clear and feature-rich.
+
+#### What does "accept interfaces" mean:
+
+1. The function/method accepts a minimal behavior contract (eg `io.Reader`)
+   rather than a hard-coded type.
+
+2. This reduces coupling between modules.
+
+3. Simplifies testing: easy to substitute stub/mock/fake with required methods.
+
+#### What does "return structures" mean:
+
+1. The call receives a concrete type with its full set of methods.
+
+2. API becomes more transparent: the user sees the real capabilities of the
+   object.
+
+3. Easier to evolve a type without breaking external interface contracts.
+
+#### Why this combination is effective:
+
+1. **At the entrance — abstraction, at the exit — concreteness.**
+
+2. **Higher integration flexibility** without losing API expressiveness.
+
+3. **Better maintainability:** module boundaries are clear, dependencies are
+   controlled.
+
+4. **Easier Refactoring:** Internal changes are easier to make without cascading
+   edits.
+
+#### When to be careful:
+
+1. Do not create fallback interfaces without real need.
+
+2. An interface should live where it is consumed, not where it is implemented.
+
+3. If only one implementation is needed and there is no test benefit, too much
+   abstraction can hurt readability.
+
+#### Conclusion:
+
+Accepting interfaces and returning concrete structures is a balance between
+extensibility and clarity. It allows you to write Go code that is at the same
+time convenient to test, easy to maintain and naturally develop.
+
+</details>

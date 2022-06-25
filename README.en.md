@@ -1566,3 +1566,49 @@ extensibility and clarity. It allows you to write Go code that is at the same
 time convenient to test, easy to maintain and naturally develop.
 
 </details>
+
+
+<details>
+<summary>29. Why does Go use single-method interfaces (eg `io.Reader`, `fmt.Stringer`) and what architectural benefit does it provide?</summary>
+
+#### Go
+
+Single-method interfaces in Go are a concentrated behavior contract: they
+describe exactly one ability of an object, without overloading the API. That is
+why `io.Reader`, `io.Writer`, `fmt.Stringer` became the fundamental building
+blocks of the ecosystem.
+
+#### Why this approach is so powerful:
+
+1. **Minimum contract:** type only needs to implement one method to integrate
+   with a large number of components.
+
+2. **Low Coupling:** Modules depend on a capability, not a specific
+   implementation or a big "fat" interface.
+
+3. **Compositibility:** complex capabilities are easily built from combinations
+   of small interfaces.
+
+4. **Simple testing:** a small fake/stub with one method is enough for the test.
+
+#### Architectural benefit:
+
+1. **Plugin-like interchangeability of implementations:** file, network socket,
+   in-memory buffer can work equally as `io.Reader`.
+
+2. **Stable module boundaries:** dependencies between system layers become clear
+   and evolutionarily stable.
+
+3. **Easy code evolution:** new implementation can be added without changing
+   consumers if the contract is preserved.
+
+4. **Readability of intent:** the function signature immediately answers the
+   question "what is required of the argument".
+
+#### Practical conclusion:
+
+Single-method interfaces are not a stylistic decoration, but an architectural
+strategy of Go: small contracts, high composability, easy testability, and
+controlled scalability of the system.
+
+</details>

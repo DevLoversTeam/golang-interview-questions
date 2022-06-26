@@ -1612,3 +1612,71 @@ strategy of Go: small contracts, high composability, easy testability, and
 controlled scalability of the system.
 
 </details>
+
+
+<details>
+<summary>30. Why is `nil != nil` in Go and how does it relate to interfaces?</summary>
+
+#### Go
+
+The phrase "`nil != nil`" in Go usually refers to interfaces and means that an
+interface value can contain **type + value** where the value inside is `nil`,
+but the interface itself is not `nil`.
+
+#### How the interface is arranged conceptually:
+
+The interface consists of two parts:
+
+1. **Dynamic Type**
+
+2. **Dynamic Value**
+
+An interface is `nil` only when **both** parts are missing.
+
+#### Where the trap occurs:
+
+1. We have `var p *MyType = nil`.
+
+2. Assign `var i any = p`.
+
+3. Now `i` contains:
+
+- type: `*MyType`
+
+- value: `nil`
+
+So `i != nil` because the typical part is filled.
+
+#### Practical consequences:
+
+1. The `if err != nil` or `if x != nil` check may not behave as the developer
+   expects if typed nil is wrapped in the interface.
+
+2. This is a typical source of bugs in errors, factories, middleware, DI code.
+
+#### How to avoid problems:
+
+1. Return `nil` exactly as "empty interface", not typed nil inside the
+   interface.
+
+2. Construct `error` and other interface results with care.
+
+3. When necessary, do explicit checking of a specific type via assertion/switch.
+
+#### Conclusion:
+
+In Go, "`nil != nil`" is not a paradox, but a consequence of the two-component
+nature of the interface. The key rule is that an interface is `nil` only when it
+contains neither a dynamic type nor a dynamic value.
+
+#### Example:
+
+```go
+var p *bytes.Buffer = nil
+var x any = p
+
+fmt.Println(p == nil) // true
+fmt.Println(x == nil) // false: type=*bytes.Buffer, value=nil
+```
+
+</details>

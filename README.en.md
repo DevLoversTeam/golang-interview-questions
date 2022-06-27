@@ -1680,3 +1680,58 @@ fmt.Println(x == nil) // false: type=*bytes.Buffer, value=nil
 ```
 
 </details>
+
+
+<details>
+<summary>31. Can methods be called on `nil` values and where is this actively used?</summary>
+
+#### Go
+
+Yes, in Go, a method can be called on a `nil` value, **if this is permissible
+from the point of view of the receiver type**. Most often, we are talking about
+methods with a pointer receiver (`*T`), where the receiver can be `nil`.
+
+#### Key idea:
+
+1. Calling a method on a `nil`-pointer is technically possible.
+
+2. The question is what the method code does inside.
+
+3. If the method denames receiver without checking, we will get panic.
+
+#### When it works safely:
+
+1. The Method explicitly handles the `nil` receiver:
+
+- returns the default value;
+
+- returns error;
+
+- behaves as a no-op.
+
+2. This design is sometimes deliberately used for a convenient API.
+
+#### Where this is actually used:
+
+1. **Error types and wrappers:** methods on pointer types can work correctly
+   with `nil` to simplify error handling.
+
+2. **Linked/list/tree-like structures:** `nil`-node can be interpreted as an
+   empty state with correct behavior.
+
+3. **Service objects with optional components:** `nil` receiver is sometimes
+   used as "disabled" or "empty" mode.
+
+#### An important nuance with interfaces:
+
+If a `nil` pointer is wrapped in an interface, the interface itself may not be
+`nil`. Therefore, checks for `nil` should be done carefully to avoid false
+confidence.
+
+#### Practical conclusion:
+
+Methods on `nil` values in Go are a legitimate tool, but only with conscious API
+design: either safe handling of `nil` inside the method, or clear documentation
+that a call to `nil` is not allowed.
+
+</details>

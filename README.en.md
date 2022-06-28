@@ -1735,3 +1735,76 @@ design: either safe handling of `nil` inside the method, or clear documentation
 that a call to `nil` is not allowed.
 
 </details>
+
+
+<details>
+<summary>32. How to tell the main goroutine to wait for all worker goroutines to finish?</summary>
+
+#### Go
+
+The canonical way to wait for all working goroutines to complete in Go is to use
+`sync.WaitGroup`. It provides a simple and robust pattern: increment the counter
+before starting the job, decrement it after it's done, and call `Wait()` in the
+main goroutine.
+
+#### Basic scheme:
+
+1. Create `var wg sync.WaitGroup`.
+
+2. Before each goroutine call `wg.Add(1)`.
+
+3. Inside the goroutine execute `defer wg.Done()`.
+
+4. In the main goroutine call `wg.Wait()`.
+
+#### Why it works:
+
+1. `WaitGroup` counts the number of unfinished tasks.
+
+2. `Wait()` blocks execution until the counter reaches zero.
+
+3. This ensures that `main` will not terminate before the working goroutines.
+
+#### Typical mistakes to avoid:
+
+1. Call `Add(1)` **after** the start of the goroutine (risk of race and
+   incorrect termination).
+
+2. Forget `Done()` in the bug or early `return` branch.
+
+3. Reusing the same `WaitGroup` in different phases without clear
+   synchronization.
+
+#### When is better `errgroup`:
+
+If, in addition to waiting, you also need:
+
+1. collect the first error,
+
+2. cancel other tasks via `context`,
+
+then it is more practical to use `errgroup.Group`.
+
+#### Conclusion:
+
+For the "wait for all goroutines to complete" task, the standard tool is
+`sync.WaitGroup`: simple contract, predictable behavior and production
+reliability.
+
+#### Example:
+
+```go
+var wg sync.WaitGroup
+
+for i := 0; i < 3; i++ {
+	wg.Add(1)
+	go func(id int) {
+		defer wg.Done()
+		fmt.Println("worker", id)
+	}(i)
+}
+
+wg.Wait()
+```
+
+</details>

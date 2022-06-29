@@ -1808,3 +1808,55 @@ wg.Wait()
 ```
 
 </details>
+
+
+<details>
+<summary>33. Why was the pattern `value := value` used in loops and is it relevant after Go 1.22?</summary>
+
+#### Go
+
+The `value := value` template was historically used in `for range` loops to
+create a separate local copy of a variable and safely capture it in a closure,
+particularly in a goroutine.
+
+#### Why this was needed before Go 1.22:
+
+1. The iteration variable in `range` was actually reused between iterations.
+
+2. A closure would often capture the same variable instead of its "current"
+   value.
+
+3. As a result, the goroutine saw unexpected data (usually the last value).
+
+Therefore, they wrote:
+
+`v := v`
+
+to create a new variable within an iteration.
+
+#### What has changed since Go 1.22:
+
+1. The semantics of `range` have been changed: for each iteration, the loop
+   variables have separate values to capture in the closure.
+
+2. A typical bug with a "late" value in goroutines has been fixed at the
+   language level.
+
+3. In most modern cases, the `value := value` template is no longer needed.
+
+#### Is the template relevant today:
+
+1. **For code guaranteed to work on Go 1.22+** - usually not.
+
+2. **For projects with older versions of Go** - yes, may be necessary.
+
+3. **For mixed environments/libraries** you should aim for the lowest supported
+   version.
+
+#### Practical conclusion:
+
+`value := value` was a protective pattern against the specific trap `range`.
+After Go 1.22, the need for it mostly disappeared, but it remains relevant in
+legacy code or when supporting older versions.
+
+</details>

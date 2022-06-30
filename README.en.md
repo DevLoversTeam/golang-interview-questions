@@ -1860,3 +1860,54 @@ After Go 1.22, the need for it mostly disappeared, but it remains relevant in
 legacy code or when supporting older versions.
 
 </details>
+
+
+<details>
+<summary>34. Can using goroutines slow down the system and in what cases?</summary>
+
+#### Go
+
+Yes, it can. Despite the lightweight nature of goroutines, they are not "free".
+Improper or excessive use of them can reduce performance, increase latency, and
+complicate the runtime.
+
+#### When goroutines can slow down the system:
+
+1. **Excessive number of goroutines (goroutine explosion):** thousands or
+   hundreds of thousands of tasks without limiting competition put pressure on
+   the scheduler and memory.
+
+2. **Fine-grained tasks:** if the work is very small, the startup/coordination
+   overhead may be greater than the useful work.
+
+3. **Intensive synchronization:** frequent blocking (`mutex`, channels,
+   `select`) creates contention and reduces throughput.
+
+4. **Failed data exchange over channels:** redundant forwarding of large
+   payloads or complex fan-in/fan-out topologies can cost more than simpler
+   models.
+
+5. **Lack of backpressure:** when producers generate work faster than consumers
+   process it, queues accumulate, memory and delays grow.
+
+6. **I/O and external resource issues:** excessive parallelism can overload the
+   DB, network, file system, or third-party APIs, degrading the overall system
+   rather than speeding it up.
+
+#### How to avoid degradation:
+
+1. Limit competition (worker pool, semaphore, bounded queues).
+
+2. Profile (`pprof`, trace) instead of relying on intuition.
+
+3. Reduce shared mutable state and lock contention.
+
+4. Select the size of parallelism according to the real workload and resources.
+
+#### Conclusion:
+
+Horoutines speed up the system only when parallelism is controlled. In
+production, the principle is simple: not "more goroutines", but "enough
+goroutines with the right boundaries and synchronization".
+
+</details>

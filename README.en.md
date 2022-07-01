@@ -1911,3 +1911,72 @@ production, the principle is simple: not "more goroutines", but "enough
 goroutines with the right boundaries and synchronization".
 
 </details>
+
+
+<details>
+<summary>35. What is the difference between buffered and unbuffered channels? When is it appropriate to use slice + mutex instead of channels?</summary>
+
+#### Go
+
+Channels in Go can be buffered or unbuffered, and this difference defines the
+semantics of synchronization between goroutines. The choice of channel type is a
+choice of coordination model, not just a "technical thing".
+
+#### Unbuffered channel (`make(chan T)`):
+
+1. **Synchronous exchange:** `send` is blocked until another goroutine executes
+   the corresponding `receive` (and vice versa).
+
+2. **Clear handoff:** is good when tight step synchronization is required.
+
+3. **Queue minimum:** data does not accumulate in the channel.
+
+#### Buffered channel (`make(chan T, n)`):
+
+1. **More asynchronous interaction:** `send` does not block as long as there is
+   room in the buffer.
+
+2. **Managed queue:** allows to smooth out short load peaks.
+
+3. **Backpressure due to capacity:** when the buffer is full, `send` blocks
+   again.
+
+#### When `slice + mutex` is appropriate instead of channels:
+
+1. **Requires a shared buffer with non-trivial operations:** batch deletion,
+   reorder, random access, complex aggregation rules.
+
+2. **When the model is "shared state with explicit lock" and not a message
+   flow:** channels are not always the easiest tool for mutable collections.
+
+3. **When subtle memory/layout optimization is important:** `slice` gives more
+   direct control over data structure and operations.
+
+4. **When channel architecture creates unnecessary complexity:** sometimes
+   `mutex` + a clear invariant is simpler, more readable, and faster.
+
+#### Practical rule of choice:
+
+1. **Channels** — for passing events/messages between independent actor-like
+   goroutines.
+
+2. **`slice + mutex`** — for managing a shared collection with a rich set of
+   state operations.
+
+#### Conclusion:
+
+Buffered and unbuffered channels differ in the level of exchange synchronicity.
+The `slice + mutex` alternative is justified when you want a managed shared
+state structure rather than a message transport.
+
+#### Example:
+
+```go
+unbuf := make(chan int)    // надсилання чекає отримувача
+buf := make(chan int, 100) // надсилання не блокується, поки є місце
+
+buf <- 1
+buf <- 2
+```
+
+</details>

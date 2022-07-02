@@ -1980,3 +1980,47 @@ buf <- 2
 ```
 
 </details>
+
+
+<details>
+<summary>36. What happens when a `nil` channel is read, written, or closed?</summary>
+
+#### Go
+
+A `nil` channel in Go is a channel without initialized internal buffer and
+synchronization mechanisms. Its behavior is strictly defined and very important
+for competitive logic.
+
+#### Behavior of the `nil` channel:
+
+1. **Reading from `nil`-channel** - blocks forever.
+
+2. **Writing to `nil`-channel** - blocks forever.
+
+3. **Closing the `nil`-channel** - causes panic.
+
+#### Why so:
+
+1. The `nil` channel has no "live" structure through which to exchange.
+
+2. Therefore, send/receive operations cannot complete successfully.
+
+3. `close(nil)` is prohibited, because there is actually nothing to close.
+
+#### Practical consequences:
+
+1. In normal code, a random `nil` channel often leads to a deadlock.
+
+2. In `select` it can be a deliberate tool:
+
+- branch with `nil` channel becomes inactive;
+
+- so dynamically "disable" a specific case without additional flags.
+
+#### Conclusion:
+
+For `nil`-channel send/receive — eternal blocking, and `close` — panic. This
+property is both a source of common errors and a powerful `select` control
+technique when used deliberately.
+
+</details>

@@ -2024,3 +2024,69 @@ property is both a source of common errors and a powerful `select` control
 technique when used deliberately.
 
 </details>
+
+
+<details>
+<summary>37. How and why to use `nil` channels in `select`? Why does the `nil` channel block forever and how to use it?</summary>
+
+#### Go
+
+The `nil` channel in `select` is a controlled way to dynamically enable or
+disable individual branches. Since operations on the `nil` channel cannot
+complete, the corresponding `case` becomes inactive.
+
+#### Why the `nil` channel blocks forever:
+
+1. The channel is not initialized (`var ch chan T`), that is, it does not have a
+   runtime structure for send/receive.
+
+2. `send` and `receive` have no "rendezvous point", so they wait indefinitely.
+
+3. In `select` this means: a case with this channel will never be selected.
+
+#### How to use it in `select`:
+
+1. **Dynamically disable event source:** assign `ch = nil` and branch `case
+   <-ch:` is no longer activated.
+
+2. **Lifecycle management of pipeline stages:** after completion of a certain
+   stage, the pipeline is reset to exclude it from further selection.
+
+3. **Avoiding redundant state flags:** instead of additional `if` inside the
+   loop, the state logic is transferred to the `select` mechanism itself.
+
+#### Practical precautions:
+
+1. If all channels in `select` become `nil` and there is no `default`, you will
+   get a permanent lock.
+
+2. `close(nil)` causes panic, so nulling and closing should not be confused.
+
+3. Code with `nil`-channels needs clear invariants, otherwise it is easy to get
+   a deadlock that is difficult to debug.
+
+#### Conclusion:
+
+The `nil` channel in `select` is an elegant case activity switch. It is useful
+for controlled concurrency logic as long as the states are carefully controlled
+and avoid a situation where all paths become deadlocked.
+
+#### Example:
+
+```go
+var in <-chan int = source
+for {
+	select {
+	case v, ok := <-in:
+		if !ok {
+			in = nil // вимикаємо гілку
+			continue
+		}
+		_ = v
+	case <-ctx.Done():
+		return
+	}
+}
+```
+
+</details>

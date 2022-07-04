@@ -2090,3 +2090,54 @@ for {
 ```
 
 </details>
+
+
+<details>
+<summary>38. When is it appropriate to use `select` with the `default` branch and what scenarios does it cover?</summary>
+
+#### Go
+
+`select` with branch `default` makes the operation non-blocking: if no channel
+is ready to be exchanged, control immediately passes to `default`. This is
+useful for controlled reactivity, but dangerous when used thoughtlessly.
+
+#### When appropriate:
+
+1. **Try-send / try-receive scenarios:** should try the exchange and, if it is
+   not possible now, take an alternative path without blocking.
+
+2. **Event loops with background work:** when, while waiting for events, the
+   goroutine should perform auxiliary actions (heartbeat, housekeeping, light
+   telemetry).
+
+3. **Backpressure and controlled load shedding:** if the buffer is full,
+   `default` can refuse/delay the task instead of blocking the entire loop.
+
+4. **Soft timeouts/status polling:** in combination with `time.Ticker` or other
+   logic allows you not to "hang" waiting for a channel.
+
+#### What risks does it cover and create:
+
+1. **Covers the risk of freezing** in critical areas where blocking is
+   unacceptable.
+
+2. **But can create a busy loop** (active CPU spinning) if `default` fires too
+   often without pause or meaningful work.
+
+#### Practical precautions:
+
+1. Do not use `default` if blocking synchronization is desired.
+
+2. In loops, add pace control (`ticker`, `sleep`, limits) to avoid wasted CPU
+   consumption.
+
+3. Clearly fix the policy: what do we do when the channel is not ready (drop,
+   retry, queue, log, metric).
+
+#### Conclusion:
+
+`select` from `default` is a non-blocking concurrency tool. It is appropriate
+where reactivity and load management are a priority, but requires discipline not
+to turn the processing cycle into inefficient active polling.
+
+</details>

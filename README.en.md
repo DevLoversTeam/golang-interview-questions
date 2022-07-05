@@ -2141,3 +2141,57 @@ where reactivity and load management are a priority, but requires discipline not
 to turn the processing cycle into inefficient active polling.
 
 </details>
+
+
+<details>
+<summary>39. How does `select` work when receiving data from multiple channels at the same time?</summary>
+
+#### Go
+
+If there are multiple `case` ready when `select` is executed, Go chooses one of
+them pseudo-randomly. This is done to avoid the rigid priority of the first
+branch and to reduce the systematic "starvation" of individual channels.
+
+#### What happens step by step:
+
+1. Runtime checks all `case` in `select`.
+
+2. Defines a set of ready operations (send/receive that can be performed now).
+
+3. If one `case` is ready, it is executed.
+
+4. If several are ready, one is chosen pseudo-randomly.
+
+5. If none are ready:
+
+- executes `default` (if any),
+
+- otherwise `select` is blocked until at least one `case` is ready.
+
+#### Practical consequences:
+
+1. **There is no processing order guarantee** between concurrently ready
+   channels.
+
+2. **Cannot encode business priority** only in `case` order in `select`.
+
+3. **The behavior is competitively correct, but non-deterministic**, which is
+   normal for event-driven logic.
+
+#### How to implement priority, if it is needed:
+
+1. Build two-phase `select` (critical channel first, then common).
+
+2. Use separate queues/priority scheduler.
+
+3. Enforce an explicit fair/priority policy in the application layer, rather
+   than relying on runtime randomization.
+
+#### Conclusion:
+
+If several channels are available at the same time, `select` chooses one
+randomly (pseudo-randomly). This is a good strategy for overall fairness, but
+prioritization requires explicit architectural logic on top of the basic
+`select`.
+
+</details>

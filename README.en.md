@@ -2195,3 +2195,75 @@ prioritization requires explicit architectural logic on top of the basic
 `select`.
 
 </details>
+
+
+<details>
+<summary>40. How to safely close a channel in Go if multiple goroutines are writing to it?</summary>
+
+#### Go
+
+Go's basic rule: a channel is closed by **who owns the write side** and only
+after all `send` operations are guaranteed to complete. A script with multiple
+writer goroutines requires completion coordination.
+
+#### Safe approach (canonical):
+
+1. Start several writer subroutines.
+
+2. Each writer signals about it after completion of work (`WaitGroup.Done()`).
+
+3. A separate control goroutine is waiting for `wg.Wait()`.
+
+4. Only then calls `close(ch)`.
+
+#### Why it's safe:
+
+1. No goroutine writes to the channel after `close`.
+
+2. Avoids panic `send on closed channel`.
+
+3. Closing occurs exactly once per controlled point.
+
+#### What cannot be done:
+
+1. Allow each writer to independently close the shared channel.
+
+2. Close channel "just in case" from multiple locations.
+
+3. Catching panic as a "synchronization mechanism" is an antipattern.
+
+#### Additional practices:
+
+1. For an early stop, use a separate `done/context` rather than `close(dataCh)`
+   on the reader side.
+
+2. If you need to guarantee one-time closure in a complex topology, use
+   `sync.Once`.
+
+#### Conclusion:
+
+In a multi-writer scenario, the channel is safely closed by the coordinator
+after explicitly confirming the completion of all writer subroutines. The
+principle is simple: **many senders, one closer, close-after-all-sends**.
+
+#### Example:
+
+```go
+ch := make(chan int)
+var wg sync.WaitGroup
+
+for i := 0; i < 5; i++ {
+	wg.Add(1)
+	go func(v int) {
+		defer wg.Done()
+		ch <- v
+	}(i)
+}
+
+go func() {
+	wg.Wait()
+	close(ch) // один координатор закриває канал
+}()
+```
+
+</details>

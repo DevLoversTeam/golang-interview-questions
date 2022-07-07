@@ -2267,3 +2267,69 @@ go func() {
 ```
 
 </details>
+
+
+<details>
+<summary>41. How to implement a semaphore through a buffered channel?</summary>
+
+#### Go
+
+In Go, a semaphore is naturally modeled by a fixed-capacity buffered channel.
+The number of slots in the buffer is equal to the maximum allowed number of
+simultaneous operations (parallelism).
+
+#### Principle of operation:
+
+1. **Acquire (occupy a slot):** before starting work, the goroutine executes
+   `sem <- token`. If the buffer is full, sending is blocked.
+
+2. **Release (release the slot):** after completion, the goroutine executes
+   `<-sem`. This frees up space for the next task.
+
+#### Typical form:
+
+- `sem := make(chan struct{}, N)`
+
+- `N` — limit of simultaneously active tasks.
+
+- `struct{}` is chosen as a lightweight token without payload.
+
+#### Why it is effective:
+
+1. **Simple backpressure model:** Redundant tasks naturally wait.
+
+2. **Transparent synchronization:** The Go runtime performs lock/wakeup without
+   manual control of conditional variables.
+
+3. **Reads well in the code:** the intention to "restrict competition" is
+   immediately apparent.
+
+#### Practical precautions:
+
+1. Always do `release` over `defer` to avoid losing a slot in the event of an
+   error.
+
+2. To cancel waiting, use `select` with `context.Done()`.
+
+3. Do not confuse a semaphore (parallelism limit) with a task queue (worker
+   pool).
+
+#### Conclusion:
+
+A buffered channel in Go is a canonical implementation of counting semaphore:
+simple, reliable, and well integrated into the goroutine model. This is one of
+the best ways to control the level of competition in production services.
+
+#### Example:
+
+```go
+sem := make(chan struct{}, 10) // максимум 10 одночасних задач
+
+run := func(job Job) {
+	sem <- struct{}{}         // зайняти слот
+	defer func() { <-sem }() // звільнити слот
+	job.Do()
+}
+```
+
+</details>

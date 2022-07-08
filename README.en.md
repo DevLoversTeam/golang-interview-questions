@@ -2333,3 +2333,57 @@ run := func(job Job) {
 ```
 
 </details>
+
+
+<details>
+<summary>42. How to implement patterns `Fan-in` and `Fan-out`?</summary>
+
+#### Go
+
+`Fan-out` and `Fan-in` are basic concurrency patterns in Go for managed
+parallelism: the former distributes work across multiple executors, the latter
+collects results back into a shared thread.
+
+#### `Fan-out` (load branching):
+
+1. There is an incoming problem channel.
+
+2. Starts `N` worker-routine.
+
+3. Each worker reads from a common input channel and processes its part.
+
+#### `Fan-in` (merging results):
+
+1. Several producer-channels or worker-results.
+
+2. Individual merge routines send data to one output channel.
+
+3. After completion of all merge branches, the output channel is closed.
+
+#### Typical architectural scheme:
+
+1. `jobs` channel → `fan-out` on workers.
+
+2. Each worker writes to `results`.
+
+3. `fan-in` aggregates `results` (or several `results`-channels) into one
+   channel for the next pipeline stage.
+
+#### Critically important rules:
+
+1. Closing channels should be centralized and one time.
+
+2. Use `WaitGroup` to coordinate worker termination.
+
+3. For early termination, use `context`/`done` to avoid goroutine leaks.
+
+4. Control the size of buffers and level of parallelism to avoid overloading
+   memory or external dependencies.
+
+#### Conclusion:
+
+`Fan-out` scales processing, `Fan-in` returns control over the result stream.
+Together, they form the basis of most effective pipeline solutions in Go
+services.
+
+</details>

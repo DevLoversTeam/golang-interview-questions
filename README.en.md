@@ -2387,3 +2387,54 @@ Together, they form the basis of most effective pipeline solutions in Go
 services.
 
 </details>
+
+
+<details>
+<summary>43. Why should you not use channels to transfer large amounts of data?</summary>
+
+#### Go
+
+Channels in Go are a great tool for coordinating and passing events/small
+messages, but not the best transport for massive payloads. For large amounts of
+data, they often create unnecessary overhead.
+
+#### Why it might not be effective:
+
+1. **Cost of copying:** passing large values over the channel increases memory
+   operations and traffic between goroutines.
+
+2. **Contention and synchronization costs:** channels have internal access
+   coordination; at high load it can become a bottleneck.
+
+3. **GC and memory pressure:** large channel buffers or numerous large messages
+   increase memory pressure and can increase pauses/runtime costs.
+
+4. **Degradation of cache locality:** large objects pass through the competitive
+   pipeline worse than compact signals + access to shared storage.
+
+#### Better alternatives:
+
+1. Transfer over channel **links/handles/indexes**, not big data.
+
+2. Keep the payload in a shared buffer/pool, and use the channel as a ready
+   signal.
+
+3. Use a worker pool with controlled access to a shared data structure
+   (`slice/map + mutex`) where appropriate.
+
+#### When channels are still appropriate:
+
+1. For small control messages.
+
+2. For events, commands, statuses, and completion signals.
+
+3. For a pipeline where light metadata context moves in the pipeline.
+
+#### Conclusion:
+
+A channel in Go is primarily a synchronization and coordination mechanism. For
+large data, it is more efficient to separate: transmit "what to do" through a
+channel, and the most massive payloads — through more suitable memory
+structures.
+
+</details>

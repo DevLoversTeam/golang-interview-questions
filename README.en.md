@@ -2438,3 +2438,72 @@ channel, and the most massive payloads — through more suitable memory
 structures.
 
 </details>
+
+
+<details>
+<summary>44. How to correctly return an error from a goroutine to the main thread?</summary>
+
+#### Go
+
+A routine cannot "return" a value directly via `return` to the caller.
+Therefore, the error from the competitive task is transmitted explicitly:
+through the error channel or through `errgroup`, which encapsulates this
+pattern.
+
+#### Canonical approaches:
+
+1. **`errgroup.Group` + `context` (recommended):** best for running a group of
+   goroutines, collecting the first error, and canceling the remaining tasks.
+
+2. **Separate `errCh` + `WaitGroup`:** explicit control over the life cycle;
+   after the completion of all workers, the channel is closed, and the main
+   thread reads errors.
+
+#### Key rules of correctness:
+
+1. Errors are transmitted in one agreed channel/aggregator.
+
+2. Closing `errCh` is performed by the coordinator after the completion of all
+   writer-routines.
+
+3. For the first critical error, other tasks should be stopped through `context`
+   (to avoid useless work and goroutine leaks).
+
+4. Errors in competing branches cannot be ignored - this creates "silent"
+   defects.
+
+#### Typical processing strategy:
+
+1. Start workers with access to `ctx`.
+
+2. On error, send `error` to the aggregator.
+
+3. Cancel context (if fail-fast policy is required).
+
+4. Wait for all goroutines to complete.
+
+5. Return the agreed result (first error or aggregated error).
+
+#### Conclusion:
+
+Correct error "return" from goroutine is discipline of explicit communication
+channel plus lifecycle management via `WaitGroup`/`errgroup` and `context`. In
+production, most often the optimal choice is `errgroup`.
+
+#### Example (Go 1.22+):
+
+```go
+g, ctx := errgroup.WithContext(context.Background())
+
+for _, task := range tasks {
+	g.Go(func() error {
+		return task.Run(ctx)
+	})
+}
+
+if err := g.Wait(); err != nil {
+	return err
+}
+```
+
+</details>

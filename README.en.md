@@ -2507,3 +2507,48 @@ if err := g.Wait(); err != nil {
 ```
 
 </details>
+
+
+<details>
+<summary>45. Can `defer` in Go catch a (`recover`) panic that occurred in a child goroutine?</summary>
+
+#### Go
+
+Short answer: **no**. `recover` only works in the same goroutine where the panic
+occurred, and only in a `defer` function executing in its call stack.
+
+#### The main rule:
+
+1. Panic does not "fly" between goroutines as a controlled signal for `recover`.
+
+2. `defer` in the parent goroutine cannot catch the panic of the child.
+
+3. In order to catch a panic in a worker-routine, `defer` with `recover` must be
+   inside this particular worker-routine.
+
+#### Practical consequences:
+
+1. If panic in the child goroutine is not caught locally, the process may crash.
+
+2. For stable services, each "risky" goroutine is wrapped with a protective
+   `defer func(){ if r := recover(); r != nil { ... } }()`.
+
+3. After `recover` it is necessary to clearly signal a failure to the main
+   circuit (via `error`-channel, `errgroup`, metrics, logging).
+
+#### What is considered good practice:
+
+1. Local `recover` at the launch point of long-lived workers.
+
+2. Clear policy: panic turns into an error/alert and doesn't go away silently.
+
+3. Using `context` for coordinated termination of other goroutines after a
+   critical failure.
+
+#### Conclusion:
+
+`recover` in Go has a local scope — a single goroutine. Therefore, panic
+interception in competing code must be designed at the level of each child
+goroutine separately.
+
+</details>

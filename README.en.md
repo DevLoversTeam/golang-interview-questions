@@ -2552,3 +2552,82 @@ interception in competing code must be designed at the level of each child
 goroutine separately.
 
 </details>
+
+
+<details>
+<summary>46. Talk about concurrency patterns in Go.</summary>
+
+#### Go
+
+Concurrency patterns in Go are repetitive architectural patterns for
+coordinating goroutines, pipes, and synchronization primitives. Their goal is to
+provide manageable parallelism without chaos, leaks, and deadlocks.
+
+#### The most used patterns:
+
+1. **Worker Pool**
+
+- a fixed number of worker-routines reads tasks from the queue;
+
+- limits the level of parallelism and stabilizes the load.
+
+2. **Fan-out / Fan-in**
+
+- `fan-out`: allocation of one queue of tasks to many executors;
+
+- `fan-in`: Merging results from multiple sources into one channel.
+
+3. **Pipeline (conveyor of stages)**
+
+- data goes through successive stages of processing;
+
+- each stage can have its own competition and backpressure.
+
+4. **Semaphore via buffered channel**
+
+- limits the number of simultaneous operations;
+
+- useful for working with databases, file descriptors, external APIs.
+
+5. **Context cancellation**
+
+- centralized cancellation of the entire group of goroutines;
+
+- prevents leaks on timeout, error, or shutdown.
+
+6. **Errgroup (fail-fast orchestration)**
+
+- collects errors from a group of tasks;
+
+- combines conveniently with `context` to stop the rest of the work early.
+
+7. **Single owner / Actor-like loop**
+
+- one goroutine has mutable state;
+
+- others interact via messages, reducing lock contention.
+
+8. **Publish/Subscribe (broadcast)**
+
+- events are sent to multiple consumers;
+
+- requires careful monitoring of buffers and subscriber lifecycle.
+
+#### Critical principles for all patterns:
+
+1. Explicit resource ownership and channel closing rules.
+
+2. Contest restrictions (not "infinite" goroutines).
+
+3. Required termination path (`context`, `done`, `WaitGroup`).
+
+4. Observability: metrics, logging, profiling.
+
+#### Conclusion:
+
+The power of Go is not in "the goroutines themselves", but in the discipline of
+patterns. It is the right combination of worker-pool, pipeline, fan-in/fan-out,
+cancellation and error-coordination that gives systems scalability,
+predictability and production reliability.
+
+</details>

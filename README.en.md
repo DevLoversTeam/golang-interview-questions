@@ -2631,3 +2631,64 @@ cancellation and error-coordination that gives systems scalability,
 predictability and production reliability.
 
 </details>
+
+
+<details>
+<summary>47. When to use `sync.Mutex` and when to use `sync.RWMutex`?</summary>
+
+#### Go
+
+`sync.Mutex` and `sync.RWMutex` solve the same problem — protecting shared
+state, but with a different concurrency model. The right choice depends on the
+profile of data access: the ratio of reads and writes, the duration of critical
+sections and the level of contention.
+
+#### `sync.Mutex` — when to choose:
+
+1. **Mixed or frequent writes:** unless write operations are infrequent, the
+   benefit of `RWMutex` is often negated.
+
+2. **Short critical sections:** simple lock/unlock usually gives predictable and
+   fast behavior.
+
+3. **Basic default choice:** less complexity, less chance to get the lock model
+   wrong.
+
+4. **When ease of maintenance is important:** `Mutex` is easier to read, debug,
+   and profile.
+
+#### `sync.RWMutex` — when it makes sense:
+
+1. **Reads dominate, writes are rare:** many concurrent readers can work in
+   parallel.
+
+2. **Reads are relatively long:** parallel read-access gives a real gain in
+   throughput.
+
+3. **Read contention is high:** and there is empirical evidence that it is the
+   read-lock that becomes the bottleneck.
+
+#### Important notices:
+
+1. `RWMutex` is not "automatically faster" - due to more complex internal
+   coordination, it may be slower in real workloads.
+
+2. Readers are still blocked during frequent write operations.
+
+3. The final choice should be made based on profiling (`pprof`, benchmarks), not
+   intuition.
+
+#### Rule of thumb:
+
+1. Start with `sync.Mutex`.
+
+2. Go to `sync.RWMutex` only when there is a measured read-heavy scenario and a
+   proven performance gain.
+
+#### Conclusion:
+
+`sync.Mutex` is a reliable default for most tasks. `sync.RWMutex` is a point
+optimization tool for reader-oriented workloads, where the gain is confirmed by
+metrics.
+
+</details>

@@ -2692,3 +2692,49 @@ optimization tool for reader-oriented workloads, where the gain is confirmed by
 metrics.
 
 </details>
+
+
+<details>
+<summary>48. Why can't `sync.Mutex` objects be copied?</summary>
+
+#### Go
+
+`sync.Mutex` contains the internal lock state. After the first use, copying such
+an object creates a dangerous situation: two different instances of the lock
+state appear, which the programmer can mistakenly perceive as one.
+
+#### Why it is essentially prohibited:
+
+1. **Mutex is not just "data", but a stateful synchronization primitive.**
+
+2. **The copy does not share the same lock-state** with the original.
+
+3. This breaks mutual exclusion guarantees and can lead to race, deadlock, or
+   panic in complex scenarios.
+
+#### Typical ways to accidentally copy a mutex:
+
+1. Pass a structure with `sync.Mutex` by value to a function.
+
+2. Return the following structure by value after initialization/use.
+
+3. Keep/forward copies via channels or value collections.
+
+#### Correct practice:
+
+1. Structures from `sync.Mutex` should be used via pointers (`*T`), not
+   value-copy.
+
+2. Do not export `Mutex` directly in the public API.
+
+3. If the type has a lock, document that it is not copied after the first use.
+
+4. Use `go vet` (copylocks) and linters for early detection.
+
+#### Conclusion:
+
+`sync.Mutex` cannot be copied because it undermines the synchronization model
+itself. Remember the rule: lock primitives have a stable identity and must live
+in one instance per protected state.
+
+</details>

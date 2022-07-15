@@ -2738,3 +2738,53 @@ itself. Remember the rule: lock primitives have a stable identity and must live
 in one instance per protected state.
 
 </details>
+
+
+<details>
+<summary>49. Why is reading and writing shared state without synchronization a data race, even if "logically safe"?</summary>
+
+#### Go
+
+In terms of the Go memory model, `data race` occurs when two or more goroutines
+simultaneously access the same variable, at least one of which is a write
+operation, and there is no established `happens-before` relationship (i.e.
+synchronization) between these accesses.
+
+#### Why "logically safe" does not save:
+
+1. **Logic in the developer's head ≠ memory model guarantee.** Without
+   synchronization, the order of visibility of records between cores/threads is
+   not defined.
+
+2. **Compiler and CPU optimizations can change the observed order** of
+   reads/writes within the allowed memory model.
+
+3. **Instability under load:** code may "work" in local startup, but break in
+   production or CI.
+
+#### What are the consequences of race:
+
+1. Reading outdated or partially updated values.
+
+2. Irreproducible bugs (heisenbugs) that are difficult to debug.
+
+3. Violation of business state invariants without explicit panic.
+
+#### What is considered correct synchronization:
+
+1. `sync.Mutex` / `sync.RWMutex`
+
+2. Atomics (`sync/atomic`) for simple low-level scenarios
+
+3. Channels as ownership/signalling mechanism
+
+4. `WaitGroup`, `Cond`, `Once`, `context` — in their coordination roles
+
+#### Conclusion:
+
+Without synchronization, shared read/write in Go is a race by definition,
+regardless of subjective "logical safety". The only reliable way is to
+explicitly form the `happens-before` relationship through the correct
+concurrency primitives.
+
+</details>

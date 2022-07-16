@@ -2788,3 +2788,53 @@ explicitly form the `happens-before` relationship through the correct
 concurrency primitives.
 
 </details>
+
+
+<details>
+<summary>50. What is Race Condition and how does the `-race` detector work? What it can and cannot detect?</summary>
+
+#### Go
+
+`Race Condition` is a general class of concurrency defects where the result of a
+program depends on an unpredictable order of events between threads of
+execution. `Data race` is a special case of the race condition, which refers to
+dangerous simultaneous access to the same memory without synchronization.
+
+#### How `-race` works:
+
+1. During `go test -race` / `go run -race` code is instrumented.
+
+2. Runtime tracks memory reads/writes between goroutines.
+
+3. If accesses without `happens-before` are detected (and there is a record) —
+   `data race` with stack traces is reported.
+
+#### What `-race` detects well:
+
+1. Classic read/write and write/write races on shared variables.
+
+2. Missed lock/unlock in competitive areas.
+
+3. Part of coordination errors in test scenarios with real competition.
+
+#### What `-race` does not guarantee:
+
+1. **Does not detect all race conditions as logical bugs:** eg, incorrect
+   interaction protocol without direct data race.
+
+2. **Doesn't see unexecuted code:** if tests don't cover a competitive path,
+   race may go unnoticed.
+
+3. **Does not prove bug-free:** A "clean" run means only that the tool did not
+   detect any violations during that run.
+
+4. **Has overhead:** slowdown and increased memory consumption in
+   instrumentation mode.
+
+#### Practical conclusion:
+
+`-race` is a mandatory tool for competing code hygiene, but not an absolute
+oracle of correctness. Its power is revealed in combination with quality tests,
+design invariants, and synchronization discipline.
+
+</details>

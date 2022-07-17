@@ -2838,3 +2838,57 @@ oracle of correctness. Its power is revealed in combination with quality tests,
 design invariants, and synchronization discipline.
 
 </details>
+
+
+<details>
+<summary>51. What are the advantages of atomic operations compared to mutex for simple competitive operations?</summary>
+
+#### Go
+
+`atomic` operations in Go are appropriate for very simple competitive scenarios
+where you need to safely perform an elementary operation on a single value
+(increment, read a flag, CAS). In such cases, they may be lighter than `mutex`.
+
+#### Advantages of the atomic approach:
+
+1. **Less overhead for simple operations:** no explicit `Lock/Unlock` around the
+   short operation.
+
+2. **High efficiency in hot-path counters and flags:** eg metrics, stop/start
+   states, lightweight coordination.
+
+3. **No locking in the classical sense:** threads do not need to wait for a lock
+   owner for atomic read/write.
+
+4. **Clear memory-order guarantees via API `sync/atomic`:** correct visibility
+   between goroutines for a specific variable is ensured.
+
+#### When atomic is better than mutex:
+
+1. Operation applies to **one** variable or very local state.
+
+2. The logic is simple and well formalized (`Load`, `Store`, `Add`,
+   `CompareAndSwap`).
+
+3. Requires minimum latency in the high-frequency path.
+
+#### When mutex is better:
+
+1. A **invariant between multiple fields** must be protected.
+
+2. The operation includes several steps with domain logic.
+
+3. Readability and maintainability are more important than micro-optimization.
+
+#### Important notice:
+
+Atomic is not a universal replacement for `mutex`. Excessive use of atomics
+complicates the code and increases the risk of subtle bugs in the memory model.
+
+#### Conclusion:
+
+The advantage of atomic operations is fast, low-cost synchronization for simple
+cases. For complex shared state and business invariants, `mutex` is usually the
+more reliable tool.
+
+</details>

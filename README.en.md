@@ -2892,3 +2892,67 @@ cases. For complex shared state and business invariants, `mutex` is usually the
 more reliable tool.
 
 </details>
+
+
+<details>
+<summary>52. How does `sync.WaitGroup` work and what will happen with a negative counter? Why can't `wg.Done()` be called before `wg.Add()`?</summary>
+
+#### Go
+
+`sync.WaitGroup` is a counter of active concurrent tasks. Its purpose is to
+allow one goroutine (`Wait`) to wait for the others to complete their work.
+
+#### How it works:
+
+1. `wg.Add(n)` increases the counter by `n` (we add the number of tasks).
+
+2. Each completed task triggers `wg.Done()` (equivalent to `Add(-1)`).
+
+3. `wg.Wait()` is blocked until the counter reaches zero.
+
+#### What will happen with a negative counter:
+
+1. This is a logical coordination error.
+
+2. Runtime causes panic (typically: `sync: negative WaitGroup counter`).
+
+3. This situation means that `Done()` was called more times than `Add()` was.
+
+#### Why you can't do `Done()` to `Add()`:
+
+1. The task lifecycle contract is being violated.
+
+2. `Wait()` may end prematurely, because at the moment of waiting, the counter
+   does not yet reflect the real number of jobs.
+
+3. In the worst case, we will get a negative counter and panic.
+
+#### Correct discipline:
+
+1. Call `Add(1)` **before** the goroutine starts.
+
+2. Inside the goroutine, set `defer wg.Done()` immediately at the entrance.
+
+3. Call `Wait()` only after registering all tasks.
+
+#### Conclusion:
+
+`WaitGroup` is only reliable under strict `Add -> go -> Done -> Wait` sequence.
+A negative counter and `Done()` to `Add()` is a signal of a broken
+synchronization model, which inevitably leads to unstable behavior or panic.
+
+#### Example:
+
+```go
+var wg sync.WaitGroup
+wg.Add(1)
+
+go func() {
+	defer wg.Done()
+	work()
+}()
+
+wg.Wait()
+```
+
+</details>

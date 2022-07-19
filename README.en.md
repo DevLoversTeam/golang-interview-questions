@@ -2956,3 +2956,64 @@ wg.Wait()
 ```
 
 </details>
+
+
+<details>
+<summary>53. What is the difference between `sync.WaitGroup` and `errgroup.Group`? When to use each?</summary>
+
+#### Go
+
+`sync.WaitGroup` and `errgroup.Group` both coordinate the completion of
+goroutines, but they have different levels of abstraction: `WaitGroup` only
+waits, while `errgroup` additionally handles errors and cancellation via
+`context`.
+
+#### `sync.WaitGroup`:
+
+1. Only responsible for waiting for tasks to complete.
+
+2. Does not collect errors out of the box.
+
+3. Does not cancel other goroutines automatically.
+
+4. Requires manual infrastructure:
+
+- error channel;
+
+- coordination `context`;
+
+- fail-fast logic.
+
+#### `errgroup.Group`:
+
+1. Allows you to run goroutines through `Go(func() error)`.
+
+2. Returns the first error received in `Wait()`.
+
+3. Paired with `errgroup.WithContext` automatically cancels context on error.
+
+4. Reduces boilerplate for the typical "parallel tasks + stop on error" pattern.
+
+#### When to choose `WaitGroup`:
+
+1. Just wait for completion without error-aggregation.
+
+2. The error handling policy is non-standard and completely custom.
+
+3. Low-level control is more important than API convenience.
+
+#### When to choose `errgroup`:
+
+1. Needs a clear "failure in one task → stop the rest" model.
+
+2. Need to quickly and cleanly implement competitive orchestration.
+
+3. Readability and short, maintainable code are important.
+
+#### Conclusion:
+
+`WaitGroup` - "wait only" synchronization primitive. `errgroup` - higher level:
+"wait + return an error + cancel the rest via context". For most production
+scenarios with errors and fail-fast semantics, `errgroup` is more practical.
+
+</details>

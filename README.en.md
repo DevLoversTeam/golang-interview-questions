@@ -3017,3 +3017,61 @@ waits, while `errgroup` additionally handles errors and cancellation via
 scenarios with errors and fail-fast semantics, `errgroup` is more practical.
 
 </details>
+
+
+<details>
+<summary>54. Describe the purpose and implementation of `sync.Once` - how does it guarantee one-time initialization?</summary>
+
+#### Go
+
+`sync.Once` is intended for guaranteed one-time execution of a function under
+conditions of concurrent access. Regardless of the number of goroutines calling
+`once.Do(f)` at the same time, the body of `f` must be executed only once.
+
+#### What is it used for:
+
+1. Lazy initialization of singleton resources.
+
+2. One-time configuration/cache loading.
+
+3. Safely run heavy initialization without duplicating work.
+
+#### How `sync.Once` guarantees reproducibility:
+
+1. Checks an internal done/failed status flag.
+
+2. If the initialization has not been done yet — blocks competitors
+   synchronously.
+
+3. Exactly one goroutine executes `f`.
+
+4. On success marks the state as "done" and further `Do` returns without
+   restarting `f`.
+
+#### Important properties:
+
+1. The correct visibility of initialized data for other goroutines is guaranteed
+   (memory-safety through internal synchronization).
+
+2. Other goroutines that came during `f` execution will wait for completion.
+
+3. `Once` is not intended to be "restarted" - it is a one-time life cycle.
+
+#### Nuances and warnings:
+
+1. If `f` panics, the behavior needs careful design consideration: `Once` is not
+   a fallback mechanism.
+
+2. You should not hide too complex business logic in `Do`; it is better to keep
+   the initialization of the resource there.
+
+3. Reset/reload tasks require other patterns (atomic pointer, mutex, versioned
+   state, etc.).
+
+#### Conclusion:
+
+`sync.Once` is a disciplined one-time initialization primitive: race-safe,
+predictable, and very useful where rerunning initialization is either redundant
+or dangerous.
+
+</details>

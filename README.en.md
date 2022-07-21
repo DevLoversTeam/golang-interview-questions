@@ -3075,3 +3075,63 @@ predictable, and very useful where rerunning initialization is either redundant
 or dangerous.
 
 </details>
+
+
+<details>
+<summary>55. What is `sync.Cond` and when does it override a channel?</summary>
+
+#### Go
+
+`sync.Cond` is a conditional synchronization primitive: it allows goroutines to
+wait until a certain state (condition) becomes true and be woken by a signal
+from another goroutine.
+
+#### Base model `sync.Cond`:
+
+1. `Cond` works on top of `Locker` (usually `*sync.Mutex`).
+
+2. The routine in the loop checks the condition under lock.
+
+3. If the condition is false — calls `Wait()`.
+
+4. Another goroutine calls `Signal()` or `Broadcast()` after a state change.
+
+#### Key methods:
+
+1. **`Wait()`** — atomically releases the lock, falls asleep, and after waking
+   up grabs the lock again.
+
+2. **`Signal()`** — wakes up one waiting goroutine.
+
+3. **`Broadcast()`** - wakes up all expectants.
+
+#### When `sync.Cond` channel prevails:
+
+1. **Complex condition on shared state, not message transfer:** when it is
+   important to wait for "predicate over state" and not receive payload.
+
+2. **Many waiters on one lock-protected resource:** `Cond` more naturally
+   expresses coordination around shared state.
+
+3. **Fine wake-up control required:** `Signal/Broadcast` are sometimes better
+   suited than channel semantics.
+
+4. **High-frequency scenarios with minimal allocation noise:** in certain
+   low-level cases, `Cond` gives a more efficient model than building additional
+   channel protocols.
+
+#### When the channel is better:
+
+1. When the task is to transfer event/data between independent actors.
+
+2. When a simple pipeline model and a readable message flow are important.
+
+3. When you don't want to manage the shared mutable state under lock.
+
+#### Conclusion:
+
+`sync.Cond` is a "waiting for mutex condition to change" tool, while a channel
+is a "passing message" tool. `Cond` prevails where the center of the logic is
+the state itself and its invariants, not the data transport.
+
+</details>

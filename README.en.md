@@ -3135,3 +3135,61 @@ is a "passing message" tool. `Cond` prevails where the center of the logic is
 the state itself and its invariants, not the data transport.
 
 </details>
+
+
+<details>
+<summary>56. How is `sync.Map` arranged, when does it give better performance compared to map + mutex, and where is it used in the standard library?</summary>
+
+#### Go
+
+`sync.Map` is a specialized competitive map from the `sync` package, optimized
+primarily for read-heavy workloads and scenarios where keys are read frequently
+and rarely changed.
+
+#### How `sync.Map` is arranged conceptually:
+
+1. Has a two-layer access model:
+
+- **read-part** for fast, mostly lock-free readings;
+
+- **dirty-part** for updates and new entries under sync.
+
+2. Reading from a "hot" read zone often does without a common mutex, which
+   reduces contention.
+
+3. Inter-layer writes/promotions have more complex internal logic, but are aimed
+   at not penalizing bulk reads.
+
+#### When `sync.Map` can be faster than `map + mutex`:
+
+1. **Many reads, few writes** (classic read-mostly workload).
+
+2. **Keys mostly stable**, without aggressive churn.
+
+3. **Highly competitive read access** from many goroutines.
+
+#### When more is better `map + mutex`:
+
+1. Entries are many or dominate.
+
+2. Requires complex invariants over multiple keys.
+
+3. Type safety is more important (because `sync.Map` works through `any`).
+
+4. Needs simpler and more obvious logic for the team to support.
+
+#### Where used in the standard library:
+
+`sync.Map` is used in internal caches and tables where the nature of access is
+close to read-heavy (in particular, in parts of the runtime/standard packages
+for caching metadata and auxiliary structures). The key idea is the same
+everywhere: minimize blocking on bulk reads.
+
+#### Conclusion:
+
+`sync.Map` is not a "best map overall", but a point tool for a specific load
+profile. If you have a read-mostly scenario with high competition, it can give a
+win; in other cases, simple `map + mutex` is often more transparent and
+efficient.
+
+</details>

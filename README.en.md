@@ -3193,3 +3193,59 @@ win; in other cases, simple `map + mutex` is often more transparent and
 efficient.
 
 </details>
+
+
+<details>
+<summary>57. What are concurrency tests in Go and why are they used?</summary>
+
+#### Go
+
+Concurrency tests in Go are tests that test the behavior of code under
+conditions of parallel execution of goroutines, state sharing, and resource
+competition. Their goal is to detect defects that do not appear in a linear
+scenario.
+
+#### What exactly do the following tests check:
+
+1. Correctness of synchronization (`mutex`, `channel`, `atomic`, `WaitGroup`).
+
+2. Lack of data race in shared state.
+
+3. Resistance to deadlock/live-lock scenarios.
+
+4. Correct completion of goroutines (no leaks).
+
+5. Observance of invariants under competitive load.
+
+#### Why are they needed:
+
+1. **Early detection of competitive bugs:** many of them only show up under
+   parallelism pressure.
+
+2. **Decreasing flaky behavior in production:** tests capture scenarios where
+   the order of events is non-deterministic.
+
+3. **Assertion of architectural guarantees:** such as that the system does not
+   lose events and does not violate state consistency.
+
+4. **Safer refactoring:** competitive invariants remain protected by the
+   regression set.
+
+#### Tools and Practices in Go:
+
+1. `go test -race` as a mandatory verification level.
+
+2. Parallel scripting via goroutines, `t.Run`, `t.Parallel`.
+
+3. Explicit timeouts/`context` to prevent tests from hanging.
+
+4. Stress runs and multiple runs to increase the chance of reproducing
+   non-deterministic errors.
+
+#### Conclusion:
+
+Concurrency tests are not an "extra luxury", but a necessary element of quality
+for Go services. They check not only the functionality, but also the correctness
+of the interaction of goroutines in real conditions of parallelism.
+
+</details>

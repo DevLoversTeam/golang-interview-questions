@@ -3249,3 +3249,80 @@ for Go services. They check not only the functionality, but also the correctness
 of the interaction of goroutines in real conditions of parallelism.
 
 </details>
+
+
+<details>
+<summary>58. Why does Go use `context.Context` and how is it passed through the function call tree?</summary>
+
+#### Go
+
+`context.Context` in Go is a standard mechanism for managing the
+request/operation lifecycle: cancellations, deadlines, timeouts, and request
+metadata. It allows all branches of execution to see a single "stop" signal.
+
+#### Why do you need `Context`:
+
+1. **Cancellation:** stop work that is no longer needed (the client has
+   disconnected, an error has occurred in a nearby branch, the service is
+   terminating).
+
+2. **Deadline/timeout:** limit the execution time of operations (HTTP, DB,
+   external APIs) so as not to hang indefinitely.
+
+3. **Request-scoped values:** transfer service request data (trace-id,
+   auth-token, tenant-id) between layers.
+
+#### How it is passed through the call tree:
+
+1. `ctx` is passed as the **first parameter** to a function that can block or do
+   I/O.
+
+2. Each child call receives the same `ctx` or derivative:
+
+- `context.WithCancel`
+
+- `context.WithTimeout`
+
+- `context.WithDeadline`
+
+- `context.WithValue`
+
+3. Child contexts form a tree:
+
+- canceling a parent context cancels all children;
+
+- deadlines are inherited (or narrowed).
+
+#### Practical rules:
+
+1. Do not store `Context` in a structure as a long-lived field.
+
+2. Do not pass `nil` context (use `context.Background()` or `context.TODO()`).
+
+3. Do not use `WithValue` for business parameters that must be explicit function
+   arguments.
+
+#### Conclusion:
+
+`context.Context` is the query "nervous system" in Go. It spreads timing and
+cancellation control throughout the call tree, making competing code manageable,
+economical, and predictable in a production environment.
+
+#### Example:
+
+```go
+func handler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	if err := service.Do(ctx); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+}
+
+func (s *Service) Do(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	return s.repo.Call(ctx)
+}
+```
+
+</details>

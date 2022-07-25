@@ -3326,3 +3326,52 @@ func (s *Service) Do(ctx context.Context) error {
 ```
 
 </details>
+
+
+<details>
+<summary>59. Is `context.Context` immutable and what does it mean in practice?</summary>
+
+#### Go
+
+Yes, `context.Context` is conceptually immutable: after creation, the existing
+context is not "edited", but a new derivative context is built on top of the
+parent one.
+
+#### What does immutable mean in the case of `Context`:
+
+1. Calls `WithCancel`, `WithTimeout`, `WithDeadline`, `WithValue` do not change
+   the old `ctx`.
+
+2. They return a **new** descendant context.
+
+3. The parent context remains as it was before.
+
+#### Practical consequences:
+
+1. **Safe propagation between goroutines:** the same `ctx` can be passed around
+   without the risk of "hidden overwriting" of parameters.
+
+2. **Transparent Lifecycle:** The context tree clearly shows who inherited
+   cancel/deadline from whom.
+
+3. **Intended API behavior:** a function that received `ctx` cannot sneakily
+   "twist" it for other calls; it can only create a local descendant.
+
+4. **Better testability and debugging:** it's easier to trace exactly where
+   timeout/cancel/value appeared, because they are separate derived nodes, not
+   mutations of a single object.
+
+#### Important clarification:
+
+Immutability does not mean that there is no dynamics inside: the cancel signal
+and the deadline state can change over time. But this is a change of the
+**execution state** within the context model, not an "in-place" mutation of the
+API contract of the passed object.
+
+#### Conclusion:
+
+`context.Context` in Go is a functional-chain model: we do not change the
+existing one, but create a derivative. This gives clean composition, secure
+concurrency, and predictable query lifecycle management.
+
+</details>

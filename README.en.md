@@ -3375,3 +3375,60 @@ existing one, but create a derivative. This gives clean composition, secure
 concurrency, and predictable query lifecycle management.
 
 </details>
+
+
+<details>
+<summary>60. How does using `context.WithCancel` help avoid goroutine leaks?</summary>
+
+#### Go
+
+`context.WithCancel` gives a managed termination signal to all goroutines
+running within the same context tree. This is the key to preventing goroutine
+leak — a situation where auxiliary goroutines remain "alive" after the work has
+lost its relevance.
+
+#### How a goroutine leak occurs:
+
+1. The routine is waiting for a channel/network/timer without a stop condition.
+
+2. The request has already ended or has become unnecessary, but the worker did
+   not know about it.
+
+3. Such "orphaned" goroutines accumulate and consume resources.
+
+#### Role `WithCancel`:
+
+1. Creating child context: `ctx, cancel := context.WithCancel(parent)`.
+
+2. All worker goroutines have `select` with branch `case <-ctx.Done():`.
+
+3. When `cancel()` is called, all dependent goroutines receive a stop signal.
+
+4. Groutines terminate in a controlled manner, freeing resources.
+
+#### Practical safety rules:
+
+1. Always call `cancel()` (often through `defer cancel()`), even on successful
+   completion.
+
+2. In every long-lived loop/blocking operation, check `ctx.Done()`.
+
+3. Skip `ctx` through all I/O calls that support cancellation.
+
+4. Combine with `WaitGroup`/`errgroup` to wait for actual completion.
+
+#### What it gives the system:
+
+1. Absence of "hanging" background workers.
+
+2. Better CPU/Memory utilization under load.
+
+3. Predicted shutdown and more stable behavior of the service.
+
+#### Conclusion:
+
+`context.WithCancel` is the basic anti-leak mechanism in Go concurrency: a
+single explicit stop signal that terminates all related goroutines in a
+consistent manner and saves the system from resource bloat.
+
+</details>

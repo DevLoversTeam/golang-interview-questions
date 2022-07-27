@@ -3432,3 +3432,73 @@ single explicit stop signal that terminates all related goroutines in a
 consistent manner and saves the system from resource bloat.
 
 </details>
+
+
+<details>
+<summary>61. Why does Go use non-standard key types (eg `struct{}`) for `context.WithValue` and how does this prevent collisions?</summary>
+
+#### Go
+
+In `context.WithValue`, the key must be comparable, but most importantly, it
+must be **unique within your application and dependency space**. That is why it
+is recommended to use your own (non-standard) key types instead of the commonly
+used `string`.
+
+#### Why `string` keys are dangerous:
+
+1. Different packages may accidentally use the same string (`"userID"`,
+   `"request_id"`, etc.).
+
+2. The value in the context will be overwritten or "shadowed" by another
+   package.
+
+3. Get silent, hard-to-reproduce routing/authentication/login errors.
+
+#### How a non-standard type prevents collisions:
+
+1. Creates a private key type in the package, for example: `type ctxKey
+   struct{}` or `type ctxKey int`.
+
+2. External code cannot accidentally use the same key type and value.
+
+3. This way the key namespace becomes isolated at the level of the typical
+   system.
+
+#### Why `struct{}` is often taken:
+
+1. Lightweight marker type without payload.
+
+2. Emphasizes that the identity of the key is important, not its "data".
+
+3. Corresponds well with the "package-local unique key" idiom.
+
+#### Rule of thumb:
+
+1. Declare keys as non-exported package variables.
+
+2. Do not use "empty" strings as keys for `WithValue`.
+
+3. Store in `Context` only request-scoped service data, not business parameters.
+
+#### Conclusion:
+
+Non-standard key types in `context.WithValue` are a type-safe namespace
+mechanism. They reliably reduce the risk of collisions between packages and make
+contextual values ​​predictable in large codebases.
+
+#### Example:
+
+```go
+type requestIDKey struct{}
+
+func withRequestID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, requestIDKey{}, id)
+}
+
+func requestID(ctx context.Context) (string, bool) {
+	v, ok := ctx.Value(requestIDKey{}).(string)
+	return v, ok
+}
+```
+
+</details>

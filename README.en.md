@@ -3502,3 +3502,55 @@ func requestID(ctx context.Context) (string, bool) {
 ```
 
 </details>
+
+
+<details>
+<summary>62. What is the difference between `context.Value` and passing parameters via function arguments?</summary>
+
+#### Go
+
+`context.Value` and normal function arguments have different purposes. In a
+competent Go design, they are not interchangeable: arguments convey business
+data, and `context.Value` is a service request-scoped metacontext.
+
+#### Pass through arguments:
+
+1. **Explicit API contract:** all required data is visible in the signature.
+
+2. **Type safety and readability:** the compiler helps control correctness.
+
+3. **Best choice for domain logic:** domain parameters must be passed directly.
+
+#### `context.Value`:
+
+1. **Implicit service data channel:** trace-id, request-id, auth-claims, tenant,
+   correlation metadata.
+
+2. **Propagates through layers without inflating signatures:** useful for
+   middleware, logging, observability.
+
+3. **Less transparency:** value dependency not obvious from function signature.
+
+#### Why you should not replace the `context.Value` arguments:
+
+1. API clarity is falling ("hidden" inputs appear).
+
+2. Increases the risk of runtime errors due to assertion with `any`.
+
+3. Tests and refactoring are complicated.
+
+#### Rule of thumb:
+
+1. In `Context` is only what belongs to the request lifecycle and is needed by
+   the infrastructure layers.
+
+2. In the function parameters - everything that is the essence of the business
+   operation.
+
+#### Conclusion:
+
+Arguments form an explicit domain contract; `context.Value` carries the service
+metadata of the request. Mixing these roles degrades the architecture, so
+professional Go code keeps the line between them clear.
+
+</details>

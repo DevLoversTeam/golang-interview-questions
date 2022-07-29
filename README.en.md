@@ -3554,3 +3554,55 @@ metadata of the request. Mixing these roles degrades the architecture, so
 professional Go code keeps the line between them clear.
 
 </details>
+
+
+<details>
+<summary>63. How does Stack vs Heap allocation work in Go?</summary>
+
+#### Go
+
+In Go, the placement of data in the Stack or Heap is determined by the compiler
+through escape analysis. The developer does not choose this manually directly,
+but can write code to reduce unnecessary heap allocations.
+
+#### Stack allocation:
+
+1. Data lives within a function call (or a managed goroutine stack).
+
+2. Allocation and release are very cheap.
+
+3. Does not directly load the GC.
+
+#### Heap allocation:
+
+1. Data is required outside the current stack frame.
+
+2. Memory is managed by the garbage collector.
+
+3. Gives higher overhead (allocation + subsequent garbage collection).
+
+#### What decides where the value goes:
+
+1. **Escape analysis of the compiler:** if the value "escapes" outside the
+   function (pointer is returned, stored in a long-lived structure, closure is
+   captured, etc.), it gets into the Heap.
+
+2. **Usage context:** even a local variable can end up on the Heap if its
+   lifetime is longer than the current frame.
+
+#### Why this is important:
+
+1. More Heap allocations = more work for the GC.
+
+2. In hot-path, it affects latency and throughput.
+
+3. Optimizing allocations often gives a noticeable increase in service
+   performance.
+
+#### Practical conclusion:
+
+In Go, the key is not to "manually manage memory", but to understand escape
+behavior. Clear data design and minimization of unnecessary leaks in Heap help
+to write fast and stable production code.
+
+</details>

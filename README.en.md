@@ -3606,3 +3606,60 @@ behavior. Clear data design and minimization of unnecessary leaks in Heap help
 to write fast and stable production code.
 
 </details>
+
+
+<details>
+<summary>64. How to minimize heap allocations with `sync.Pool`?</summary>
+
+#### Go
+
+`sync.Pool` is a temporary object reuse mechanism that allows you to reduce the
+frequency of heap allocations in hot code areas. The idea is simple: not to
+create short-lived objects anew every time, but to take them from the pool and
+return them after use.
+
+#### Basic scheme:
+
+1. Create a pool of `New` that initializes the object as needed.
+
+2. At the input of the operation: `obj := pool.Get()`.
+
+3. Before use, bring the object to a valid state.
+
+4. After completion: clear fields and `pool.Put(obj)`.
+
+#### Why this reduces allocations:
+
+1. Part of requests receives already allocated objects.
+
+2. Fewer new Heap allocations.
+
+3. Less pressure on GC with high frequency of short operations.
+
+#### Where `sync.Pool` is particularly relevant:
+
+1. Buffers (`[]byte`, `bytes.Buffer`) in serialization/network handlers.
+
+2. Temporary auxiliary structures in parse/encode/decode paths.
+
+3. Highly loaded HTTP/RPC services with repeated short operations.
+
+#### Important notices:
+
+1. `sync.Pool` is a cache, not long-term storage; elements can be cleaned by GC.
+
+2. The object before `Put` must be brought to a clean state, otherwise data
+   leakage between requests is possible.
+
+3. Pool is not a panacea: on cold paths, the complexity of the code may not pay
+   off.
+
+4. Optimization should be confirmed by profiling, not intuition.
+
+#### Conclusion:
+
+`sync.Pool` is effective for reusing short-lived objects in hot paths where
+critical allocations and GC-pause are critical. Its strength lies in reducing
+allocation turbulence, but it should be applied selectively and profiled.
+
+</details>

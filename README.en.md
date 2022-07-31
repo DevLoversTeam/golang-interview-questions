@@ -3663,3 +3663,74 @@ critical allocations and GC-pause are critical. Its strength lies in reducing
 allocation turbulence, but it should be applied selectively and profiled.
 
 </details>
+
+
+<details>
+<summary>65. What do the `GOGC` and `GOMEMLIMIT` environment variables mean and how do they affect the garbage collector?</summary>
+
+#### Go
+
+`GOGC` and `GOMEMLIMIT` are key parameters to control GC behavior in Go. They
+allow you to balance memory consumption, garbage collection frequency and
+service performance.
+
+#### `GOGC`:
+
+1. Specifies the target heap growth rate before the next GC cycle (in percent).
+
+2. Typical value is `100` (allow the heap to roughly double relative to "live"
+   data after the previous GC).
+
+3. More `GOGC`:
+
+- less GC cycles;
+
+- more memory consumption;
+
+- potentially lower GC CPU overhead.
+
+4. Less than `GOGC`:
+
+- more frequent GC;
+
+- smaller heap;
+
+- higher assembly overhead.
+
+#### `GOMEMLIMIT`:
+
+1. Sets a soft upper memory limit within which the runtime tries to keep the
+   process.
+
+2. When memory approaches this limit, the GC works more aggressively, even if
+   `GOGC` a less frequent collection would allow.
+
+3. Especially useful in containers/orchestrators with hard memory limits.
+
+#### How they work together:
+
+1. `GOGC` sets the general "greedyness" of heap growth.
+
+2. `GOMEMLIMIT` acts as a fuse that limits excessive memory growth.
+
+3. In production, it is the combination of both parameters that gives the best
+   control of latency and OOM risks.
+
+#### Practical approach:
+
+1. Start with defaults.
+
+2. Measure `heap`, GC pause, CPU, tail-latency under real load.
+
+3. Tune parameters gradually, capturing impact on SLA.
+
+4. For containers, it is necessary to match `GOMEMLIMIT` with the platform
+   memory-limit.
+
+#### Conclusion:
+
+`GOGC` controls the GC frequency through the heap growth target, and
+`GOMEMLIMIT` limits memory from above. Together, they form a practical tool for
+fine-tuning the runtime behavior of Go services.
+
+</details>

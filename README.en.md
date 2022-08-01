@@ -3734,3 +3734,53 @@ service performance.
 fine-tuning the runtime behavior of Go services.
 
 </details>
+
+
+<details>
+<summary>66. What is `runtime.SetFinalizer` and is it used in the standard library?</summary>
+
+#### Go
+
+`runtime.SetFinalizer` is a mechanism for binding a finalizer function to an
+object that can be called by the GC before the object is finally freed.
+Important: The finalizer does not provide strict runtime guarantees and is not a
+reliable replacement for explicit `Close`/`Dispose`.
+
+#### What `SetFinalizer` does:
+
+1. Registers a callback for a specific heap object.
+
+2. When an object becomes unreachable, the runtime **may** run a finalizer.
+
+3. The object will then be collected in one of the next GC cycles.
+
+#### Key limitations:
+
+1. **There is no guarantee "when" the finalizer will run.**
+
+2. **There is no guarantee that it will execute before the process completes.**
+
+3. Finalizers complicate lifecycle reasoning and can create hidden costs/delays.
+
+#### Rule of thumb:
+
+1. For resources (files, sockets, handles, external connections), always use an
+   explicit closure (`defer obj.Close()`).
+
+2. The finalizer is only allowed as a "safety net" against usage errors, not the
+   primary way to control the resource.
+
+#### Whether used in the standard library:
+
+Yes, used pointwise in some low-level places as an auxiliary security/diagnostic
+mechanism, but not as the underlying resource management model. The general
+philosophy of the standard library is an explicit lifecycle and explicit
+closure.
+
+#### Conclusion:
+
+`runtime.SetFinalizer` is a specialized tool with soft guarantees. In
+production-Go, it is used carefully and rarely; explicit resource management
+remains the foundation of reliable code.
+
+</details>

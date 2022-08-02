@@ -3784,3 +3784,65 @@ production-Go, it is used carefully and rarely; explicit resource management
 remains the foundation of reliable code.
 
 </details>
+
+
+<details>
+<summary>67. How to find a memory leak with `pprof`?</summary>
+
+#### Go
+
+Searching for memory leaks in Go through `pprof` is based on comparing heap
+profiles over time: if "live" objects grow steadily without returning to the
+base level, we have a sign of a leak or uncontrolled reference retention.
+
+#### Basic diagnostic strategy:
+
+1. Enable profiling (`net/http/pprof`) in the service.
+
+2. Remove multiple heap profiles:
+
+- at the start;
+
+- under workload;
+
+- after a "quiet" period.
+
+3. Compare profiles (`go tool pprof`, diff-mode) to find types/stacks that keep
+   growing.
+
+#### What to watch in `pprof`:
+
+1. **`inuse_space` / `inuse_objects`** — that really remains in memory.
+
+2. **Top allocators** and their call stacks.
+
+3. **The call graph (`web`)** is where long-lived objects are kept.
+
+4. Dynamics after several GC cycles: the real leak does not "blow up".
+
+#### Typical sources of leaks:
+
+1. Global map/cache without eviction policy.
+
+2. Uncleared buffers/queues/channels.
+
+3. Non-terminating routines that hold references to large structures.
+
+4. Failed to project pools or "forever" metric/label collections.
+
+#### Practical techniques:
+
+1. Run profiles under a representative workload.
+
+2. Add comparison snapshots before/after fix.
+
+3. Watch the goroutine profile in parallel (`goroutine`) — goroutine leaks often
+   correlate with memory leaks.
+
+#### Conclusion:
+
+`pprof` allows you to find a memory leak not "by eye", but demonstrably: due to
+the growth of `inuse` metrics and specific retention stacks. The key to success
+is the time profile comparison in a stable, reproducible load.
+
+</details>

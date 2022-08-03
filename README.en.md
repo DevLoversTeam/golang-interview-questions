@@ -3846,3 +3846,68 @@ the growth of `inuse` metrics and specific retention stacks. The key to success
 is the time profile comparison in a stable, reproducible load.
 
 </details>
+
+
+<details>
+<summary>68. How to find hot paths and measure throughput?</summary>
+
+#### Go
+
+`Hot paths` are code sections where the program spends the most time or
+resources. To find them correctly, you need not intuition, but profiling under
+real or close to real load.
+
+#### How to find hot paths:
+
+1. **CPU Profiling (`pprof`):** shows where CPU time is spent the most.
+
+2. **Heap/alloc-profiles:** help to find "hot" allocation paths that often cause
+   indirect degradation through GC.
+
+3. **Trace (`go tool trace`):** gives a picture of the scheduler, locks, delays
+   between goroutines and I/O.
+
+4. **Flame graph / top / call graph:** visualize which functions form the main
+   cost.
+
+#### How to measure throughput:
+
+1. Define bandwidth business metrics:
+
+- req/s, msg/s, jobs/s, rows/s, etc.
+
+2. Conduct controlled load testing:
+
+- fixed input;
+
+- known competitive profile;
+
+- stable startup environment.
+
+3. Remove metrics simultaneously:
+
+- throughput;
+
+- latency (p50/p95/p99);
+
+- CPU, memory, GC, lock contention.
+
+4. Compare "before/after" changes under the same conditions (and preferably with
+   multiple runs).
+
+#### Practical principles:
+
+1. Optimize only what is confirmed by the profiler.
+
+2. Do not improve throughput at the cost of uncontrolled growth of tail-latency.
+
+3. After optimization, re-profile to ensure that the bottleneck is indeed gone
+   and not shifted.
+
+#### Conclusion:
+
+Finding hot paths and measuring throughput is a single cycle: **profiling →
+hypothesis → change → repeat measurement**. In Go, this approach is well
+supported by the standard tooling and gives engineering sound results.
+
+</details>

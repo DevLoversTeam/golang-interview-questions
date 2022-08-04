@@ -3911,3 +3911,71 @@ hypothesis → change → repeat measurement**. In Go, this approach is well
 supported by the standard tooling and gives engineering sound results.
 
 </details>
+
+
+<details>
+<summary>69. How to optimize string handling with `strings.Builder`? Why can't you concatenate in a loop?</summary>
+
+#### Go
+
+Strings are immutable in Go. This means that each concatenation operation
+creates a new string. Therefore, repeated `s += part` in a loop often generates
+an avalanche of allocations and copies.
+
+#### Why concatenation in a loop is inefficient:
+
+1. A new row is created on each iteration.
+
+2. Old content is copied over and over again.
+
+3. Total cost can grow quadratically for large volumes.
+
+4. Increasing pressure on the GC due to short-lived intermediate objects.
+
+#### How `strings.Builder` helps:
+
+1. `Builder` accumulates data in an internal buffer.
+
+2. Entries (`WriteString`, `WriteByte`, `WriteRune`) minimize redundant copies.
+
+3. The final line is generated once through `String()`.
+
+4. Can be called `Grow(n)` if needed to pre-reserve capacity and reduce
+   reallocation.
+
+#### Practical advantages:
+
+1. Less allocations.
+
+2. Better throughput in formatting/text generation hot paths.
+
+3. More stable latency behavior under load.
+
+#### When it is especially necessary to use:
+
+1. Generation of large payloads (JSON/SQL/HTML/log lines).
+
+2. String construction in loops.
+
+3. Any operations where a string is formed from many fragments.
+
+#### Conclusion:
+
+Concatenation in a loop is expensive due to repeated allocations and copying of
+immutable rows. `strings.Builder` is an idiomatic and efficient tool for
+constructing strings in Go, especially in performance-sensitive places.
+
+#### Example:
+
+```go
+var b strings.Builder
+b.Grow(1024)
+
+for _, part := range parts {
+	b.WriteString(part)
+}
+
+result := b.String()
+```
+
+</details>

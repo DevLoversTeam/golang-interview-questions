@@ -3979,3 +3979,68 @@ result := b.String()
 ```
 
 </details>
+
+
+<details>
+<summary>70. How to optimize serialization?</summary>
+
+#### Go
+
+Optimizing serialization in Go is primarily work with allocations, data format,
+buffer reuse, and reducing reflection in hot paths. Only a profiled approach
+gives the best result, not "blind" micro-optimizations.
+
+#### Practical optimization strategies:
+
+1. **Selecting a format for the task:**
+
+- JSON is convenient and versatile, but heavier than CPU;
+
+- Protobuf/MessagePack are often faster and more compact for inter-service
+  traffic.
+
+2. **Reduction of allocations:**
+
+- reuse `bytes.Buffer` / `[]byte` via `sync.Pool`;
+
+- avoid unnecessary intermediate objects during marshal/unmarshal.
+
+3. **Thread Serialization:**
+
+- use `Encoder/Decoder` for large streams to avoid keeping the entire payload in
+  memory at once.
+
+4. **Data structure optimization:**
+
+- remove unnecessary fields;
+
+- use correct tags (`omitempty`, short keys if necessary);
+
+- avoid overly nested structures unless required by business logic.
+
+5. **Avoidance of redundant reflection in hot-path:**
+
+- in critical places consider code generation or manual optimized
+  (de)serialization.
+
+6. **Payload size control:**
+
+- compression is appropriate only after measurements, because it adds CPU costs;
+
+- sometimes it is better to transmit less data than to compress "better".
+
+#### How to evaluate the effect:
+
+1. Benchmarks (`go test -bench`) before/after.
+
+2. CPU/alloc profiles (`pprof`).
+
+3. Production metrics: throughput, p95/p99 latency, heap, GC.
+
+#### Conclusion:
+
+Optimal serialization is a balance of format, allocations, and code complexity.
+In Go, it's best practice to profile, clean up redundant copies, reuse buffers,
+and choose a format that meets the requirements of a particular system.
+
+</details>

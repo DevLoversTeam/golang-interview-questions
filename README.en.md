@@ -4044,3 +4044,55 @@ In Go, it's best practice to profile, clean up redundant copies, reuse buffers,
 and choose a format that meets the requirements of a particular system.
 
 </details>
+
+
+<details>
+<summary>71. How to optimize work with files?</summary>
+
+#### Go
+
+Optimizing file I/O in Go is about choosing the right read/write pattern, buffer
+size, concurrency level, and disk strategy. The main goal is to reduce system
+calls, redundant copies and deadlocks.
+
+#### Key practices:
+
+1. **Buffered I/O (`bufio.Reader/Writer`):** reduces the number of small
+   `read/write` and increases throughput.
+
+2. **Batch processing instead of byte-by-byte access:** reading/writing in
+   blocks is much more efficient than small operations.
+
+3. **Threading of large files:** do not load the entire file into memory if it
+   can be processed in parts.
+
+4. **Proper handle management:** `defer file.Close()` immediately after opening;
+   this is basic hygiene to avoid FD leaks.
+
+5. **Concurrency control:** parallelism is only useful within disk/FS bandwidth;
+   excessive parallel I/O operations can degrade latency.
+
+6. **Minimize redundant copies:** use `io.Copy` and reuse buffers where
+   appropriate.
+
+7. **Pre-Optimization Profiling:** measure whether the bottleneck is in disk,
+   CPU, serialization or synchronization.
+
+#### Additional engineering tips:
+
+1. For logs/events, consider the flush policy (frequent flushes = lower
+   throughput).
+
+2. For large pipelines, separate reading, processing, and writing into
+   manageable stages.
+
+3. For critical scenarios, check file system and container/host settings (I/O
+   quota, volume type, network storage).
+
+#### Conclusion:
+
+Working efficiently with files in Go is a discipline of buffering, streaming,
+controlled parallelism, and measurements. Optimization should be based on the
+real load profile, not on general assumptions.
+
+</details>

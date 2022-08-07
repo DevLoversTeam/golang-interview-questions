@@ -4096,3 +4096,70 @@ controlled parallelism, and measurements. Optimization should be based on the
 real load profile, not on general assumptions.
 
 </details>
+
+
+<details>
+<summary>72. How does batching work and when is it appropriate?</summary>
+
+#### Go
+
+`Batching` is the combination of many small operations into larger packages
+(batch) to reduce the overhead of each individual operation. In highly loaded
+systems, this is one of the most effective ways to increase throughput.
+
+#### How batching works:
+
+1. Events/records accumulate in the buffer.
+
+2. Batch is sent according to one of the triggers:
+
+- reached size `N`;
+
+- timeout `T`;
+
+- complete/flush received.
+
+3. The operation is performed by one "batch" call (DB, network, disk, queue).
+
+#### Why it is effective:
+
+1. **Fewer system calls and round-trips.**
+
+2. **Better loading of the I/O channel** (network, disk, database).
+
+3. **Less synchronization overhead** for large numbers of small tasks.
+
+#### When batching is appropriate:
+
+1. Mass operations of the same type (logging, telemetry, bulk insert/update).
+
+2. Scenarios where throughput is more important than the minimum possible unit
+   latency.
+
+3. Integrations where the external system works well with batch requests.
+
+#### When batching can be harmful:
+
+1. Strict requirements for the delay of a single operation.
+
+2. Failed batch-size/timeout configuration, increasing tail latency.
+
+3. High risk of losing a large block of data without proper retry/flush logic.
+
+#### Practical rules:
+
+1. Set **both size and time** (`N` + `T`) at the same time.
+
+2. Have an explicit flush at shutdown.
+
+3. Provide retry/backoff for partial or complete failures of batch requests.
+
+4. Measure throughput ↔ latency balance on real load.
+
+#### Conclusion:
+
+Batching is an architectural performance multiplier for bulk operations. Its
+power is revealed where the reduction of per-request overhead is more important
+than the instantaneous response of each single event.
+
+</details>

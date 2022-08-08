@@ -4163,3 +4163,55 @@ power is revealed where the reduction of per-request overhead is more important
 than the instantaneous response of each single event.
 
 </details>
+
+
+<details>
+<summary>73. When is code generation (`go generate`) better than reflection?</summary>
+
+#### Go
+
+`Code generation` and `reflection` solve similar metaprogramming problems, but
+have different prices. In Go, code generation often wins where speed, type
+safety, and predictability are needed in production.
+
+#### When `go generate` is better than reflection:
+
+1. **Hot-path performance is critical:** generated code runs without runtime
+   reflection, so it's usually faster and with smaller allocations.
+
+2. **Strong type safety required:** errors are detected at compile time, not at
+   runtime.
+
+3. **High latency/throughput requirements:** serialization, mapping, RPC codecs,
+   validation in bulk requests.
+
+4. **Stable data contract:** when schemas are known in advance and rarely
+   change.
+
+5. **Requires transparent debugging:** generated calls can be profiled and
+   analyzed like regular Go code.
+
+#### When reflection is justified:
+
+1. The scheme is dynamic and defined only at runtime.
+
+2. Requires rapid prototyping or universal library flexibility.
+
+3. Low performance requirements, where it is easier to accept the runtime
+   overhead.
+
+#### Compromises `go generate`:
+
+1. Adds a step in build/workflow.
+
+2. Must support templates/generators.
+
+3. The generated code increases the size of the repository.
+
+#### Practical conclusion:
+
+If the system is performance sensitive and the default model is stable, `go
+generate` is usually better than reflection. Reflection is appropriate where the
+main value is dynamism, and not maximum performance efficiency.
+
+</details>

@@ -4215,3 +4215,66 @@ generate` is usually better than reflection. Reflection is appropriate where the
 main value is dynamism, and not maximum performance efficiency.
 
 </details>
+
+
+<details>
+<summary>74. What is Escape Analysis and how to check it with compiler flags?</summary>
+
+#### Go
+
+`Escape Analysis` is a Go compiler analysis that determines whether a value can
+remain on the stack or must be allocated on the heap because it "runs away" from
+the current stack frame.
+
+#### Why is it important:
+
+1. Stack allocations are cheaper.
+
+2. Heap allocations increase GC pressure.
+
+3. Understanding escape behavior helps optimize hot paths.
+
+#### Typical reasons for escape:
+
+1. Return pointer to local value.
+
+2. Preserving value in a long-lived structure.
+
+3. Capture of variable by closure.
+
+4. Passing a value into contexts where the compiler cannot guarantee a local
+   lifecycle.
+
+#### How to check compiler flags:
+
+The most used method:
+
+1. `go build -gcflags="-m" ./...`
+
+2. For more detailed output: `go build -gcflags="-m -m" ./...`
+
+Messages are searched for phrases like:
+
+- `moved to heap`
+
+- `escapes to heap`
+
+This is a direct indicator that no value has been left on the stack.
+
+#### Practical process:
+
+1. Run the benchmark/profile and find the hot fragment.
+
+2. Check compiler escape output for this section.
+
+3. Refactor locally (without degrading readability).
+
+4. Remeasure effect (`bench`, `pprof`, allocs/op).
+
+#### Conclusion:
+
+Escape Analysis is a compiler "radar" for allocation behavior. `-gcflags="-m"`
+allows you to see where data is leaking into the heap and make informed
+decisions about memory and performance optimization.
+
+</details>

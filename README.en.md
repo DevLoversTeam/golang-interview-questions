@@ -4278,3 +4278,54 @@ allows you to see where data is leaking into the heap and make informed
 decisions about memory and performance optimization.
 
 </details>
+
+
+<details>
+<summary>75. Why are `panic` and `recover` not a replacement for normal error handling?</summary>
+
+#### Go
+
+In Go, `panic/recover` are for exceptional, emergency situations, not for normal
+business logic error handling. The normal way to handle errors is to explicitly
+return `error` and control the execution flow.
+
+#### Why `panic/recover` is not replaced by `error handling`:
+
+1. **Violate contract clarity:** with `error`, the function signature explicitly
+   shows what can go wrong; with `panic` the error becomes implicit.
+
+2. **Make flow control more difficult:** panic unwinds the stack, making the
+   behavior less predictable for the caller.
+
+3. **Test worse:** testing for panic scenarios is more difficult and less
+   natural than testing for returned errors.
+
+4. **Deteriorate the reliability of services:** an uncaught panic in a goroutine
+   can destroy a process or an important processing loop.
+
+5. **`recover` is local in nature:** works only in `defer` the same goroutine,
+   so it is not a universal error mechanism between components.
+
+#### When `panic` is justified:
+
+1. Violation of internal invariants, which means a software error.
+
+2. Contractually impossible states ("this should never happen").
+
+3. Critical initialization failures when continuing is incorrect.
+
+#### When `error` is needed:
+
+1. Expected failures of external systems (network, DB, I/O).
+
+2. Validation and domain errors.
+
+3. Any situations where the caller has a choice of how to respond.
+
+#### Conclusion:
+
+In mature Go code, `error` is the primary tool for managed error handling.
+`panic/recover` is an emergency mechanism for exceptional cases, not an everyday
+alternative to standard error handling.
+
+</details>

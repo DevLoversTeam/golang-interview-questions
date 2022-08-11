@@ -4329,3 +4329,70 @@ In mature Go code, `error` is the primary tool for managed error handling.
 alternative to standard error handling.
 
 </details>
+
+
+<details>
+<summary>76. How do `errors.Is` and `errors.As` work with error wrapping in Go and what is the difference between them?</summary>
+
+#### Go
+
+In modern Go, errors are often "wrapped" by adding context via `fmt.Errorf("...:
+%w", err)`. `errors.Is` and `errors.As` allow you to work correctly with such a
+chain of errors without losing the original cause.
+
+#### How `errors.Is` works:
+
+1. Checks if the error chain contains a specific target error.
+
+2. Used mainly for sentinel errors (`io.EOF`, `context.Canceled`, etc.).
+
+3. Semantics: **"is this (or a wrapped version) the exact error?"**
+
+#### How `errors.As` works:
+
+1. Searches the chain for an error of a specific type.
+
+2. If found, writes it to the passed target (pointer).
+
+3. Semantics: **"can an error of this type be removed from the string?"**
+
+#### Key Difference:
+
+1. `errors.Is` — error **identity/equivalence** check.
+
+2. `errors.As` — **type** checking and access to type-specific fields/methods.
+
+#### Practical pattern of use:
+
+1. First `errors.Is` for known sentinel cases.
+
+2. Then `errors.As` if custom-type details (code, metadata, context) are
+   required.
+
+3. Do not compare wrapped errors through `==`, because this way correctness is
+   lost in the wrapping chain.
+
+#### Conclusion:
+
+`errors.Is` answers the question "is this the same error?", and `errors.As`
+answers "is this the same type of error?". Together, they form a correct and
+reliable model for working with error wrapping in Go.
+
+#### Example:
+
+```go
+if err := repo.Save(ctx, x); err != nil {
+	return fmt.Errorf("save user: %w", err)
+}
+
+if errors.Is(err, sql.ErrNoRows) {
+	// перевірка sentinel-помилки
+}
+
+var ve *ValidationError
+if errors.As(err, &ve) {
+	// доступ до полів конкретного типу помилки
+}
+```
+
+</details>

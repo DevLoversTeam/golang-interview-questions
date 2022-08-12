@@ -4396,3 +4396,76 @@ if errors.As(err, &ve) {
 ```
 
 </details>
+
+
+<details>
+<summary>77. When should you use custom error type instead of sentinel error and what are the practical consequences of this choice for the architecture?</summary>
+
+#### Go
+
+`Sentinel error` and `custom error type` are different error modeling tools.
+Sentinel is suitable for a simple binary signal, and custom type - when the
+error carries a structured context and affects the behavior of several layers of
+the system.
+
+#### When sentinel error is enough:
+
+1. Only the fact of the specific error category is required.
+
+2. No need to pass additional fields.
+
+3. Checking through `errors.Is` is sufficient.
+
+#### When is a custom error type:
+
+1. Requires **structured details**:
+
+- error code;
+
+- domain reason;
+
+- resource identifier;
+
+- retryability;
+
+- HTTP/gRPC mapping.
+
+2. Different layers must make different decisions based on these fields.
+
+3. Require stable evolution of error contract without chaotic string checks.
+
+#### Architectural consequences of the choice:
+
+1. **Sentinel error**
+
+- an easier start;
+
+- less code;
+
+- but weaker expressiveness and risk of "growth" of implicit processing rules.
+
+2. **Custom error type**
+
+- clearer domain contract;
+
+- better integration between transport/service/domain layers;
+
+- higher testing of processing policies;
+
+- but requires design discipline and a versioning approach.
+
+#### Recommended practice:
+
+1. For simple global signals — sentinel.
+
+2. For domain-significant errors — custom type + `errors.As`.
+
+3. Wrap lower errors through `%w` without losing causation.
+
+#### Conclusion:
+
+The choice between sentinel and custom type is a choice of the expressiveness
+level of the error architecture. When an error affects decision routing in the
+system, a custom error type provides a much more robust and scalable contract.
+
+</details>

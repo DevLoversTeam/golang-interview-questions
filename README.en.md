@@ -4469,3 +4469,60 @@ level of the error architecture. When an error affects decision routing in the
 system, a custom error type provides a much more robust and scalable contract.
 
 </details>
+
+
+<details>
+<summary>78. How does `defer` behave inside a loop and what might be the memory and performance implications?</summary>
+
+#### Go
+
+`defer` in Go is not executed at the end of the loop iteration, but at the
+moment of exit from the surrounding function. Therefore, `defer` inside the loop
+accumulates and is triggered only after the completion of the entire function.
+
+#### How it works:
+
+1. Each iteration adds a new deferred call to the defer stack.
+
+2. These calls are not executed until the end of the function.
+
+3. They are run in reverse (LIFO) order on exit.
+
+#### Potential consequences:
+
+1. **Delayed release of resources:** files, sockets, transactions, locks may
+   remain open longer than necessary.
+
+2. **Increased memory consumption:** many defer entries in a long loop increase
+   overhead.
+
+3. **Performance degradation:** in hot loops, excessive defers add
+   runtime-overhead.
+
+4. **Risk of running out of resources:** eg "too many open files" if `defer
+   file.Close()` is in a long read cycle.
+
+#### When it's safe:
+
+1. Small number of iterations.
+
+2. Short function life cycle.
+
+3. Resources are not scarce.
+
+#### Best practice for loops:
+
+1. Put the iteration body into a separate function and put `defer` there.
+
+2. Or close/release the resource explicitly at the end of each iteration.
+
+3. For locks, it is especially important to control the holding time of the
+   critical section.
+
+#### Conclusion:
+
+`defer` in a loop is a tool that requires discipline: it simplifies code, but
+can stealthily accumulate resources and overhead. If there are many iterations,
+it is better to ensure that resources are released within each step.
+
+</details>

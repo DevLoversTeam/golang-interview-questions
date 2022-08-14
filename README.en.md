@@ -4526,3 +4526,65 @@ can stealthily accumulate resources and overhead. If there are many iterations,
 it is better to ensure that resources are released within each step.
 
 </details>
+
+
+<details>
+<summary>79. How does the `init` function work and can you rely on the order of its execution?</summary>
+
+#### Go
+
+`init` in Go is a special package function that is executed automatically during
+program initialization (before `main`). It is used for initial setup, which
+should happen once before starting the main logic.
+
+#### How initialization works:
+
+1. Imported dependencies are initialized first.
+
+2. The package variables are then initialized.
+
+3. After that, the `init` functions of the package are called.
+
+4. Only after the entire initialization tree has completed does `main` run.
+
+#### Can you rely on the order:
+
+1. **Between packages**: yes, within dependencies, the order is defined - first
+   dependencies, then consumer package.
+
+2. **Within one package**:
+
+- the order of initialization of variables is determined by dependencies between
+  them;
+
+- for multiple `init` different files in the same package, relying on a "random"
+  text file order is a bad design idea.
+
+3. Conclusion: there are basic guarantees, but architecturally it is better not
+   to build critical business logic on complex implicit `init` chains.
+
+#### Risks of overuse `init`:
+
+1. Implicit side effects.
+
+2. Heavier debugging and testing.
+
+3. More complex order control in large codebases.
+
+#### Practical recommendation:
+
+1. Keep `init` minimal and predictable.
+
+2. Use explicit constructors/`Setup`-functions for important initializations.
+
+3. Dependencies and launch order should be fixed explicitly in the composition
+   layer.
+
+#### Conclusion:
+
+`init` in Go is performed automatically and has formal order guarantees at the
+level of the import graph. However, for a readable, testable architecture, it is
+better to make critical initializations explicit rather than relying on hidden
+`init` effects.
+
+</details>

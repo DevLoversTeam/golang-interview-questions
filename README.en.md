@@ -4588,3 +4588,56 @@ better to make critical initializations explicit rather than relying on hidden
 `init` effects.
 
 </details>
+
+
+<details>
+<summary>80. Why should you avoid global variables and `init` functions in libraries?</summary>
+
+#### Go
+
+In library code, global variables and "heavy" `init` functions often create
+implicit behavior that makes it difficult to integrate, test, and predict the
+application. This is especially critical for reusable packages.
+
+#### Why global variables are bad in libraries:
+
+1. **Hidden shared mutable state:** A consumer of the library may not know that
+   there is global state somewhere that affects behavior.
+
+2. **Competitiveness issues:** globals easily become a source of
+   race/contention.
+
+3. **Complex testing:** tests start to depend on the run order and side effects
+   of previous cases.
+
+4. **Poor composability:** it is difficult to have multiple independent library
+   instances with different settings.
+
+#### Why "heavy" `init` is undesirable:
+
+1. **Implicit import side effects:** just `import` and the code is already
+   executed.
+
+2. **No explicit initialization time control:** It is difficult to control the
+   startup order/conditions in a large application.
+
+3. **Degraded observability/debuggability:** startup errors and side effects are
+   harder to localize.
+
+#### What is better instead:
+
+1. Explicit constructors (`New(...)`) and configuration structures.
+
+2. Instance-oriented design without global mutable state.
+
+3. Explicit `Setup/Start/Close` lifecycle where needed.
+
+4. Minimum `init` only for actions without side effects.
+
+#### Conclusion:
+
+The library should be predictable and user-driven. Avoiding global state and
+excessive `init` is an investment in the testability, scalability, and
+architectural purity of Go code.
+
+</details>

@@ -4641,3 +4641,55 @@ excessive `init` is an investment in the testability, scalability, and
 architectural purity of Go code.
 
 </details>
+
+
+<details>
+<summary>81. What happens if you serialize to JSON a structure with fields starting with a lowercase letter?</summary>
+
+#### Go
+
+In Go, struct fields starting with a lowercase letter are non-exportable
+(`unexported`). The `encoding/json` package does not have reflective access to
+them as public fields, so they are ignored during serialization.
+
+#### What happens with `json.Marshal`:
+
+1. Only exported fields (in upper case) will be included in JSON.
+
+2. Lowercase fields will be ignored.
+
+3. The `json:"..."` tags on non-exported fields do not "force" them to be
+   serialized.
+
+#### Consequences in practice:
+
+1. Unexpectedly "empty" or incomplete JSON.
+
+2. Loss of important data in API responses.
+
+3. Difficult to debug errors if the developer didn't take the export rule into
+   account.
+
+#### What about deserialization (`json.Unmarshal`):
+
+1. Similarly, `encoding/json` will not write data to non-exported fields
+   directly.
+
+2. Process control requires custom `MarshalJSON` / `UnmarshalJSON` , separate
+   DTOs, or other explicit transformation mechanisms.
+
+#### Rule of thumb:
+
+1. For fields to be JSON, use exported names.
+
+2. Keep domain-sensitive internal data unexported deliberately.
+
+3. Separate internal models and transport DTOs when fine-grained public contract
+   control is required.
+
+#### Conclusion:
+
+In Go, JSON serialization only works with exported structure fields. Lowercase
+fields in standard `encoding/json` are not serialized, even if they are tagged.
+
+</details>

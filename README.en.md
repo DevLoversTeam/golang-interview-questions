@@ -4693,3 +4693,64 @@ In Go, JSON serialization only works with exported structure fields. Lowercase
 fields in standard `encoding/json` are not serialized, even if they are tagged.
 
 </details>
+
+
+<details>
+<summary>82. What are some ways to get data from JSON in Go?</summary>
+
+#### Go
+
+There is no single "right" way to work with JSON in Go: the approach is chosen
+based on schema stability, performance requirements, and level of type safety.
+
+#### Main methods:
+
+1. **Decoding to structure (`struct`)**
+
+- the most typical and most reliable option for a known scheme;
+
+- provides type safety, clear contracts, and better maintainability.
+
+2. **Decoding in `map[string]any`**
+
+- is convenient for partially dynamic payloads;
+
+- flexible, but less secure: requires assertions and type checks.
+
+3. **Stream reading via `json.Decoder`**
+
+- is suitable for large JSON or streams (HTTP body, files);
+
+- allows you to work without loading the entire document into memory.
+
+4. **`json.RawMessage` for deferred/partial parsing**
+
+- useful when part of the scheme depends on the "discriminator" field;
+
+- gives control over the decoding steps.
+
+5. **Custom `UnmarshalJSON` / `MarshalJSON`**
+
+- for non-standard formats, validation or special business semantics.
+
+6. **Third libraries / codegen**
+
+- is appropriate for high-performance or specific compatibility requirements.
+
+#### Practical choice:
+
+1. Stable API contract → `struct`.
+
+2. Dynamic or partially unknown JSON → `map` + `RawMessage`.
+
+3. Large volumes of data → `Decoder` (streaming).
+
+4. Critical performance/pathological JSON → profiling + codegen/alternatives.
+
+#### Conclusion:
+
+The optimal way to "fetch" JSON data in Go depends on the nature of the schema.
+In most production cases, typed structures are the basic choice, and dynamic
+mechanisms (`map`, `RawMessage`, custom unmarshal) — for more complex scenarios.
+
+</details>

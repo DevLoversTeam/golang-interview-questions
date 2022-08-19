@@ -4819,3 +4819,53 @@ if err := json.NewEncoder(w).Encode(resp); err != nil {
 ```
 
 </details>
+
+
+<details>
+<summary>84. What is `json.RawMessage` and when is it useful?</summary>
+
+#### Go
+
+`json.RawMessage` is a type (essentially `[]byte`) from the `encoding/json`
+package that allows you to save a JSON fragment "as is" without immediately
+parsing it into a specific structure.
+
+#### What it does:
+
+1. **Deferred Parsing:** only the "wrapper" of the message can be parsed first,
+   and the complex field later when the required type is known.
+
+2. **Partial decoding:** we analyze only those parts of the payload that are
+   really needed in this step.
+
+3. **Transparent Retransmission:** A JSON fragment can be retransmitted without
+   losing the original representation.
+
+#### When it is especially useful:
+
+1. **Polymorphic payloads:** when the field type depends on the
+   `type/kind/version`-discriminator.
+
+2. **Event-driven systems:** the event wrapper is stable and the event body has
+   different schemas.
+
+3. **Integration gateways:** need to read the routing metadata and pass the
+   "body" on almost unchanged.
+
+4. **Performance optimization:** avoiding unnecessary full unmarshal for large
+   or partially unnecessary objects.
+
+#### What to consider:
+
+1. `RawMessage` does not automatically validate the semantics — the validation
+   is left to your logic when `Unmarshal` follows.
+
+2. Deferred parsing complicates code if applied unnecessarily.
+
+#### Conclusion:
+
+`json.RawMessage` is a tool for managed "late binding" of JSON data. It is
+especially valuable in polymorphic and multi-format protocols, where the type of
+the internal payload is determined only at runtime.
+
+</details>

@@ -4869,3 +4869,59 @@ especially valuable in polymorphic and multi-format protocols, where the type of
 the internal payload is determined only at runtime.
 
 </details>
+
+
+<details>
+<summary>85. How to implement a custom marshaler for JSON?</summary>
+
+#### Go
+
+A custom marshaler in Go is implemented through the `MarshalJSON() ([]byte,
+error)` method on your type. This allows full control over how an object is
+serialized into JSON: field format, validation, computed values, masking, etc.
+
+#### Basic approach:
+
+1. Add method: `func (t MyType) MarshalJSON() ([]byte, error)`.
+
+2. Internally create an intermediate representation (often an alias/DTO
+   structure).
+
+3. Call `json.Marshal` for this view.
+
+4. Return bytes or error.
+
+#### Why do they do it:
+
+1. **Non-standard output format:** eg time conversion, enum, decimal, mask
+   fields.
+
+2. **External contract compatibility:** when an API requires a specific schema
+   or naming convention.
+
+3. **Managed data hiding:** do not output sensitive fields or generate a
+   redacted version.
+
+4. **Computed/derived fields:** include values ​​in JSON that are not present as
+   "raw" structure fields.
+
+#### A typical technique without recursion:
+
+To avoid an infinite call to `MarshalJSON`, use the alias type (`type alias
+MyType`) and marshal the alias or a separate DTO.
+
+#### Important tips:
+
+1. Keep marshalling logic deterministic and simple.
+
+2. Write tests on edge-cases and backward compatibility of the JSON contract.
+
+3. If symmetry is required, also implement `UnmarshalJSON`.
+
+#### Conclusion:
+
+Custom `MarshalJSON` is a tool for fine-tuning public exposure. In production,
+it is used when standard tags are not sufficient for contract, security or
+domain semantics.
+
+</details>

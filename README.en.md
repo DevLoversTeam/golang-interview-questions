@@ -4925,3 +4925,64 @@ it is used when standard tags are not sufficient for contract, security or
 domain semantics.
 
 </details>
+
+
+<details>
+<summary>86. How to parse multi-typed JSON if the input data or any of the fields can be either a `[...]` array or a `{...}` object?</summary>
+
+#### Go
+
+When a JSON field has a "float" form (sometimes an array, sometimes an object),
+the most reliable approach in Go is deferred decoding via `json.RawMessage` or
+custom `UnmarshalJSON` with actual type recognition.
+
+#### Canonical strategy:
+
+1. Decode the problematic field in `json.RawMessage`.
+
+2. Look at the first significant byte:
+
+- `[` → this is an array;
+
+- `{` → this is an object.
+
+3. Depending on the form, commit `json.Unmarshal` to the appropriate target
+   type.
+
+4. Normalize the result into an internal single model (so that the code does not
+   depend on the external "fluid" scheme).
+
+#### Alternative: Custom `UnmarshalJSON`:
+
+1. Implement a method on your own type.
+
+2. Inside the method, try parsing in `[]T`, and if it doesn't fit - in `T` (or
+   vice versa).
+
+3. Save in unified representation, eg always as `[]T`.
+
+#### Why this is important:
+
+1. External APIs are often inconsistent between versions/endpoints.
+
+2. Direct `Unmarshal` into a hard structure gives errors like `cannot unmarshal
+   object into Go value of type []...`.
+
+3. Input normalization dramatically simplifies the rest of the business logic.
+
+#### Practical tips:
+
+1. Clearly document acceptable forms of input JSON.
+
+2. Log anomalous payloads to diagnose contract failures.
+
+3. Cover with tests both forms (`{}` and `[]`) + edge-cases (null, empty values,
+   incorrect type).
+
+#### Conclusion:
+
+For multi-type JSON, the pattern "RawMessage → shape detection → target
+Unmarshal → normalization" works best in Go. This gives stable processing even
+with an unstable external contract.
+
+</details>

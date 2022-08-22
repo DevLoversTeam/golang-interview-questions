@@ -4986,3 +4986,63 @@ Unmarshal → normalization" works best in Go. This gives stable processing even
 with an unstable external contract.
 
 </details>
+
+
+<details>
+<summary>87. How to test serialization (XML/JSON) in Go when the order of the keys in the map is not deterministic?</summary>
+
+#### Go
+
+When the order of keys in `map` is non-deterministic, tests cannot be built on a
+literal comparison of "raw" serialization strings. The correct approach is to
+compare the content, not the random order of presentation.
+
+#### Robust strategies for JSON:
+
+1. **Round-trip structure comparison:**
+
+- serialize;
+
+- deserialize back to type/normalized model;
+
+- compare data as a structure.
+
+2. **Canonicalization before comparison:**
+
+- parse JSON into intermediate model;
+
+- sort keys/collections;
+
+- compare canonical view.
+
+3. **Semantic assertions instead of string equality:**
+
+- check specific fields and invariants.
+
+#### For XML:
+
+1. Similar principle: compare element/attribute tree, not raw string.
+
+2. Normalize spaces, formatting, order of attributes (if the contract allows
+   it).
+
+3. Check the semantic equivalence of parsed structures.
+
+#### When you need a golden file:
+
+1. Form **deterministic output**:
+
+- sort keys before serialization;
+
+- or serialize not `map` but a struct/ordered list of pairs.
+
+2. Golden test should fail only on semantic changes of the contract, not random
+   order of keys.
+
+#### Practical conclusion:
+
+Serialization tests for `map` do not compare "text one-to-one", but data
+equivalence. Determinism must either be introduced explicitly (sorting), or
+apply semantic-level checks.
+
+</details>

@@ -5046,3 +5046,66 @@ equivalence. Determinism must either be introduced explicitly (sorting), or
 apply semantic-level checks.
 
 </details>
+
+
+<details>
+<summary>88. What are the advantages and disadvantages of Protobuf compared to JSON? How is serialization different in Protobuf?</summary>
+
+#### Go
+
+Protobuf and JSON are two different classes of formats: JSON is focused on human
+readability and versatility, while Protobuf is focused on compactness, speed,
+and machine interaction contractibility.
+
+#### Advantages of Protobuf over JSON:
+
+1. **More compact payload size:** binary encoding is usually significantly
+   smaller than textual JSON.
+
+2. **Higher serialization/deserialization performance:** less parsing overhead
+   and better throughput in interservice traffic.
+
+3. **Strict schema-first contract (`.proto`):** Clear typical model, codegen and
+   field evolution control.
+
+4. **Better backward/forward compatibility by field and tag rule.**
+
+#### Disadvantages of Protobuf:
+
+1. **Less eye-readable:** binary format is not convenient for manual debugging
+   without tools.
+
+2. **Additional infrastructure:** `.proto`, code generation, schema versioning.
+
+3. **Entry threshold is higher than JSON.**
+
+#### Advantages of JSON:
+
+1. Easy integration and quick start.
+
+2. Human readability and convenience of manual analysis.
+
+3. Broad compatibility in the web ecosystem.
+
+#### How serialization differs in Protobuf:
+
+1. Data is encoded not by field names, but by numeric tags (`field numbers`).
+
+2. The format is binary, with distinct wire-level types.
+
+3. Structures are generated from `.proto` (code generation), not reflected as in
+   a typical JSON stream.
+
+4. Contract evolution requires discipline:
+
+- do not reuse old tags;
+
+- carefully change the types/optional/repeated fields.
+
+#### Conclusion:
+
+JSON is better for open, human-centric APIs and fast integration. Protobuf is
+for high-performance interservice systems with a clear schematic contract, where
+payload size, latency and stability of evolution are critical.
+
+</details>

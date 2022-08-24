@@ -5109,3 +5109,49 @@ for high-performance interservice systems with a clear schematic contract, where
 payload size, latency and stability of evolution are critical.
 
 </details>
+
+
+<details>
+<summary>89. Why should `http.Client` be reused instead of creating a new one for each request?</summary>
+
+#### Go
+
+In Go, `http.Client` and its transport (`http.Transport`) manage TCP connection
+pooling, keep-alives, TLS sessions, and other network optimizations. If you
+create a new client for each request, these benefits are lost.
+
+#### Why reuse is important:
+
+1. **Connection pooling:** reusing already open connections reduces latency.
+
+2. **Less handshake overhead:** fewer TCP/TLS setups per request.
+
+3. **Better throughput:** more stable throughput in high-load scenarios.
+
+4. **Resource Control:** Mass creation of new clients/transports can increase
+   the number of sockets and exhaust system resources.
+
+#### What happens with "client per request":
+
+1. Worse disposal of keep-alive.
+
+2. More short-lived connections.
+
+3. Higher latencies and extra network/CPU pressure.
+
+#### Recommended practice:
+
+1. Have a long-lived `http.Client` (often one per service or policy class).
+
+2. Configure timeouts and parameters `Transport` explicitly under workload.
+
+3. For different SLAs/Routes - Separate reuse clients, but not "new client per
+   call".
+
+#### Conclusion:
+
+`http.Client` should be reused in Go because it provides network efficiency,
+lower latency, and better stability under load. Creating a new client for each
+request is a typical anti-practice for production systems.
+
+</details>

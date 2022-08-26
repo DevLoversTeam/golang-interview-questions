@@ -5213,3 +5213,52 @@ _ = body
 ```
 
 </details>
+
+
+<details>
+<summary>91. How is `http.DefaultServeMux` different from custom `ServeMux`?</summary>
+
+#### Go
+
+`http.DefaultServeMux` is the "default" global router. A custom `ServeMux` is a
+separate explicitly created router instance that you manage locally within a
+specific server.
+
+#### `http.DefaultServeMux`:
+
+1. **Global package state `net/http`:** registration via `http.Handle` /
+   `http.HandleFunc` writes exactly there.
+
+2. **Quickstart:** good for simple examples and small utilities.
+
+3. **Risks in larger projects:** implicit registrations from different packages,
+   more complex control of dependencies and tests.
+
+#### Custom `ServeMux`:
+
+1. **Explicit composition:** `mux := http.NewServeMux()` and passing it to
+   `http.Server{Handler: mux}`.
+
+2. **Route isolation:** each server/test/instance can have its own handler
+   table.
+
+3. **Better testability and maintainability:** fewer global side effects, easier
+   to do independent integration tests.
+
+4. **Safer architecture for monoliths and microservices:** routing becomes part
+   of the explicit bootstrap code.
+
+#### Practical choice:
+
+1. For production code, custom `ServeMux` is almost always better.
+
+2. `DefaultServeMux` is mostly appropriate for very simple scenarios or
+   tutorials.
+
+#### Conclusion:
+
+The difference between them is in the level of transparency and control.
+`DefaultServeMux` convenient but global; custom `ServeMux` gives isolated,
+controlled, and architecturally cleaner routing.
+
+</details>

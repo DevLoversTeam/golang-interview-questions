@@ -5262,3 +5262,71 @@ The difference between them is in the level of transparency and control.
 controlled, and architecturally cleaner routing.
 
 </details>
+
+
+<details>
+<summary>92. How to properly implement graceful shutdown of HTTP server and background worker in Go?</summary>
+
+#### Go
+
+`Graceful shutdown` in Go is a controlled service termination without losing
+requests and without "orphaned" goroutines. The idea is simple: stop receiving a
+new load, let the active work finish, correctly stop the background and close
+the resources in a predictable sequence.
+
+#### Canonical sequence:
+
+1. Intercept completion signals (`SIGTERM`, `SIGINT`).
+
+2. Create `context` with timeout for shutdown phase.
+
+3. Call `server.Shutdown(ctx)`:
+
+- new connections are no longer accepted;
+
+- active requests are given time to complete.
+
+4. Cancel context/signal background workers to stop.
+
+5. Wait for completion of workers (`WaitGroup`/`errgroup`).
+
+6. Close external resources (DB, queues, producers, files).
+
+#### How to stop a background worker:
+
+1. Worker runs in a loop with `select` where there is a branch `case
+   <-ctx.Done(): return`.
+
+2. On shutdown, the main process calls the cancel function.
+
+3. The worker completes the current protected step, does a flush/cleanup and
+   exits.
+
+#### Critical practices:
+
+1. **Timeouts are required:** graceful should not turn into an eternal wait.
+
+2. **Idempotent shutdown:** repeated signals do not break the shutdown logic.
+
+3. **Observability:** log stop stages and duration metrics.
+
+4. **Clear order:** first stop intake, then drain in-flight, then cleanup.
+
+#### Typical errors:
+
+1. Stop the process "hard" without `Shutdown`.
+
+2. Do not pass `ctx` to workers/external calls.
+
+3. Do not wait for goroutines to finish.
+
+4. Forget about flush buffers/queues before exit.
+
+#### Conclusion:
+
+A proper graceful shutdown in Go is orchestrated via a signal, `context`,
+`server.Shutdown` and explicitly waiting for all background tasks. This approach
+guarantees the integrity of requests, predictable output and reliability of
+operation.
+
+</details>

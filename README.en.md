@@ -5372,3 +5372,92 @@ easily error-prone because it compares more than is usually intended when
 checking for moment equivalence.
 
 </details>
+
+
+<details>
+<summary>94. How do indexes work? How to choose indexes for tables?</summary>
+
+#### Go
+
+An index in a DBMS is an auxiliary data structure (most often B-tree-like),
+which speeds up the search for rows by certain fields without a full table scan.
+In fact, an index stores an ordered representation of keys and references to
+rows.
+
+#### How indexes work:
+
+1. A query with `WHERE/JOIN/ORDER BY` can use an index to quickly find a
+   relevant range of keys.
+
+2. Instead of `Seq Scan` (full table read), the optimizer chooses `Index
+   Scan/Bitmap Scan` if it is beneficial.
+
+3. Indexes can also support uniqueness (`UNIQUE`).
+
+#### Index price:
+
+1. Each index takes up disk space.
+
+2. `INSERT/UPDATE/DELETE` become more expensive because you need to update the
+   indexes.
+
+3. Redundant indexes slow down writes and make maintenance difficult.
+
+#### How to choose indexes correctly:
+
+1. **Push off real requests**, not "just in case".
+
+2. Index fields that are often in:
+
+- `WHERE`
+
+- `JOIN ON`
+
+- `ORDER BY`
+
+- `GROUP BY` (if needed)
+
+3. For composite indexes, take into account the order of columns
+   (leftmost-prefix rule):
+
+- most selective/frequent conditions are at the beginning.
+
+4. Watch `EXPLAIN (ANALYZE, BUFFERS)` and confirm that the index is actually
+   used and profitable.
+
+5. Review ineffective/unused indexes regularly.
+
+#### Practical approach:
+
+1. Define top slow requests.
+
+2. Add minimum required indexes.
+
+3. Check plan before/after.
+
+4. Measure impact on read/write balance under real load.
+
+#### Conclusion:
+
+An index is a tool to speed up reading at the cost of writing more expensively.
+The correct selection of indexes is always query-driven: only for specific
+access patterns and only after plan and performance validation.
+
+#### Example:
+
+```sql
+-- Перевіряємо план до індексу
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM orders
+WHERE tenant_id = 42
+  AND created_at >= now() - interval '7 days'
+ORDER BY created_at DESC
+LIMIT 100;
+
+-- Додаємо індекс під реальний патерн запиту
+CREATE INDEX CONCURRENTLY idx_orders_tenant_created_at
+  ON orders (tenant_id, created_at DESC);
+```
+
+</details>

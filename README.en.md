@@ -5461,3 +5461,72 @@ CREATE INDEX CONCURRENTLY idx_orders_tenant_created_at
 ```
 
 </details>
+
+
+<details>
+<summary>95. What is a Materialized View and how is it different from a regular View?</summary>
+
+#### Go
+
+`View` and `Materialized View` both represent a stored query, but differ
+fundamentally in the way the result is stored and the cost of reading.
+
+#### Normal `View`:
+
+1. This is a logical "virtual table" based on an SQL query.
+
+2. Data is not physically stored separately.
+
+3. Each request to the view actually re-executes the underlying SQL.
+
+#### `Materialized View`:
+
+1. This is a physically stored query result.
+
+2. Reading is usually much faster because you don't have to recalculate complex
+   join/aggregate every time.
+
+3. Data may be out of date by `REFRESH`.
+
+#### Key Difference:
+
+1. `View` = always up-to-date data, but higher calculation cost.
+
+2. `Materialized View` = fast read, but compromise on data freshness.
+
+#### When to choose `Materialized View`:
+
+1. Heavy analytical queries and aggregations.
+
+2. Frequently read reports with less frequent updates.
+
+3. Scenarios where controlled relevance delay is acceptable.
+
+#### When the usual `View` is enough:
+
+1. The most up-to-date real-time data is required.
+
+2. The request is not too expensive.
+
+3. `View` is used as a logical access abstraction, not as a cache.
+
+#### Practical conclusion:
+
+`Materialized View` is essentially a managed SQL result cache with an explicit
+update; plain `View` is a pure logical projection with no data storage. The
+choice between them is a balance between freshness and speed.
+
+#### Example:
+
+```sql
+CREATE MATERIALIZED VIEW mv_daily_sales AS
+SELECT date_trunc('day', created_at) AS day,
+       sum(amount) AS total
+FROM payments
+GROUP BY 1;
+
+-- Оновлення знімка даних
+REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
+```
+
+</details>

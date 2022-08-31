@@ -5530,3 +5530,80 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
 ```
 
 </details>
+
+
+<details>
+<summary>96. What is ACID? Comment on how ACID is implemented in PostgreSQL.</summary>
+
+#### Go
+
+`ACID` are four basic properties of transactional systems that guarantee
+correctness of data even under failures, competition and high load: Atomicity,
+Consistency, Isolation, Durability.
+
+#### ACID decryption:
+
+1. **Atomicity:** a transaction is either fully executed or not executed at all.
+
+2. **Consistency:** after the commit, the data remains valid against the defined
+   rules and restrictions.
+
+3. **Isolation:** parallel transactions should not improperly affect each other.
+
+4. **Durability:** Committed changes persist even after a process/system
+   failure.
+
+#### How PostgreSQL implements ACID:
+
+1. **Atomicity:**
+
+- transaction log of changes + rollback mechanisms;
+
+- in the event of an error, all transaction changes will be rolled back as a
+  whole.
+
+2. **Consistency:**
+
+- constraints (`PRIMARY KEY`, `UNIQUE`, `CHECK`, `FOREIGN KEY`) and triggers;
+
+- commit is possible only if invariants are not violated.
+
+3. **Isolation:**
+
+- MVCC (Multi-Version Concurrency Control): readers see consistent versions of
+  lines without gross blocking of reads;
+
+- support of isolation levels (`Read Committed`, `Repeatable Read`,
+  `Serializable`) with different balance of performance and strictness.
+
+4. **Durability:**
+
+- WAL (Write-Ahead Logging): before the commit, changes are first recorded in
+  the log;
+
+- after a failure, recovery takes place according to WAL, which preserves the
+  committed state.
+
+#### Practical conclusion:
+
+In PostgreSQL, ACID is not provided by "one button", but by a combination of
+MVCC, WAL, transaction manager, locks and constraint mechanisms. This is what
+makes PostgreSQL a reliable DBMS for critical transactional systems.
+
+#### Example:
+
+```sql
+BEGIN;
+
+UPDATE accounts
+SET balance = balance - 100
+WHERE id = 1;
+
+UPDATE accounts
+SET balance = balance + 100
+WHERE id = 2;
+
+COMMIT; -- або ROLLBACK при помилці
+```
+
+</details>

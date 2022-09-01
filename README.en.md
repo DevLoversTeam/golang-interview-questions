@@ -5607,3 +5607,57 @@ COMMIT; -- або ROLLBACK при помилці
 ```
 
 </details>
+
+
+<details>
+<summary>97. What is the difference between BASE and ACID?</summary>
+
+#### Go
+
+`ACID` and `BASE` are two different philosophies of consistency and reliability
+in distributed/transactional systems. They reflect different architectural
+priorities: strictness and instant consistency versus availability and
+scalability.
+
+#### ACID:
+
+1. **Atomicity, Consistency, Isolation, Durability**.
+
+2. Focused on strict transactional guarantees.
+
+3. Benefit — predictable correctness of data after each commit.
+
+4. Typically used in financial, accounting, critical consistent scenarios.
+
+#### BASE:
+
+1. **Basically Available, Soft state, Eventual consistency**.
+
+2. Focused on high availability and horizontal scaling.
+
+3. Allows temporary inconsistency between nodes.
+
+4. Consistency is achieved "over time", not necessarily instantly.
+
+#### Key Difference:
+
+1. **ACID**: "better to wait but keep strict guarantees".
+
+2. **BASE**: "best to respond quickly and be available, even if consistency is
+   not instant."
+
+#### Practical implications for architecture:
+
+1. ACID simplifies reasoning about invariants, but may cost more in terms of
+   latency/scaling in a distributed environment.
+
+2. BASE provides stability and availability at large scales, but requires
+   compensation mechanisms, idempotency, and thoughtful domain design.
+
+#### Conclusion:
+
+ACID and BASE are not "good/bad" but different compromises. The choice depends
+on what is more critical for the system: immediate stringency of invariants or
+availability and scalability at the price of eventual consistency.
+
+</details>

@@ -5661,3 +5661,64 @@ on what is more critical for the system: immediate stringency of invariants or
 availability and scalability at the price of eventual consistency.
 
 </details>
+
+
+<details>
+<summary>98. Name the transaction isolation levels.</summary>
+
+#### Go
+
+Isolation levels determine how "visible" the changes of parallel transactions
+are to each other. The higher the level of isolation, the fewer anomalies, but
+usually at a higher cost in performance and competitiveness.
+
+#### Classic isolation levels (SQL):
+
+1. **Read Uncommitted**
+
+- lowest level;
+
+- allows reading unfixed changes (dirty read).
+
+2. **Read Committed**
+
+- only committed data is read;
+
+- dirty read is prohibited;
+
+- non-repeatable read and phantom read are possible.
+
+3. **Repeatable Read**
+
+- reading the same lines repeatedly within a transaction gives the same result;
+
+- reduces some of the anomalies, but depending on the DBMS, phantom scenarios
+  may remain.
+
+4. **Serializable**
+
+- the strictest level;
+
+- guarantees a result equivalent to sequential execution of transactions;
+
+- maximum protection against anomalies, but more expensive than the competition.
+
+#### Practical conclusion:
+
+The choice of isolation level is a balance between correctness and performance.
+In production, it is determined from domain invariants: where `Read Committed`
+is sufficient, and where `Repeatable Read` or `Serializable` is required.
+
+#### Example:
+
+```sql
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+SELECT balance FROM accounts WHERE id = 1;
+-- ... інші операції в межах тієї ж транзакції
+
+COMMIT;
+```
+
+</details>

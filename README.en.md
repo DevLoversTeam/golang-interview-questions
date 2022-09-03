@@ -5722,3 +5722,60 @@ COMMIT;
 ```
 
 </details>
+
+
+<details>
+<summary>99. What are graph databases for?</summary>
+
+#### Go
+
+Graph databases are needed where the main value is not individual records, but
+the connections between them and fast bypass of multi-step relationships.
+
+#### What a graph database models:
+
+1. **Nodes** are entities.
+
+2. **Edges** — relationships between entities.
+
+3. **Properties** of nodes and edges are attributes of the domain model.
+
+#### For what tasks are they especially useful:
+
+1. **Social graphs:** friends, subscriptions, recommendations.
+
+2. **Fraud detection:** non-trivial chains of transactions and suspicious
+   connections.
+
+3. **Knowledge graph / semantic search:** connected representation of knowledge.
+
+4. **Network/IT topology:** service dependencies, routes, impact of incidents.
+
+5. **Role/permission models:** complex access policies with role inheritance.
+
+#### Why a relational database is not always enough:
+
+1. In multi-step join scenarios, queries can become heavy and cumbersome.
+
+2. The graph engine is optimized specifically for traversal-path requests.
+
+3. The "relationship as a first-class entity" model makes complex relationship
+   cases more natural.
+
+#### When a graph database is optional:
+
+1. If connections are simple and are rarely queried deeply.
+
+2. If classic CRUD/OLTP scenarios without complex traversal dominate.
+
+3. If the team and infrastructure are already working effectively with the
+   relational stack.
+
+#### Conclusion:
+
+Graph databases are needed when the business value lies in the structure of
+connections and multi-step navigation through them. It is a specialized tool for
+relationship-centric domains where a join-oriented approach becomes ineffective
+or too complex.
+
+</details>

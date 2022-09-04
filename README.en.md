@@ -5779,3 +5779,54 @@ relationship-centric domains where a join-oriented approach becomes ineffective
 or too complex.
 
 </details>
+
+
+<details>
+<summary>100. If data is time-bound, which databases should I use?</summary>
+
+#### Go
+
+If the data has a specific time nature (metrics, logs, events, telemetry), it is
+advisable to choose a DBMS according to the load profile: recording frequency,
+type of requests, storage period, requirements for aggregations and latency.
+
+#### Typical options:
+
+1. **Time-series DB (TSDB)**
+
+- examples: Prometheus (for metrics), VictoriaMetrics, InfluxDB, TimescaleDB;
+
+- strengths: high speed of ingestion, requests for time windows,
+  downsampling/retention policies.
+
+2. **PostgreSQL + time-oriented approach**
+
+- when you need transactionality, the SQL ecosystem, and complex join queries
+  with time data;
+
+- is often combined with time partitioning.
+
+3. **Columnar OLAP storage**
+
+- for analytics of large volumes of historical events (ClickHouse, etc.);
+
+- strong in aggregates and scanning large time ranges.
+
+#### Selection criteria:
+
+1. **Write-heavy telemetry** → TSDB.
+
+2. **Operational transactions + time** → PostgreSQL (with partitioning/indexes).
+
+3. **Large-scale historical analytics** → columnar/OLAP approach.
+
+4. **Retention and cost model**: hot data in the fast layer, cold data in the
+   cheaper storage.
+
+#### Practical conclusion:
+
+There is no "universal" database for time-bound data: a combination of tools for
+a specific workload is optimal. In most systems, a hot TSDB/OLTP layer strategy
+combined with a separate analytical layer for long history works.
+
+</details>

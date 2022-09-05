@@ -5830,3 +5830,67 @@ a specific workload is optimal. In most systems, a hot TSDB/OLTP layer strategy
 combined with a separate analytical layer for long history works.
 
 </details>
+
+
+<details>
+<summary>101. How does master-slave replication work?</summary>
+
+#### Go
+
+Master-slave (primary-replica) replication is a model in which one node accepts
+writes and one or more replica nodes replicate those changes for read scaling,
+redundancy, and increased fault tolerance.
+
+#### Basic principle:
+
+1. **Master (primary)** handles `INSERT/UPDATE/DELETE`.
+
+2. Changes are recorded in the transaction log (WAL/binlog depending on the
+   DBMS).
+
+3. **Slave (replica)** reads the log and applies the changes to its copy of the
+   data.
+
+4. Reads are often distributed to replicas, writes are left on the primary.
+
+#### Replication modes:
+
+1. **Asynchronous**
+
+- primary does not wait for confirmation from replica before committing;
+
+- lower recording latency;
+
+- possible replication lag and temporal inconsistency.
+
+2. **Synchronous/quasi-synchronous**
+
+- primary partially or fully waits for confirmation of replicas;
+
+- higher consistency;
+
+- potentially higher write latency.
+
+#### What it does:
+
+1. Scaling read load.
+
+2. Backup copies of data for failover.
+
+3. Separation of OLTP records and heavy-read scenarios.
+
+#### Typical risks:
+
+1. **Replication lag** (reader can see "old" data).
+
+2. Complexity of failover/failback and node roles.
+
+3. Risk of split-brain in incorrectly organized switching scenarios.
+
+#### Practical conclusion:
+
+Master-slave replication is a balance between availability, scalability, and
+consistency. It is effective for read-scaling, but requires the discipline of
+lag monitoring, thoughtful failover, and a clear request routing policy.
+
+</details>

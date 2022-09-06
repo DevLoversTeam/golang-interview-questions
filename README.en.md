@@ -5894,3 +5894,84 @@ consistency. It is effective for read-scaling, but requires the discipline of
 lag monitoring, thoughtful failover, and a clear request routing policy.
 
 </details>
+
+
+<details>
+<summary>102. What is sharding and what are its types?</summary>
+
+#### Go
+
+Sharding is the horizontal division of data into several independent nodes
+(shards) to scale the system beyond a single server in terms of data volume,
+load, and bandwidth.
+
+#### Why is sharding used:
+
+1. Unrestrict single node (CPU/RAM/disk/I/O).
+
+2. Increase write/read throughput through parallel operation of shards.
+
+3. Localize hot datasets and reduce competition for resources.
+
+#### The main types of sharding:
+
+1. **Range-based sharding**
+
+- data is partitioned by key ranges (for example, by date or ID interval);
+
+- simple for time-series scenarios;
+
+- risk of "hot" ranges.
+
+2. **Hash-based sharding**
+
+- shard is determined by the hash of the key;
+
+- distributes the load more evenly;
+
+- it is more difficult to make range queries.
+
+3. **Directory / Lookup-based sharding**
+
+- a separate table/service maps key → shard;
+
+- flexible routing and migrations;
+
+- additional complexity and dependency on the lookup layer.
+
+4. **Geo / Tenant-based sharding**
+
+- data is shared by region or client (tenant);
+
+- good for isolation, compliance and multi-tenant architectures;
+
+- possible imbalance between shards.
+
+#### Architectural challenges of sharding:
+
+1. Data rebalancing during growth.
+
+2. Cross-shard requests, joins and transactions.
+
+3. Complications of backup/restore and failover.
+
+4. Increased complexity of observability and operational support.
+
+#### Conclusion:
+
+Sharding is a scaling tool that provides significant performance gains, but at
+the cost of architectural complexity. The choice of sharding type should be
+based on the data access pattern, domain model and system evolution plan.
+
+#### Example:
+
+```go
+func shardForUser(userID int64, shards int) int {
+	if shards <= 0 {
+		return 0
+	}
+	return int(userID % int64(shards)) // hash/range-логіку змінюють під домен
+}
+```
+
+</details>

@@ -5975,3 +5975,81 @@ func shardForUser(userID int64, shards int) int {
 ```
 
 </details>
+
+
+<details>
+<summary>103. Tell us about your experience with database optimization. What tools did you use?</summary>
+
+#### Go
+
+For an interview, this question usually expects a **structured case story**:
+context → problem → actions → tools → before/after metrics. Below is a sample
+strong response that you can adapt to your own real-world experience.
+
+#### Example:
+
+1. **Context**
+
+- in a service with a high read/write load, degradation of p95/p99 latency was
+  observed during peak hours.
+
+2. **Symptoms**
+
+- slow requests;
+
+- CPU growth on the DB node;
+
+- increasing lock wait and request queues.
+
+3. **What did you do**
+
+- collected the top slow requests;
+
+- have analyzed execution plans;
+
+- added/rebuilt indexes to real `WHERE/JOIN/ORDER BY`;
+
+- removed N+1 and transferred some heavy operations to batch;
+
+- added caching for hot read-cases;
+
+- optimized the scheme (types of fields, partitioning by time, archiving of old
+  data).
+
+4. **Tools**
+
+- `EXPLAIN (ANALYZE, BUFFERS)` / `EXPLAIN ANALYZE`;
+
+- request statistics (`pg_stat_statements` or similar);
+
+- application profiling (`pprof`) to separate the DB-bottleneck from the
+  app-layer;
+
+- metrics and dashboards (Prometheus/Grafana);
+
+- load tests before/after changes.
+
+5. **Result (formulation example)**
+
+- p95 was conditionally reduced by 40–60%;
+
+- throughput increased without additional DB nodes;
+
+- stabilized peak periods and reduced lock-contention.
+
+#### How to respond most convincingly:
+
+1. Speak the language of measurements, not general phrases.
+
+2. Explain the trade-off: what was accelerated and at what cost.
+
+3. Emphasize a reproducible process: "first measured, then changed, then
+   tested".
+
+#### Conclusion:
+
+A strong DB optimization answer is a proof-of-concept engineering case with
+metrics and tools. It is this structure that demonstrates maturity and practical
+competence.
+
+</details>

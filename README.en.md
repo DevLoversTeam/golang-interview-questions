@@ -6053,3 +6053,69 @@ metrics and tools. It is this structure that demonstrates maturity and practical
 competence.
 
 </details>
+
+
+<details>
+<summary>104. How does `pgx` differ from `lib/pq` in terms of performance and functionality?</summary>
+
+#### Go
+
+`lib/pq` and `pgx` both work with PostgreSQL, but belong to different
+generations of the Go ecosystem. In modern production scenarios, `pgx` is
+generally considered a more practical choice.
+
+#### Main difference:
+
+1. **`lib/pq`**
+
+- classic driver for `database/sql`;
+
+- stable, but functionally conservative;
+
+- fewer modern optimizations and PostgreSQL-specific features.
+
+2. **`pgx`**
+
+- modern driver/tools for PostgreSQL;
+
+- can work both as a native API and through the `database/sql`-compatible layer;
+
+- richer feature set and often better performance under real load.
+
+#### Productivity:
+
+1. `pgx` often shows better throughput and lower latency, especially in
+   high-load scenarios.
+
+2. Reasons: more efficient handling of the PostgreSQL protocol, better
+   batching/copying capabilities, more flexible handling of types.
+
+3. The final conclusion is always benchmarked against your workload.
+
+#### Functionality:
+
+1. `pgx` provides wider access to PostgreSQL specifics:
+
+- extended typical system;
+
+- batch/Copy-primitives;
+
+- finer control of connection and query behavior.
+
+2. `lib/pq` mostly remains a "barely sufficient" driver for basic tasks due to
+   `database/sql`.
+
+#### When to choose:
+
+1. **`pgx`** — for new projects, high workload, need for modern PostgreSQL
+   features and better control.
+
+2. **`lib/pq`** — mostly legacy code, where migration is not yet justified.
+
+#### Conclusion:
+
+`pgx` usually wins in both functionality and performance potential. `lib/pq` is
+historically important, but for most new Go/PostgreSQL systems, `pgx` is the
+preferred choice.
+
+</details>

@@ -6119,3 +6119,94 @@ historically important, but for most new Go/PostgreSQL systems, `pgx` is the
 preferred choice.
 
 </details>
+
+
+<details>
+<summary>105. How to write unit tests in Go?</summary>
+
+#### Go
+
+A unit test in Go tests a small, isolated unit of behavior (function/method)
+with a clear input and expected result. The strength of the approach lies in
+determinism, speed and transparency of the reasons for the fall.
+
+#### Basic principles of a quality unit test:
+
+1. **One behavior is one test intent.**
+
+2. **Isolation from external systems** (DB, network, time, file system).
+
+3. **Determinism**: The same conditions must produce the same result.
+
+4. **Readability and diagnosticity** of error messages.
+
+#### Idiomatic structure in Go:
+
+1. File `*_test.go`.
+
+2. View functions `func TestXxx(t *testing.T)`.
+
+3. Arrange → Act → Assert pattern.
+
+4. For multiple cases — table-driven tests.
+
+#### What must be covered:
+
+1. Positive scenarios (happy path).
+
+2. Negative scripts and bugs.
+
+3. Borderline cases (empty data, zeros, large values, incorrect input).
+
+4. Invariants that must not be violated under any circumstances.
+
+#### Practical tools:
+
+1. Standard Package `testing`.
+
+2. `go test ./...` for a regular run.
+
+3. `-race` for competitive sites.
+
+4. If necessary - `testify` (assert/require), but without excessive magic.
+
+#### Typical errors:
+
+1. Time/Network/Run Order dependent tests.
+
+2. Checking only "without panic", without substantive assertions.
+
+3. Too large integration scripts disguised as unit tests.
+
+#### Conclusion:
+
+Writing unit tests in Go means designing verifiable behavior: minimal volume, a
+clear contract, isolation from the outside world, and reliable assertions. This
+approach provides fast and stable regression protection.
+
+#### Example:
+
+```go
+func TestSum(t *testing.T) {
+	tests := []struct {
+		name string
+		a, b int
+		want int
+	}{
+		{"pos", 2, 3, 5},
+		{"zero", 0, 7, 7},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			got := Sum(tc.a, tc.b)
+			if got != tc.want {
+				t.Fatalf("got %d, want %d", got, tc.want)
+			}
+		})
+	}
+}
+```
+
+</details>

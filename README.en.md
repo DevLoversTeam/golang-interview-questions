@@ -6300,3 +6300,55 @@ A good test usually combines both: `require` for "stop conditions", `assert` for
 further content control.
 
 </details>
+
+
+<details>
+<summary>108. How does `t.Run` allow you to run subtests and filter them?</summary>
+
+#### Go
+
+`t.Run` allows you to structure a single test into a set of named subtests. Each
+subcase is executed as a separate logical unit, which simplifies table tests,
+diagnostics, and selective startup.
+
+#### How `t.Run` works:
+
+1. In the main test, `t.Run(name, func(t *testing.T) { ... })` is called.
+
+2. Each call creates a separate subtest with its own `t`.
+
+3. Subtests can have different inputs, assertions, and settings.
+
+#### Why it is convenient:
+
+1. **Better readability of table-driven tests.**
+
+2. **Precise diagnostics:** you can see exactly which case fell.
+
+3. **Test Hierarchy:** can be nested `t.Run` to group scenarios.
+
+4. **Concurrency control:** individual subcases can be run via `t.Parallel()`.
+
+#### How filtering works:
+
+1. `go test -run <pattern>` runs tests whose names match the pattern.
+
+2. Name path is taken into account for subtests (eg `TestXxx/case_name`).
+
+3. This allows you to point-run a single problem case without a full set.
+
+#### A practical example of thinking:
+
+1. `TestParser` contains dozens of cases through `t.Run`.
+
+2. Only one is run during debugging: `go test -run 'TestParser/invalid_header'`.
+
+3. Get a faster feedback loop and a cleaner correction cycle.
+
+#### Conclusion:
+
+`t.Run` turns monolithic tests into a managed system of subtests with granular
+triggering and filtering. This is one of the key tools of supported test design
+in Go.
+
+</details>

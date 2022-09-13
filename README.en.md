@@ -6352,3 +6352,80 @@ triggering and filtering. This is one of the key tools of supported test design
 in Go.
 
 </details>
+
+
+<details>
+<summary>109. How to test HTTP handlers?</summary>
+
+#### Go
+
+HTTP handlers in Go are tested in isolation, without a real network socket,
+using `httptest`. The goal is to test the HTTP layer contract: status, headers,
+response body, error handling, and edge scenarios.
+
+#### Canonical approach:
+
+1. Create request via `httptest.NewRequest(...)`.
+
+2. Create a recorder through `httptest.NewRecorder()`.
+
+3. Call handler: `handler.ServeHTTP(rec, req)`.
+
+4. Check:
+
+- `rec.Code` (status code);
+
+- headers;
+
+- body (JSON/schema/message).
+
+#### What must be covered:
+
+1. **Happy path** (correct request, expected response).
+
+2. **Validation errors** (incomplete/incorrect payload, query params).
+
+3. **HTTP Methods** (GET/POST/PUT/DELETE + 405 if method not allowed).
+
+4. **Dependency errors** (service/repository returns error).
+
+5. **Contextual scripts** (timeout/cancel if the logic supports it).
+
+#### Architectural tips:
+
+1. Export business logic from the handler to the service layer.
+
+2. In handler tests, mock/fake service dependencies.
+
+3. Test the HTTP contract itself, not the internal implementation.
+
+#### Practical minimum checks:
+
+1. Correct `Content-Type`.
+
+2. The structure of the JSON response.
+
+3. Correspondence of status codes to domain errors.
+
+4. No leakage of sensitive information in error-body.
+
+#### Conclusion:
+
+The HTTP-handler test in Go is a test of endpoint behavior as a black box:
+incoming request → clear HTTP output. `httptest` provides a fast, deterministic
+and reasonably accurate tool for such contract testing.
+
+#### Example:
+
+```go
+req := httptest.NewRequest(http.MethodGet, "/health", nil)
+rec := httptest.NewRecorder()
+
+handler.ServeHTTP(rec, req)
+
+if rec.Code != http.StatusOK {
+	t.Fatalf("status=%d", rec.Code)
+}
+```
+
+</details>

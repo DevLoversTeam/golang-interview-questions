@@ -6429,3 +6429,60 @@ if rec.Code != http.StatusOK {
 ```
 
 </details>
+
+
+<details>
+<summary>110. How to test for errors?</summary>
+
+#### Go
+
+Error testing in Go should check not only the fact that an error exists, but
+also its semantics: type, category, wrapper chain, and expected system response.
+
+#### What exactly to check:
+
+1. **Presence/absence of an error** in a specific scenario.
+
+2. **Error category** due to `errors.Is` (sentinel errors).
+
+3. **Error type** via `errors.As` (custom error type with fields).
+
+4. **Wrapper context** (whether the root cause is lost with `%w`).
+
+5. **Behavioral effect**: correct status code, retry/no-retry, rollback, etc.
+
+#### Recommended practices:
+
+1. Avoid fragile full-text checks `err.Error()`.
+
+2. For stable contracts, use `errors.Is/As`, not `==` for wrapped errors.
+
+3. In table-driven tests, explicitly specify the expected error class and
+   consequence.
+
+#### What to test in negative scenarios:
+
+1. Input validation errors.
+
+2. Errors of external dependencies (DB, HTTP, queues).
+
+3. Timeouts/Aborts via `context`.
+
+4. Border states (empty values, incorrect formats, exceeded limits).
+
+#### Architectural accent:
+
+1. Error must be part of the API contract of the function.
+
+2. Tests must prove that error handling is deterministic and predictable.
+
+3. If the system maps domain errors to the transport layer, test this mapping
+   separately.
+
+#### Conclusion:
+
+Qualitative error testing in Go is about checking the semantics, not the message
+string. This kind of verification makes the code resistant to refactoring and
+reliable in production.
+
+</details>

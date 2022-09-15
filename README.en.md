@@ -6486,3 +6486,62 @@ string. This kind of verification makes the code resistant to refactoring and
 reliable in production.
 
 </details>
+
+
+<details>
+<summary>111. How to wet external dependencies without using third-party frameworks?</summary>
+
+#### Go
+
+In Go, external dependencies are mocked most cleanly through interfaces and own
+test-double implementations (stub/fake/spy), without the need for heavy mocking
+frameworks. It's an idiomatic approach that scales well and remains transparent.
+
+#### Basic scheme:
+
+1. Highlight the minimum dependency interface in the consumer layer.
+
+2. Production implementation works with real DB/HTTP/queue.
+
+3. In the test, substitute your own structure that implements the same
+   interface.
+
+#### Test-double types without third-party libraries:
+
+1. **Stub** — returns predefined data.
+
+2. **Fake** - a simplified "working" implementation (for example, an in-memory
+   repo).
+
+3. **Spy** — captures calls (arguments, number, order).
+
+4. **Manual mock** - Guided script with customizable responses/errors.
+
+#### Advantages of this approach:
+
+1. Complete type safety of the compiler.
+
+2. Zero runtime magic.
+
+3. Better test readability and predictable code evolution.
+
+4. No external dependencies in the test stack.
+
+#### Practical recommendations:
+
+1. Make interfaces small (by behavior, not "on all methods").
+
+2. Mot on module boundary, not inside domain logic.
+
+3. For competitive scenarios, protect state test-double (`mutex`, atomics).
+
+4. Do not duplicate the production logic in fake excessively - otherwise the
+   tests become fragile.
+
+#### Conclusion:
+
+Mocking without frameworks in Go is primarily about good dependency design:
+small interface + manual test-double. This approach is simple, reliable and
+architecturally sound for long-term project support.
+
+</details>

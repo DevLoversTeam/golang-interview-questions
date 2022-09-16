@@ -6545,3 +6545,67 @@ small interface + manual test-double. This approach is simple, reliable and
 architecturally sound for long-term project support.
 
 </details>
+
+
+<details>
+<summary>112. How to use `TestMain` to set up a test environment?</summary>
+
+#### Go
+
+`TestMain(m *testing.M)` is the entry point for the entire test suite. It allows
+global initialization before tests and guaranteed cleanup after them.
+
+#### When `TestMain` is appropriate:
+
+1. Must raise the shared test environment once:
+
+- test database/container;
+
+- temporary directories;
+
+- global configurations/secrets;
+
+- background service dependencies.
+
+2. Requires a centralized teardown after all package tests are complete.
+
+#### Basic life cycle:
+
+1. Setup is in progress (initialization of resources).
+
+2. Tests run through `code := m.Run()`.
+
+3. Cleanup is in progress.
+
+4. Process terminates via `os.Exit(code)`.
+
+#### Important rules:
+
+1. `m.Run()` must be called exactly once.
+
+2. The returned code must be passed to `os.Exit`, otherwise the status of the
+   tests will be lost.
+
+3. Cleanup should be performed even in case of setup errors (as far as
+   possible).
+
+4. Don't do extra logic in `TestMain` that is not related to the environment.
+
+#### Practical tips:
+
+1. Don't rely solely on `TestMain` to isolate tests within a package - local
+   setup/teardown in specific tests is often still needed.
+
+2. If possible, prefer lighter mechanisms (`t.Cleanup`) at test level;
+   `TestMain` use for true batch context.
+
+3. In parallel tests, carefully monitor the shared state initialized in
+   `TestMain`.
+
+#### Conclusion:
+
+`TestMain` — test environment batch orchestration tool: one setup, one run of
+all tests, one cleanup. It is appropriate where you need to control the life
+cycle of shared resources for the entire package.
+
+</details>

@@ -6609,3 +6609,68 @@ all tests, one cleanup. It is appropriate where you need to control the life
 cycle of shared resources for the entire package.
 
 </details>
+
+
+<details>
+<summary>113. How to use golden files?</summary>
+
+#### Go
+
+`Golden files` are reference files with the expected output against which the
+test compares the actual output. The approach is particularly useful for
+formatter, code generators, serialization, and any text/structure output.
+
+#### Basic workflow:
+
+1. Generate the result with the tested function.
+
+2. Read the corresponding `.golden` file.
+
+3. Compare the actual output with the standard.
+
+4. If there is a difference, the test fails with the diff.
+
+#### Typical structure:
+
+1. Test Input (`testdata/input/...`).
+
+2. Standards (`testdata/golden/...`).
+
+3. Table-driven tests, where each case has its own golden file.
+
+#### Very useful practice — update mode:
+
+1. Add a flag like `-update`.
+
+2. If enabled, the test overwrites the golden files with the new result.
+
+3. This speeds up support for benchmarks with legitimate behavior changes.
+
+#### What to pay attention to:
+
+1. **Determinism output:** before comparison, normalize the order of data,
+   timestamps, random values.
+
+2. **Qualitative diff:** in the test crash it should be clear what exactly
+   changed.
+
+3. **Do not abuse:** golden files for large "black boxes" without semantic
+   checks can make diagnostics difficult.
+
+#### When golden files are most appropriate:
+
+1. Text rendering/generation.
+
+2. JSON/XML/config transformation.
+
+3. CLI-output.
+
+4. Compilers, parsers, code generators.
+
+#### Conclusion:
+
+Golden files is a practical tool for contract output testing. Provided
+determinism and a convenient update process, they provide quick and clear
+protection against unwanted regressions in the result format.
+
+</details>

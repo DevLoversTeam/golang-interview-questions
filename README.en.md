@@ -6674,3 +6674,58 @@ determinism and a convenient update process, they provide quick and clear
 protection against unwanted regressions in the result format.
 
 </details>
+
+
+<details>
+<summary>114. How to properly test Go code that uses `time.Now()` so that the tests are deterministic?</summary>
+
+#### Go
+
+`time.Now()` makes the tests non-deterministic because it returns the actual
+current time. For the tests to be stable, the time should be injected, not read
+directly inside the business logic.
+
+#### Canonical approach:
+
+1. Export time source to dependency:
+
+- function `now func() time.Time`;
+
+- interface `Clock` with method `Now()`.
+
+2. In production, transfer the real clock (`time.Now`).
+
+3. Transmit a fixed time (fake clock) in the test.
+
+#### Why it works:
+
+1. The result does not depend on the moment the test is started.
+
+2. Gone are the flaky "sometimes crashes, sometimes not" scenarios.
+
+3. Easily check edge-cases: deadlines, TTL, transition dates, time zones.
+
+#### Additional practices:
+
+1. Do not compare time values with "hard" millisecond precision unless required
+   by the domain.
+
+2. For tests with timers/delays, use a controlled clock or sufficient time
+   buffers.
+
+3. Fix `Location/UTC` explicitly to avoid environment dependencies.
+
+#### What not to do:
+
+1. Leave `time.Now()` in the depth of the domain logic without the possibility
+   of substitution.
+
+2. Rescuing `time.Sleep`s in tests slows down and does not guarantee stability.
+
+#### Conclusion:
+
+Deterministic timing testing in Go is built on dependency inversion: timing is
+an input, not a global side effect. Clock source injection makes tests fast,
+reproducible, and architecturally clean.
+
+</details>

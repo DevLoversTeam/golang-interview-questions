@@ -6729,3 +6729,59 @@ an input, not a global side effect. Clock source injection makes tests fast,
 reproducible, and architecturally clean.
 
 </details>
+
+
+<details>
+<summary>115. How does `t.Parallel()` speed up the test suite and where can it break them?</summary>
+
+#### Go
+
+`t.Parallel()` allows tests (or subtests) to run concurrently, which typically
+reduces overall runtime on multi-core environments. But concurrency without
+isolation easily turns stable tests into flaky ones.
+
+#### How it speeds up runs:
+
+1. Independent tests run concurrently.
+
+2. Better use of CPU and I/O waits.
+
+3. A large set of small tests runs much faster in CI.
+
+#### Where `t.Parallel()` can break tests:
+
+1. **Shared mutable state:** global variables, shared in-memory caches, static
+   configurations without synchronization.
+
+2. **External shared resources:** one DB schema/table, one port, one file, one
+   temporary data directory.
+
+3. **Execution Order Dependency:** if a test implicitly expects another to have
+   already run.
+
+4. **Environment side effects:** changes to env vars, time zone, working
+   directory without isolation.
+
+5. **Bugs in table-driven subtests:** loop variable capture without local copy
+   in closure.
+
+#### How to use safely:
+
+1. Parallel only fully isolated tests.
+
+2. Avoid global mutable state or protect it with synchronization.
+
+3. Use unique temporary resources (`t.TempDir`, individual fixtures).
+
+4. For DB tests — transactional isolation or a separate namespace/schema per
+   test.
+
+5. Run the set with `-race` for early detection of competition issues.
+
+#### Conclusion:
+
+`t.Parallel()` is a powerful test accelerator, but only under strict case
+isolation. If the tests have shared state or hidden dependencies, concurrency
+will expose these defects and make the run unstable.
+
+</details>

@@ -6785,3 +6785,49 @@ isolation. If the tests have shared state or hidden dependencies, concurrency
 will expose these defects and make the run unstable.
 
 </details>
+
+
+<details>
+<summary>116. How to measure code coverage?</summary>
+
+#### Go
+
+In Go, code coverage is measured by built-in tools `go test` through test
+execution instrumentation. This provides metrics that show what fraction of
+lines/blocks of code were executed during the test run.
+
+#### Basic commands:
+
+1. Total coverage per package: `go test -cover ./...`
+
+2. Coverage Profile Collection: `go test -coverprofile=coverage.out ./...`
+
+3. View summary statistics: `go tool cover -func=coverage.out`
+
+4. Highlighted HTML report: `go tool cover -html=coverage.out`
+
+#### What is important to understand:
+
+1. Coverage shows the fact that invariant checks are performed, not complete.
+
+2. A high percentage does not guarantee the absence of bugs.
+
+3. Low percentage is a signal of blind testing areas.
+
+#### Practical tips:
+
+1. Analyze coverage along with code criticality, not chasing "100%".
+
+2. Cover negative and edge-case scenarios separately.
+
+3. Use coverage as a gap indicator, not an end in itself.
+
+4. In CI, save profile and track coverage dynamics between PRs.
+
+#### Conclusion:
+
+Code coverage in Go is measured by the standard tooling (`go test` + `go tool
+cover`) and is a useful metric of test review quality. It provides the greatest
+value in combination with semantic checks and meaningful test design.
+
+</details>

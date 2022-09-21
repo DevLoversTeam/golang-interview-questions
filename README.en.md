@@ -6831,3 +6831,70 @@ cover`) and is a useful metric of test review quality. It provides the greatest
 value in combination with semantic checks and meaningful test design.
 
 </details>
+
+
+<details>
+<summary>117. What is benchmarking and how to run it? How does `testing.B` implement the benchmark and what does `b.ResetTimer` reset?</summary>
+
+#### Go
+
+`Benchmarking` in Go is a measurement of code performance (time, allocations,
+throughput) under controlled conditions to compare implementations and validate
+the effect of optimizations.
+
+#### How to run the benchmark:
+
+1. Functions have the form: `func BenchmarkXxx(b *testing.B)`.
+
+2. Base Launch: `go test -bench=.`
+
+3. Only specific benchmark: `go test -bench=BenchmarkParse`
+
+4. Allocation measure: `go test -bench=. -benchmem`
+
+#### How `testing.B` works:
+
+1. Runner itself chooses `b.N` (number of iterations) to get a stable dimension.
+
+2. Your code in the benchmark function is executed in a `for i := 0; i < b.N;
+   i++` loop.
+
+3. As a result, the test ranks performance in `ns/op`, and with `-benchmem` also
+   `B/op`, `allocs/op`.
+
+#### What `b.ResetTimer` does:
+
+1. Reset the accumulated measurement timer.
+
+2. Does not count preparation code executed before calling `ResetTimer` in the
+   final time.
+
+3. Used after the setup phase to measure only the "clean" working part.
+
+#### Related useful methods:
+
+1. `b.StopTimer()` / `b.StartTimer()` — temporarily disable/enable timekeeping.
+
+2. `b.ReportAllocs()` — force allocation statistics.
+
+#### Practical conclusion:
+
+Benchmark in Go is not a one-time run, but a comparison tool under the same
+conditions. `testing.B` automatically scales iterations, and `b.ResetTimer`
+separates training from actual performance measurement.
+
+#### Example:
+
+```go
+func BenchmarkParse(b *testing.B) {
+	input := []byte(`{"x":1}`)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		var v map[string]int
+		_ = json.Unmarshal(input, &v)
+	}
+}
+```
+
+</details>

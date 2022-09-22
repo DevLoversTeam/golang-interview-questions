@@ -6898,3 +6898,66 @@ func BenchmarkParse(b *testing.B) {
 ```
 
 </details>
+
+
+<details>
+<summary>118. How to run benchmarks with control of time and number of iterations?</summary>
+
+#### Go
+
+In Go, benchmarks can be run with control of the measurement duration and a
+fixed number of iterations via the `go test` parameters. This is important for
+reproducibility and correct comparison of results.
+
+#### Main flags:
+
+1. **`-benchtime`**
+
+- sets the duration of the benchmark run (for example, `-benchtime=5s`);
+
+- runner itself picks `b.N` to run around this time window.
+
+2. **`-benchtime=Nx`**
+
+- fixes the exact number of iterations (for example, `-benchtime=100000x`);
+
+- handy for reproducible A/B comparisons on the same `N`.
+
+3. **`-count`**
+
+- number of reruns (eg `-count=10`);
+
+- helps to assess the stability and dispersion of the results.
+
+4. **`-bench`**
+
+- selection of specific benchmark functions by pattern.
+
+5. **`-benchmem`**
+
+- additionally outputs allocations (`B/op`, `allocs/op`).
+
+#### Practical examples of scenarios:
+
+1. Longer stable run: `go test -bench=. -benchtime=5s -benchmem`
+
+2. Fixed `N`: `go test -bench=BenchmarkFoo -benchtime=200000x -benchmem`
+
+3. Multiple replays for stats: `go test -bench=BenchmarkFoo -benchtime=2s
+   -count=10`
+
+#### Why is it necessary:
+
+1. Reduce the noise of short runs.
+
+2. Compare optimizations under the same conditions.
+
+3. Receive statistically meaningful data for `benchstat` analysis.
+
+#### Conclusion:
+
+Control of time and iterations in Go benchmarks is a prerequisite for
+high-quality performance analysis. `-benchtime` and `-count` provide measurement
+stability, and `Nx` mode provides strict control over the number of executions.
+
+</details>

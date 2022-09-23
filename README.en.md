@@ -6961,3 +6961,62 @@ high-quality performance analysis. `-benchtime` and `-count` provide measurement
 stability, and `Nx` mode provides strict control over the number of executions.
 
 </details>
+
+
+<details>
+<summary>119. How does the `benchstat` tool compare two sets of benchmark results and how does it determine the significance of changes?</summary>
+
+#### Go
+
+`benchstat` compares two (or more) sets of benchmark results and shows whether
+changes in metrics (`ns/op`, `B/op`, `allocs/op`) are statistically significant
+and not random run noise.
+
+#### How the comparison works:
+
+1. Collect multiple "before" and "after" runs (usually via `-count`).
+
+2. `benchstat` groups results by the same benchmark names.
+
+3. Computes central values ​​(typically median-like/robust estimates) and
+   percent difference.
+
+4. Performs a statistical test and outputs `p-value`.
+
+#### How significance is determined:
+
+1. If `p-value` is below a threshold level (typically 0.05), the change is
+   considered statistically significant.
+
+2. If `p-value` is above the threshold, the difference may be environmental
+   noise.
+
+3. That's why it's important to look at **both delta and p-value** at the same
+   time.
+
+#### What is needed for a correct analysis:
+
+1. Same launch conditions (machine, load, configuration).
+
+2. Sufficient number of repetitions (`-count`) otherwise conclusions are
+   fragile.
+
+3. No extraneous noise (background processes, thermal throttling, unstable CI
+   environment).
+
+#### Rule of thumb:
+
+1. Don't trust disposable `go test -bench`.
+
+2. Collect series of before/after results.
+
+3. Analyze through `benchstat` and then check if the change is important to
+   business metrics (latency/throughput/SLA) and not just "pretty" in a table.
+
+#### Conclusion:
+
+`benchstat` converts raw benchmark numbers into a statistically sound
+comparison. It helps to distinguish a real performance effect from a random
+scatter and to make engineering decisions based on data.
+
+</details>

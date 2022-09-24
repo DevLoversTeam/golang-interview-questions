@@ -7020,3 +7020,58 @@ comparison. It helps to distinguish a real performance effect from a random
 scatter and to make engineering decisions based on data.
 
 </details>
+
+
+<details>
+<summary>120. What is fuzz testing?</summary>
+
+#### Go
+
+`Fuzz testing` is an automated testing method where the system receives a large
+amount of semi-random or mutated input data to detect crashes, panics, incorrect
+edge-case handling, and invariant violations.
+
+#### How it works in Go:
+
+1. Set the fuzz function (`func FuzzXxx(f *testing.F)`).
+
+2. Add seed entries (initial examples).
+
+3. The fuzzer mutates these inputs and generates new combinations.
+
+4. If it finds a crash or check violation, keep the "minimum" playable case.
+
+#### What fuzz testing finds best:
+
+1. Unexpected edge-cases of parsers/decoders.
+
+2. Panics on incorrect or "broken" input data.
+
+3. Logical defects in the processing of lines, bytes, formats, protocols.
+
+#### Why it is valuable:
+
+1. Covers the input space much wider than manual unit cases.
+
+2. Good at detecting security flaws in parser-like code.
+
+3. Adds API resistance to "toxic" payloads from the outside world.
+
+#### Practical recommendations:
+
+1. Formulate explicit invariants (which must be true for any input).
+
+2. Start with critical surfaces: parsing, deserialization, normalization.
+
+3. After finding a case, add it as a regression test.
+
+4. Combine fuzzing with `-race` and regular unit/integration tests.
+
+#### Conclusion:
+
+Fuzz testing in Go is a systematic way to "break" the code with input data to
+find defects that are almost impossible to predict manually. It is one of the
+most powerful tools for increasing the reliability and security of data
+processing.
+
+</details>

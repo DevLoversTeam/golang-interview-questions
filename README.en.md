@@ -7075,3 +7075,76 @@ most powerful tools for increasing the reliability and security of data
 processing.
 
 </details>
+
+
+<details>
+<summary>121. What are the ways to run tests from the DB in CI (Testcontainers, docker-compose, GitHub Actions services)? What are the advantages of each approach?</summary>
+
+#### Go
+
+For integration tests with DB in CI, three approaches are most often used:
+`Testcontainers`, `docker-compose` and `GitHub Actions services`. The choice
+depends on the level of isolation you want, the complexity of the stack, and the
+speed of the pipeline.
+
+#### 1) Testcontainers
+
+**Gist:** containers are raised programmatically from tests and live within the
+test run.
+
+**Advantages:**
+
+1. Maximum proximity to test code (infra described next to tests).
+
+2. High case isolation and predictable environment.
+
+3. Flexible management of the database life cycle, versions, init scripts.
+
+4. Convenient for local reproduction of CI scripts.
+
+#### 2) docker-compose
+
+**Essence:** services (DB + dependencies) are described in `docker-compose.yml`,
+are raised before the tests as a single composition.
+
+**Advantages:**
+
+1. A simple and visual description of a multi-service environment.
+
+2. It is easy to add caches, brokers, several DBs at the same time.
+
+3. Same model for local dev and CI.
+
+4. Good choice for integration/e2e kits.
+
+#### 3) GitHub Actions services
+
+**Gist:** the DB container is declared directly in the workflow job as a service
+container.
+
+**Advantages:**
+
+1. The simplest CI-native script for basic needs.
+
+2. Minimum code in tests and separate orchestration.
+
+3. Quick start for one or two services (Postgres, Redis, etc.).
+
+#### Practical comparison:
+
+1. **Flexibility and isolation**: Testcontainers > docker-compose > services.
+
+2. **Easy to start**: services > docker-compose > Testcontainers.
+
+3. **Multi-service composite stands**: docker-compose / Testcontainers.
+
+4. **Laconic CI for simple DB**: GitHub Actions services.
+
+#### Conclusion:
+
+There is no universally "best" approach. For a simple CI, services are enough;
+docker-compose is appropriate for a complex integration environment; for the
+most manageable and reproducible tests at the code level, the strongest approach
+is Testcontainers.
+
+</details>

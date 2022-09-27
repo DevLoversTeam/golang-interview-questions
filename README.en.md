@@ -7199,3 +7199,67 @@ reliability by complementing the compiler and tests, especially in large team Go
 codebases.
 
 </details>
+
+
+<details>
+<summary>123. How to profile a Go application (`pprof`)?</summary>
+
+#### Go
+
+`pprof` is a standard Go profiling tool that shows where CPU, memory,
+allocations, locks, and timeouts are going. This is a basic way to find real
+bottlenecks before optimizations.
+
+#### What can be profiled:
+
+1. **CPU profile** — where CPU time is spent.
+
+2. **Heap / allocs** — who allocates memory and what remains "alive".
+
+3. **Goroutine profile** — state and number of goroutines.
+
+4. **Block / mutex profile** — contention, blocking, synchronization delays.
+
+#### How to connect in the service:
+
+1. Import `net/http/pprof` (usually via side-effect import).
+
+2. Open debug endpoint (often a separate port or protected route).
+
+3. Remove profile under real/representative load.
+
+#### Typical analysis workflow:
+
+1. Collect CPU/heap profile.
+
+2. Open via `go tool pprof` (top/list/web).
+
+3. Find hot paths/allocation nodes.
+
+4. Make a point change.
+
+5. Repeat profiling and compare before/after.
+
+#### Practical teams (general idea):
+
+1. Collection of profile from endpoint.
+
+2. Local analysis: `go tool pprof <profile>`
+
+3. Graph/flame-like visualization via web mode.
+
+#### Important principles:
+
+1. Do not optimize "by feeling" - only according to profile data.
+
+2. Profile under conditions close to production.
+
+3. Check if optimization has not degraded other metrics (tail-latency, memory).
+
+#### Conclusion:
+
+`pprof` is the main tool for proof-of-concept optimization of Go applications:
+it shows the real picture of costs and allows you to make engineering decisions
+based on measurements, not intuition.
+
+</details>

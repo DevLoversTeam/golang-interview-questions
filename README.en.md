@@ -7263,3 +7263,61 @@ it shows the real picture of costs and allows you to make engineering decisions
 based on measurements, not intuition.
 
 </details>
+
+
+<details>
+<summary>124. How does `go build` and cross-compilation work?</summary>
+
+#### Go
+
+`go build` compiles Go packages/programs into a binary (or verifies assembly)
+using module dependencies, the build cache, and current target platform
+settings.
+
+#### How `go build` works:
+
+1. Reads `go.mod` and resolves dependencies.
+
+2. Compiles the required packages (taking into account build tags and
+   conditional files).
+
+3. Uses build cache to speed up re-builds.
+
+4. Links the final executable for the target OS/architecture.
+
+#### What is cross-compilation:
+
+Cross-compilation is building a binary for a different platform than the one
+you're running the compiler on.
+
+#### Main parameters:
+
+1. `GOOS` is the target operating system (eg `linux`, `darwin`, `windows`).
+
+2. `GOARCH` is the target architecture (`amd64`, `arm64`, etc.).
+
+#### Example:
+
+1. Working on macOS.
+
+2. Want Linux/amd64 binary.
+
+3. Compiled with the corresponding `GOOS/GOARCH`, you get an artifact for Linux
+   deployment.
+
+#### Practical nuances:
+
+1. For pure-Go code, cross-compilation is usually straightforward.
+
+2. The `cgo` dependencies require a compatible cross-toolchain (C compiler for
+   the target platform).
+
+3. CI often do a matrix-build for the set `GOOS/GOARCH`.
+
+#### Conclusion:
+
+`go build` is a standardized build with caching and modular resolution.
+Cross-compilation in Go is natively supported through `GOOS/GOARCH`, which makes
+the language very convenient for multi-platform releases.
+
+</details>

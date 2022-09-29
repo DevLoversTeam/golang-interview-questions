@@ -7321,3 +7321,71 @@ Cross-compilation in Go is natively supported through `GOOS/GOARCH`, which makes
 the language very convenient for multi-platform releases.
 
 </details>
+
+
+<details>
+<summary>125. How to containerize a Go application in Docker?</summary>
+
+#### Go
+
+Containerizing a Go application is building a binary and packaging it into a
+Docker image for predictable launch in any environment (on-premises, CI,
+Kubernetes, cloud).
+
+#### Canonical approach:
+
+1. Use multi-stage Dockerfile:
+
+- stage build: Go binary compilation;
+
+- stage runtime: Minimum image to run.
+
+2. At the build stage:
+
+- copy `go.mod/go.sum`, load dependencies;
+
+- copy code;
+
+- compile the binary (`go build`).
+
+3. At the runtime stage:
+
+- put only the final binary and necessary runtime files;
+
+- set `ENTRYPOINT/CMD`.
+
+#### Why it's right:
+
+1. Smaller final image size.
+
+2. Better security (fewer redundant packages at runtime).
+
+3. Reproducible builds in CI/CD.
+
+4. Faster deployment and cold start.
+
+#### Practical recommendations:
+
+1. Add `.dockerignore` to avoid pulling extra files into the build context.
+
+2. Run the process as a non-root user in the runtime image.
+
+3. Explicitly set `EXPOSE`, healthcheck (if needed) and environment variables.
+
+4. Use pinned base image/tag for predictability.
+
+#### Typical life cycle:
+
+1. `docker build` → received an image.
+
+2. `docker run` → checked locally.
+
+3. Push to the registry → deploy to the target environment.
+
+#### Conclusion:
+
+Containerizing a Go application in Docker works best through a multi-stage
+approach: compile separately, execute separately. This gives a compact, safe and
+operationally convenient production image.
+
+</details>

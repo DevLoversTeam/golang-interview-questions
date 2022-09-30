@@ -7389,3 +7389,69 @@ approach: compile separately, execute separately. This gives a compact, safe and
 operationally convenient production image.
 
 </details>
+
+
+<details>
+<summary>126. How to reduce the size of a Docker image for a Go application (multi-stage build)?</summary>
+
+#### Go
+
+The most effective way to reduce the image of a Go application is multi-stage
+build: compile in a "heavy" build image, and run in the most minimal runtime
+image with only the final binary.
+
+#### Key optimization steps:
+
+1. **Multi-stage Dockerfile**
+
+- stage 1: `golang` for assembly;
+
+- stage 2: slim runtime (`distroless`/`scratch`/minimum base).
+
+2. **Only necessary to copy in runtime**
+
+- binary;
+
+- if necessary CA-certs / timezone data / config.
+
+3. **Static binary (where appropriate)**
+
+- reduces runtime dependencies;
+
+- is good for minimal looks.
+
+4. **Optimize the binary itself**
+
+- linker flags (`-ldflags="-s -w"`) to reduce service information.
+
+5. **Literate `.dockerignore`**
+
+- remove tests, `.git`, artifacts, local caches from build-context.
+
+6. **Dependency caching in the build stage**
+
+- copy `go.mod/go.sum` separately before copying the entire code.
+
+#### Additional practices:
+
+1. Foam base images by digest/tag for reproducibility.
+
+2. Work under a non-root user.
+
+3. Regularly check image size and vulnerabilities in CI.
+
+#### What to avoid:
+
+1. Runtime on a full `golang` image is unnecessary.
+
+2. Copying the source code to the final layer.
+
+3. Redundant debugging tools in the production image.
+
+#### Conclusion:
+
+A compact Go image is the result of proper segregation of build/runtime layers.
+Multi-stage + minimal runtime + clean build context give the best balance of
+size, security and deployment speed.
+
+</details>

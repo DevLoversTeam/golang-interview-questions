@@ -7455,3 +7455,75 @@ Multi-stage + minimal runtime + clean build context give the best balance of
 size, security and deployment speed.
 
 </details>
+
+
+<details>
+<summary>127. What tools are commonly used to collect metrics and logs? How does Prometheus work?</summary>
+
+#### Go
+
+Modern systems usually combine several classes of tools: metrics, logs, tracing,
+visualization, and alerting. This gives a complete picture of the service's
+behavior and speeds up the diagnosis of incidents.
+
+#### Typical tool stack:
+
+1. **Metrics**
+
+- Prometheus, VictoriaMetrics, Graphite (less common in newer systems).
+
+2. **Visualization**
+
+- Grafana (dashboards, SLOs, metrics correlation).
+
+3. **Logs**
+
+- Loki, Elasticsearch/OpenSearch + Kibana, Fluent Bit/Fluentd, Vector.
+
+4. **Tracing**
+
+- OpenTelemetry + Jaeger/Tempo/Zipkin.
+
+5. **Alert**
+
+- Alertmanager (often associated with Prometheus).
+
+#### How Prometheus works:
+
+1. **Pull collection model:** Prometheus periodically "scrapes" the HTTP
+   endpoints of services (usually `/metrics`) and takes the current values of
+   the metrics.
+
+2. **Time-series storage:** each metric with a set of labels is stored as a time
+   series.
+
+3. **PromQL queries:** aggregation, rate functions, percentile-like analytics,
+   correlations.
+
+4. **Rule engine:**
+
+- recording rules for preliminary calculations;
+
+- alerting rules for generating alerts.
+
+5. **Integration with Alertmanager:** deduplication, routing, grouping and
+   notifications (Slack, email, PagerDuty).
+
+#### Why Prometheus is popular:
+
+1. Simple operational model (pull + configuration files).
+
+2. Powerful PromQL.
+
+3. A large ecosystem of exporters.
+
+4. Good integration with Kubernetes and cloud-native environment.
+
+#### Conclusion:
+
+For metrics and logs, production usually uses a combined stack: Prometheus +
+Grafana for metrics, a separate log platform for logs, and tracing for
+cross-service diagnostics. Prometheus in this stack acts as a time-series
+monitoring and alerting core.
+
+</details>

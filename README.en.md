@@ -7527,3 +7527,64 @@ cross-service diagnostics. Prometheus in this stack acts as a time-series
 monitoring and alerting core.
 
 </details>
+
+
+<details>
+<summary>128. What is the difference between microservices and a monolith? What are the advantages and disadvantages?</summary>
+
+#### Go
+
+Monolith and microservices are not "fashion", but different strategies of system
+decomposition. The choice between them is determined by team size, domain
+complexity, release autonomy requirements, and operational maturity.
+
+#### Monolith:
+
+**Gist:** one application, one code base (or tightly coupled runtime), usually
+one deployment point.
+
+**Advantages:**
+
+1. Easy start and lower operational complexity.
+
+2. Easier local debugging and in-process transactional integrity.
+
+3. Faster development for small teams/early stage products.
+
+**Disadvantages:**
+
+1. It is more difficult to scale individual "hot" modules independently.
+
+2. As code grows, so does connectivity and the risk of slow releases.
+
+3. One large deployment makes frequent independent changes difficult.
+
+#### Microservices:
+
+**Gist:** the system is divided into autonomous services with their own limits
+of responsibility, API-contracts and independent life cycle.
+
+**Advantages:**
+
+1. Independent releases of teams and services.
+
+2. Point scaling of individual components.
+
+3. Technological flexibility at the service level (with governance).
+
+**Disadvantages:**
+
+1. High operational complexity (network, discovery, observability, security).
+
+2. Distributed consistency and complex inter-service transactions.
+
+3. More expensive to debug due to network interaction and more moving parts.
+
+#### Practical conclusion:
+
+A monolith is often the best start and can be quite effective for a long time.
+Microservices are justified when the scale of the domain and organization really
+needs the autonomy of teams, independent scaling and clear service
+decomposition.
+
+</details>

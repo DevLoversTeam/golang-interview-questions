@@ -7588,3 +7588,90 @@ needs the autonomy of teams, independent scaling and clear service
 decomposition.
 
 </details>
+
+
+<details>
+<summary>129. How to implement authentication in a microservice architecture?</summary>
+
+#### Go
+
+In microservices, authentication is usually built around a centralized Identity
+Provider (IdP) and a token-oriented model (most often OAuth2/OIDC + JWT). This
+allows you to scale access without duplicating the login logic in each service.
+
+#### Canonical diagram:
+
+1. The client logs in to the IdP (or auth service).
+
+2. Receives an access token (and, if necessary, a refresh token).
+
+3. Passes access token in requests to API Gateway/services.
+
+4. Services validate the token (signature, validity period, issuer, audience,
+   scopes).
+
+#### Where to check:
+
+1. **On API Gateway**
+
+- initial token validation and blocking of unauthorized traffic.
+
+2. **In every service (defense in depth)**
+
+- re-verification of critical claims/access rights;
+
+- don't rely on the perimeter alone.
+
+#### What should be in the token:
+
+1. User/Subject ID (`sub`).
+
+2. Roles/scopes/rights (minimum required).
+
+3. `iss`, `aud`, `exp`, `iat` for secure context validation.
+
+#### Key security practices:
+
+1. Short TTL for access token.
+
+2. Regular rotation of signing keys (JWKS).
+
+3. TLS everywhere (north-south and east-west traffic).
+
+4. Least privilege principle for scopes/roles.
+
+5. Clear separation of authentication (who you are) and authorization (what you
+   can do).
+
+#### For service-to-service:
+
+1. Use separate machine credentials (client credentials, mTLS, service
+   identity).
+
+2. Do not flush user tokens unnecessarily deep into the system.
+
+#### Conclusion:
+
+Reliable authentication in microservices is a centralized IdP, tokens with
+correct validation at all critical boundaries and security discipline (TTL, key
+rotation, least privilege, TLS, defense in depth).
+
+#### Example:
+
+```go
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tok := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+		claims, err := verifyJWT(tok)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), userClaimsKey{}, claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+```
+
+</details>

@@ -7675,3 +7675,84 @@ func AuthMiddleware(next http.Handler) http.Handler {
 ```
 
 </details>
+
+
+<details>
+<summary>130. How to design and implement an API Gateway in a microservice architecture and what tasks should it solve?</summary>
+
+#### Go
+
+API Gateway is the single external entry point to the microservice system. Its
+task is to standardize the perimeter: security, routing, traffic policies,
+observability and partially orchestration of requests.
+
+#### What tasks should Gateway solve:
+
+1. **Routing** to the required services (path/host/method rules).
+
+2. **Authentication and Basic Authorization** at the perimeter.
+
+3. **Rate limiting / throttling** and overload protection.
+
+4. **TLS termination**, CORS, basic security headers.
+
+5. **Request/response transformations** (if needed) and API versioning.
+
+6. **Observability**: centralized logs, metrics, tracing context.
+
+7. **Resilience policies**: timeout, retry (caution), circuit breaker.
+
+#### Key design principles:
+
+1. **Thin Gateway:** do not transfer heavy business logic into it.
+
+2. **Explicit ownership of contracts:** who is responsible for endpoints and
+   policies.
+
+3. **Security by default:** deny-by-default, least privilege.
+
+4. **Idempotency and retries control:** to avoid duplicate side effects.
+
+5. **Degradation plan:** fallback/errors should be predictable for the client.
+
+#### Implementation model:
+
+1. Choose a technology (ingress/API gateway product or own edge service).
+
+2. Define policy-as-code (rate limits, auth rules, routing tables).
+
+3. Configure integration with service discovery and certificates.
+
+4. Implement end-to-end tracing (correlation IDs).
+
+5. Add gateway-level SLOs/alerts (latency, error rate, saturation).
+
+#### Typical errors:
+
+1. "Thick" gateway as a new monolith.
+
+2. Lack of consistent error model.
+
+3. Excessive transformations on the perimeter, making debugging difficult.
+
+4. Single point of failure without HA configuration.
+
+#### Conclusion:
+
+A strong API Gateway is not a "place for everything" but a disciplined perimeter
+layer: security, traffic policies, observability, and managed routing. At the
+same time, business logic should remain in domain services.
+
+#### Example:
+
+```yaml
+routes:
+  - path: /api/orders/*
+    upstream: orders-service
+    auth: required
+    rateLimit:
+      requestsPerMinute: 600
+    timeoutMs: 2000
+```
+
+</details>

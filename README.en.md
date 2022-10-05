@@ -7756,3 +7756,77 @@ routes:
 ```
 
 </details>
+
+
+<details>
+<summary>131. How does service discovery work in a microservice architecture and how do services find each other without static IPs/hosts?</summary>
+
+#### Go
+
+`Service discovery` is a mechanism for dynamically searching for available
+service instances in conditions where IPs/pods are constantly changing
+(autoscaling, rolling update, restarts).
+
+#### Basic principle:
+
+1. The service instance is registered in the discovery registry (or
+   automatically published by the orchestrator).
+
+2. Client or intermediate proxy requests current service endpoints.
+
+3. The request is routed to the live instance according to the balancing rules.
+
+#### How services "find" each other:
+
+1. **DNS-based discovery**
+
+- service refers to a stable name (`service-name.namespace`) and DNS returns
+  current IPs.
+
+2. **Registry-based discovery**
+
+- a separate service registry (or platform API) provides a list of healthy
+  instances.
+
+3. **Service mesh / sidecar**
+
+- application is accessed locally, and sidecar handles discovery, retry, load
+  balancing, and TLS.
+
+#### Client-side vs server-side discovery:
+
+1. **Client-side**
+
+- the client itself receives the list of instances and chooses the target.
+
+2. **Server-side**
+
+- the client accesses the stable endpoint (LB/proxy), and the instance selection
+  is made by the infrastructure layer.
+
+#### Critical elements of reliability:
+
+1. Health checks and quick exclusion of "dead" instances.
+
+2. TTL/caching with record aging control.
+
+3. Observability of the discovery layer (latency, failure rate, churn).
+
+#### Conclusion:
+
+Service discovery eliminates the need for static IPs/hosts by providing dynamic
+service addressing via registry, DNS, or mesh. This is a fundamental condition
+for the scalability and elasticity of a microservice system.
+
+#### Example:
+
+```go
+// У Kubernetes сервіс звертається за DNS-іменем, а не за статичним IP.
+resp, err := http.Get("http://orders-service.default.svc.cluster.local/health")
+if err != nil {
+	return err
+}
+defer resp.Body.Close()
+```
+
+</details>

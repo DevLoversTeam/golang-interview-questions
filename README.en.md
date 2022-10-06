@@ -7830,3 +7830,71 @@ defer resp.Body.Close()
 ```
 
 </details>
+
+
+<details>
+<summary>132. How to avoid tight coupling in microservice architecture so that the system remains scalable and easily changed?</summary>
+
+#### Go
+
+`Tight coupling` in microservices occurs when changing one service forces others
+to change. Clear contracts, autonomous domain boundaries, and dependency control
+are needed for the system to remain scalable and evolvable.
+
+#### Main decoupling practices:
+
+1. **Bounded contexts and clear service ownership**
+
+- each service is responsible for its domain and its data;
+
+- avoid a "common" base as an integration channel.
+
+2. **Contract-oriented interaction**
+
+- versioned APIs/schemas;
+
+- backward compatibility as a mandatory policy.
+
+3. **Event integration where possible**
+
+- publish/subscribe reduces synchronous request-response dependency.
+
+4. **Anti-corruption layer**
+
+- adapters between domains so that other people's models do not "leak" into your
+  service.
+
+5. **Stable interfaces, unstable implementation**
+
+- internal service changes should not break consumers.
+
+6. **Idempotency and retroresistance**
+
+- for async scripts is the key to looser binding.
+
+#### Organizational and technical safeguards:
+
+1. Consumer-driven contract testing.
+
+2. API governance (contract evolution rules).
+
+3. Clear observability between services (trace-id, dependency metrics).
+
+4. Restrictions on fan-out and depth of synchronous chains.
+
+#### What to avoid:
+
+1. Shared tables/schemas between teams.
+
+2. "Smart" API Gateway that encapsulates the business logic of many services.
+
+3. Undefined contracts and implicit dependencies through internal payload
+   fields.
+
+#### Conclusion:
+
+Avoiding tight coupling is a discipline of boundaries, contracts, and evolution.
+Services must be autonomous in data and releases, integrate through stable
+contracts, and withstand neighbor changes without cascading failures.
+
+</details>

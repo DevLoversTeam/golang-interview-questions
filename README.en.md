@@ -7898,3 +7898,60 @@ Services must be autonomous in data and releases, integrate through stable
 contracts, and withstand neighbor changes without cascading failures.
 
 </details>
+
+
+<details>
+<summary>133. How to organize backward compatibility?</summary>
+
+#### Go
+
+`Backward compatibility` means that the new version of the service/API does not
+break existing clients. In distributed systems, this is critical, because
+consumers are not updated simultaneously.
+
+#### Basic principles of compatibility:
+
+1. **Never break an existing contract abruptly.**
+
+2. **Additive changes over breaking changes:** add new fields/endpoints without
+   removing old ones.
+
+3. **Stable semantics of existing fields:** do not change the value/type of a
+   field with the same name.
+
+4. **Explicit versioning policy:** URL/version header/schema version.
+
+#### Practical techniques:
+
+1. Additional fields should be made optional with safe defaults.
+
+2. Use the deprecation period to remove the old functionality.
+
+3. Maintain parallel old+new contracts during migration.
+
+4. Use feature flags for controlled rollout.
+
+#### For events and schemes:
+
+1. Schemes must evolve additively.
+
+2. Consumers should ignore unknown fields.
+
+3. Prohibit reuse of "old" field identifiers (relevant for schema-based
+   protocols).
+
+#### Compatibility quality control:
+
+1. Consumer-driven contract tests.
+
+2. Schema compatibility checks in CI.
+
+3. Canary releases and client error monitoring.
+
+#### Conclusion:
+
+Backward compatibility organization is a combination of technical rules and
+release discipline: additive evolution of contracts, managed deprecation,
+automatic compatibility checks and phased rollout.
+
+</details>

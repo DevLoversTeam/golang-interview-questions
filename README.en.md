@@ -7955,3 +7955,78 @@ release discipline: additive evolution of contracts, managed deprecation,
 automatic compatibility checks and phased rollout.
 
 </details>
+
+
+<details>
+<summary>134. How do Go applications implement configuration updates "on the fly" without restarting the service?</summary>
+
+#### Go
+
+Hot reload configuration updates in Go are usually built as a controlled
+process: detect a source change, validate a new configuration load, atomically
+switch the active snapshot, and safely propagate it to working components.
+
+#### Typical architectural scheme:
+
+1. **Configuration Source**
+
+- file (watcher), env-provider, config service, KV-store.
+
+2. **Loader + validator**
+
+- reads new version;
+
+- checks schema, value bounds, and cross-parameter invariants.
+
+3. **Atomic publish**
+
+- new config snapshot is published via `atomic.Value` or other thread-safe
+  mechanism.
+
+4. **Configuration Consumers**
+
+- reads the current snapshot without blocking races.
+
+#### Key engineering requirements:
+
+1. **Toggle Atomicity**
+
+- either all new configuration or old; without "half states".
+
+2. **Validity before use**
+
+- incorrect version cannot be made active.
+
+3. **Rollback-ready**
+
+- in case of an application error, the service should remain in the previous
+  working configuration.
+
+4. **Observability**
+
+- reload event log, configuration version, metrics of successful/failed updates.
+
+#### What can usually be changed "on the fly":
+
+1. Limits, timeouts, feature flags, retry/backoff parameters.
+
+2. Logging levels.
+
+3. Non-critical routing policies.
+
+#### What should NOT be changed often without restarting:
+
+1. Basic network binding parameters.
+
+2. Critical initialization dependencies that do not support live reconfigure.
+
+3. Parameters whose change breaks current state invariants.
+
+#### Conclusion:
+
+Hot reload in Go is not "watcher magic", but the discipline of safe
+configuration publication: validate → atomically swap → observe → rollback on
+failure. This approach allows you to change the behavior of the service without
+downtime and without loss of controllability.
+
+</details>

@@ -8030,3 +8030,82 @@ failure. This approach allows you to change the behavior of the service without
 downtime and without loss of controllability.
 
 </details>
+
+
+<details>
+<summary>135. How to implement throttling (limiting the frequency of requests) in the Go service to protect the system from overload?</summary>
+
+#### Go
+
+`Throttling` in Go service is a managed request intensity limit to protect CPU,
+DB, external APIs and critical resources from overload and cascading
+degradation.
+
+#### Main throttling models:
+
+1. **Token Bucket / Leaky Bucket**
+
+- allows short bursts within capacity;
+
+- stabilizes the average rate.
+
+2. **Fixed / Sliding Window**
+
+- limits for time windows (per second/minute).
+
+3. **Concurrency limit**
+
+- limiting the number of simultaneously processed requests (semaphore/worker
+  pool).
+
+#### Where to apply:
+
+1. On the perimeter (gateway/ingress) — global protection.
+
+2. Inside the service — protection of expensive handlers/operations.
+
+3. On dependency calls - local limit for DB/external APIs.
+
+#### Limiting sections:
+
+1. Globally per service.
+
+2. Per-route / per-endpoint.
+
+3. Per-client / per-API-key / per-tenant / per-user.
+
+#### Practical solutions in Go:
+
+1. Middleware with a limiter (often a token bucket).
+
+2. For a multi-instance environment — a centralized or distributed limit (for
+   example, via Redis).
+
+3. A clear answer to the client:
+
+- HTTP `429 Too Many Requests`;
+
+- `Retry-After` and a clear error payload.
+
+#### Important nuances:
+
+1. The limit must be consistent with the actual capabilities of the backend.
+
+2. Required metrics:
+
+- percentage of rejected requests;
+
+- queue depth;
+
+- latency before/after throttling.
+
+3. It is worth having a policy for priority traffic (for example, system
+   clients).
+
+#### Conclusion:
+
+Throttling in Go is not just a 429 switch, but part of a resilience strategy:
+speed and contention limits, transparent failover policies, and metrics to adapt
+parameters to real load.
+
+</details>

@@ -8109,3 +8109,65 @@ speed and contention limits, transparent failover policies, and metrics to adapt
 parameters to real load.
 
 </details>
+
+
+<details>
+<summary>136. How does the caching layer work in Go and what problem does `singleflight.Group` solve with concurrent requests?</summary>
+
+#### Go
+
+`Caching layer` in Go is an intermediate layer between the business logic and
+the "expensive" data source (DB, external API, calculation), which returns a
+pre-stored result for repeated queries and reduces the load on the backend.
+
+#### How a typical cache flow works:
+
+1. Received request with key `K`.
+
+2. Check cache:
+
+- **cache hit** → we return the value quickly;
+
+- **cache miss** → read from source, put in cache, return result.
+
+3. TTL/invalidation control data freshness.
+
+#### What problem arises with competition:
+
+During `cache miss`, popular key may receive many requests at the same time.
+Without additional control, they will all go to the backend in parallel — this
+is `cache stampede` (thundering herd).
+
+#### What `singleflight.Group` does:
+
+1. Deduplicates simultaneous identical queries by key.
+
+2. Only the first request performs the "expensive" function.
+
+3. Other competing requests are waiting and receiving the same result.
+
+#### What problem does this solve:
+
+1. Dramatically reduces duplicate requests to the DB/API on miss.
+
+2. Stabilizes latency under peak load.
+
+3. Protects the backend from spikes during massive simultaneous accesses.
+
+#### Important practices:
+
+1. Use `singleflight` with the cache, not instead of the cache.
+
+2. Limit timeout via `context`/timeout.
+
+3. Carefully work with errors (so as not to reproduce transient-failure).
+
+4. Add jitter to TTL to avoid multiple keys being flashed synchronously.
+
+#### Conclusion:
+
+Caching layer speeds up reading and reduces pressure on data sources, and
+`singleflight.Group` eliminates the stampede effect under competing `cache
+miss`. Together, they provide much more stable and efficient service behavior.
+
+</details>

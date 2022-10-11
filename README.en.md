@@ -8171,3 +8171,79 @@ Caching layer speeds up reading and reduces pressure on data sources, and
 miss`. Together, they provide much more stable and efficient service behavior.
 
 </details>
+
+
+<details>
+<summary>137. How to design a multi-tenant architecture with data isolation between clients in the Go service?</summary>
+
+#### Go
+
+Multi-tenant architecture means that one platform serves many clients (tenants),
+but guarantees the isolation of their data, access and resources. The key to
+success is to make the tenant context a mandatory part of the entire query path.
+
+#### Basic data isolation models:
+
+1. **Shared DB, shared schema + tenant_id**
+
+- cheapest start;
+
+- mandatory hard filters per request.
+
+2. **Shared DB, separate schema per tenant**
+
+- stronger logical isolation;
+
+- more complex operational support.
+
+3. **Database per tenant**
+
+- maximum isolation and compliance;
+
+- highest infrastructure value.
+
+#### What you need to put in the Go service:
+
+1. **Tenant context**
+
+- extract tenant from auth-token/header;
+
+- pass through `context.Context` to all layers.
+
+2. **Enforcement-by-default**
+
+- repository layer should not execute requests without tenant filter;
+
+- "no tenant, no query" as an invariant.
+
+3. **Authorization**
+
+- check that the user/key has the right to a specific tenant.
+
+4. **Cache Isolation**
+
+- cache keys must include tenant-id.
+
+5. **Isolation of queues/events**
+
+- tenant tags in events, consumer filtering, routing control.
+
+#### Operational aspects:
+
+1. Quotas and rate limits per tenant.
+
+2. Metrics/logs/traces with tenant attribute.
+
+3. Backup/restore strategy taking into account tenant limits.
+
+4. Migration mechanisms between isolation models during growth (for example,
+   from shared to dedicated for enterprise clients).
+
+#### Practical conclusion:
+
+Multi-tenant in Go is not just a DB schema, but an end-to-end discipline: tenant
+identity, access policies, cache/event isolation, and operational control. The
+earlier this is built into the architecture, the easier it is to scale the
+product without leaks between clients.
+
+</details>

@@ -8247,3 +8247,91 @@ earlier this is built into the architecture, the easier it is to scale the
 product without leaks between clients.
 
 </details>
+
+
+<details>
+<summary>138. How to correctly organize the processing of long-running tasks (long-running tasks) so as not to block HTTP requests?</summary>
+
+#### Go
+
+Long-term tasks should not be performed synchronously in the HTTP handler,
+because this increases latency, reduces throughput and increases the risk of
+client timeouts/interruptions. The correct approach is asynchronous execution
+via a queue/workers.
+
+#### Canonical architecture:
+
+1. HTTP endpoint accepts request, validates payload.
+
+2. Creates a job (with `job_id`, status, metadata).
+
+3. Puts the job in the queue (broker/task table).
+
+4. Returns a quick response (`202 Accepted` + `job_id`) to the client.
+
+5. Background workers process the task outside the HTTP context.
+
+#### What is needed for production reliability:
+
+1. **Idempotency**
+
+- job redelivery should not break state.
+
+2. **Retry policy**
+
+- backoff, max attempts, classification of retriable/non-retriable errors.
+
+3. **Task Statuses**
+
+- `queued`, `running`, `succeeded`, `failed`, `canceled`.
+
+4. **Observability**
+
+- queue metrics, execution time, error rate, worker lag.
+
+5. **Cancellation / timeout**
+
+- control of execution time limits and correct cancellation.
+
+6. **Backpressure**
+
+- restriction of worker competition to avoid overloading DB/dependencies.
+
+#### How the client gets the result:
+
+1. Polling endpoint for `job_id`.
+
+2. Webhook/callback.
+
+3. Push channel (SSE/WebSocket) — near-real-time UX if needed.
+
+#### Typical errors:
+
+1. Perform a heavy business operation directly in the handler.
+
+2. Do not have persistent job status.
+
+3. Lack of retry and dead-letter script.
+
+4. No worker limit and queue control.
+
+#### Conclusion:
+
+In order not to block HTTP requests, long-running tasks should be decomposed
+into the `accept -> enqueue -> async process -> observe result` model. This
+gives a stable API, manageable throughput and predictable performance under
+load.
+
+#### Example:
+
+```go
+func (h *Handler) StartReport(w http.ResponseWriter, r *http.Request) {
+	jobID := uuid.NewString()
+	_ = h.queue.Publish(r.Context(), Job{ID: jobID, Type: "build_report"})
+
+	w.WriteHeader(http.StatusAccepted)
+	_ = json.NewEncoder(w).Encode(map[string]string{"job_id": jobID})
+}
+```
+
+</details>

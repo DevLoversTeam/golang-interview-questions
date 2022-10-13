@@ -8335,3 +8335,83 @@ func (h *Handler) StartReport(w http.ResponseWriter, r *http.Request) {
 ```
 
 </details>
+
+
+<details>
+<summary>139. How to build an interservice transaction?</summary>
+
+#### Go
+
+In microservices, a classic ACID transaction between multiple DBs/services is
+usually impractical. Therefore, an interservice "transaction" is built through
+an agreed business procedure with compensations and eventual consistency.
+
+#### Main approaches:
+
+1. **Saga (most common)**
+
+- sequence of local transactions in services;
+
+- in the event of a failure, compensatory actions are triggered.
+
+2. **Orchestration Saga**
+
+- central orchestrator manages steps and rollbacks.
+
+3. **Choreography Saga**
+
+- services respond to each other's events without a central conductor.
+
+4. **2PC/XA**
+
+- is theoretically possible, but usually avoided in microservices due to
+  complexity and degradation of availability.
+
+#### Canonical design of an interservice transaction:
+
+1. Break the process into local atomic steps.
+
+2. For each step, define compensation.
+
+3. Ensure idempotency of commands and events.
+
+4. Implement reliable delivery via outbox/inbox patterns.
+
+5. Add correlational `transaction/saga id` for tracing.
+
+#### Critical requirements:
+
+1. **Idempotence** on all boundaries.
+
+2. **Retry/backoff** for temporary failures.
+
+3. **Deduplication** of redelivered events.
+
+4. **Timeout and dead-letter policy** for "hanging" steps.
+
+5. **Observability**: saga statuses, metrics, auditing.
+
+#### Conclusion:
+
+Interservice transaction in microservices is not global ACID, but a managed
+consistency process: local transactions + events + compensations. The most
+practical model for this is Saga, with clear invariants and robust failure
+handling.
+
+#### Example:
+
+```go
+// Спрощений оркестратор Saga
+func (s *Saga) Run(ctx context.Context, cmd CreateOrder) error {
+	if err := s.reserveInventory(ctx, cmd); err != nil {
+		return err
+	}
+	if err := s.chargePayment(ctx, cmd); err != nil {
+		_ = s.compensateInventory(ctx, cmd)
+		return err
+	}
+	return s.confirmOrder(ctx, cmd)
+}
+```
+
+</details>

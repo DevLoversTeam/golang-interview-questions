@@ -8415,3 +8415,60 @@ func (s *Saga) Run(ctx context.Context, cmd CreateOrder) error {
 ```
 
 </details>
+
+
+<details>
+<summary>140. What problems does the Saga pattern solve?</summary>
+
+#### Go
+
+The `Saga` pattern addresses the problem of a consistent business operation
+spanning multiple microservices with separate DBs where it is not possible or
+practical to apply a single global ACID transaction.
+
+#### What problems does Saga cover:
+
+1. **Lack of distributed ACID between services**
+
+- replaces the global transaction with a sequence of local transactions.
+
+2. **Requirement for partial failure compensation**
+
+- if one of the steps failed, compensating actions are performed.
+
+3. **Eventual consistency management**
+
+- allows the agreed business state to be achieved asynchronously.
+
+4. **Decreased connectivity between services**
+
+- steps can interact via events/commands without hard 2PC.
+
+5. **Resistance to temporary failures**
+
+- retry/backoff and idempotence make the process more reliable.
+
+#### What Saga does not "heal" automatically:
+
+1. Does not remove the need for explicit domain modeling of compensations.
+
+2. Does not eliminate the complexity of observability and process state
+   monitoring.
+
+3. Does not guarantee instant consistency - only managed consistency over time.
+
+#### Where Saga is especially relevant:
+
+1. Checkout/Order workflow (product reserve, payment, delivery).
+
+2. Reserve/cancel resources in multiple systems.
+
+3. Any multi-step business processes with cross-service effects.
+
+#### Conclusion:
+
+Saga solves the central problem of microservice consistency: how to perform a
+complex cross-service operation without a global lock coordinator, with
+controlled recovery through offsets and acceptable operational resilience.
+
+</details>

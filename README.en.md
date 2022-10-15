@@ -8472,3 +8472,66 @@ complex cross-service operation without a global lock coordinator, with
 controlled recovery through offsets and acceptable operational resilience.
 
 </details>
+
+
+<details>
+<summary>141. What is Event Sourcing?</summary>
+
+#### Go
+
+`Event Sourcing` is an approach in which the system saves not the "current
+state" of the entity, but the sequence of events that changed this state. The
+current state is reproduced by replaying events.
+
+#### Key idea:
+
+1. The source of truth is an immutable domain event log.
+
+2. The state of the aggregate is the derived result of reducing these events in
+   time order.
+
+3. Change of state occurs by adding a new event, not by "overwriting".
+
+#### What Event Sourcing provides:
+
+1. **Full audit trail**: you can see who/when/why changed the domain status.
+
+2. **State reproducibility** at any point in time.
+
+3. **Flexible projections** (read models) for different reading scenarios.
+
+4. **Natural integration with event-driven architecture**.
+
+#### Typical components:
+
+1. Event store (append-only).
+
+2. Aggregate with command validation rules.
+
+3. Projection/read model builders.
+
+4. Event versioning mechanisms and upcasters.
+
+#### Important challenges:
+
+1. The complexity of the evolution of event patterns.
+
+2. Need for snapshots for quick restoration of long streams.
+
+3. Operational complexity of consistency between write/read models (often CQRS).
+
+#### When appropriate:
+
+1. Domains with high audit and change history requirements.
+
+2. Complex business processes where cause-and-effect transparency is important.
+
+3. Systems where events are a natural integration contract.
+
+#### Conclusion:
+
+Event Sourcing is a "store event facts, not final state" model. It provides
+strong historical transparency and architectural flexibility, but requires a
+mature discipline of event modeling, versioning, and operational support.
+
+</details>

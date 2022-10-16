@@ -8535,3 +8535,45 @@ strong historical transparency and architectural flexibility, but requires a
 mature discipline of event modeling, versioning, and operational support.
 
 </details>
+
+
+<details>
+<summary>142. Formulate the CAP theorem.</summary>
+
+#### Go
+
+The CAP theorem states: in a distributed system during network separation
+(`Partition`) it is impossible to simultaneously guarantee both strong
+consistency (`Consistency`) and full availability (`Availability`) for all
+requests.
+
+#### Three properties of CAP:
+
+1. **Consistency (C)** all nodes see the same current data state after a write
+   operation.
+
+2. **Availability (A)** every request gets a response (success/failure without
+   infinite wait).
+
+3. **Partition tolerance (P)** system continues to work even if there are
+   network breaks or communication delays between nodes.
+
+#### Key practical emphasis:
+
+1. In real distributed systems, `P` is almost always required (the network is
+   unreliable by nature).
+
+2. Therefore, at the moment of partition, you have to choose a priority:
+
+- **CP**: preserve consistency by sacrificing some availability;
+
+- **AP**: Preserve availability by accepting a temporary mismatch.
+
+#### Conclusion:
+
+CAP does not say "choose only two properties forever". She says: **when a
+partition occurs, maximum C and A are simultaneously unattainable**; the
+architect must consciously determine what the system sacrifices in emergency
+mode.
+
+</details>

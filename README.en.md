@@ -8577,3 +8577,71 @@ architect must consciously determine what the system sacrifices in emergency
 mode.
 
 </details>
+
+
+<details>
+<summary>143. Tell us about the Raft consensus algorithm.</summary>
+
+#### Go
+
+Raft is a consensus algorithm for a replicated log (replicated log), which
+allows a group of nodes to consistently store the same sequence of commands even
+in the face of partial network or node failures.
+
+#### The main idea of Raft:
+
+1. The cluster has **one leader** and several followers.
+
+2. Client records are accepted by leader.
+
+3. Leader replicates journal entries to followers.
+
+4. The record is considered committed after confirmation by the majority
+   (quorum).
+
+5. All nodes apply committed records in the same order.
+
+#### Node roles:
+
+1. **Leader** - Manages replication and handles client commands.
+
+2. **Follower** — passively accepts replication from leader.
+
+3. **Candidate** — a role during the election of a new leader.
+
+#### Leader elections:
+
+1. Time is divided into terms (`term`).
+
+2. If the follower does not receive a heartbeat, it becomes a candidate and
+   initiates an election.
+
+3. The node with the most votes becomes the leader of the current term.
+
+#### Safety guarantees:
+
+1. **Log matching** - same index/term means same history up to this point.
+
+2. **Leader completeness** — committed records are stored in the logs of future
+   leaders.
+
+3. **State machine safety** — commands are applied in a consistent order on all
+   nodes.
+
+#### Practical aspects:
+
+1. Quorum dependence means: without a majority, the cluster cannot commit new
+   entries.
+
+2. Snapshot/log compaction is used to limit log growth.
+
+3. Correct heartbeat/election timeouts are critical for stability.
+
+#### Conclusion:
+
+Raft provides a clear and reliable consensus model: leader-based replication,
+quorum elections, and strong guarantees of log consistency. That is why it is
+widely used in configuration, coordination and distributed stateful services
+systems.
+
+</details>

@@ -8645,3 +8645,72 @@ widely used in configuration, coordination and distributed stateful services
 systems.
 
 </details>
+
+
+<details>
+<summary>144. How to organize CI/CD for Go?</summary>
+
+#### Go
+
+Effective CI/CD for Go is built as a consistent pipeline: fast code validation,
+reproducible build, automated tests, secure deployment, and controlled rollback.
+
+#### Typical CI pipeline structure:
+
+1. **Lint + static checks**
+
+- `go vet`, linters, basic security checks.
+
+2. **Unit tests**
+
+- `go test ./...` (if necessary `-race` for critical branches).
+
+3. **Integration tests**
+
+- services/DB in containers or test-env.
+
+4. **Build stage**
+
+- reproducible artifact build (binary/container).
+
+5. **Artifact publishing**
+
+- push image to registry, tagging with version/commit.
+
+#### Typical CD structure:
+
+1. Deployment in staging.
+
+2. Automatic smoke/checks.
+
+3. Promote to production (manual gate or policy-based).
+
+4. Post-deployment SLO/error-rate/latency monitoring.
+
+#### Key Reliability Practices:
+
+1. **Immutable artifacts** (do not rebuild the same release twice).
+
+2. **Pinning of toolchain/dependencies versions**.
+
+3. **Secrets management** via CI vault/secret store.
+
+4. **Environment parity** between staging and prod.
+
+5. **Canary/blue-green rollout** to reduce release risks.
+
+#### What is important specifically for Go:
+
+1. Quick tests and builds allow a short feedback loop.
+
+2. Matrix-build for multiple `GOOS/GOARCH` as needed.
+
+3. Early detection of competitive defects (`-race`) in relevant jobs.
+
+#### Conclusion:
+
+CI/CD for Go should be fast, repeatable, and risk-managed: check, build, test,
+deploy incrementally, and have a guaranteed rollback path. It is this discipline
+that produces stable releases without losing development speed.
+
+</details>

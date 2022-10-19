@@ -8714,3 +8714,71 @@ deploy incrementally, and have a guaranteed rollback path. It is this discipline
 that produces stable releases without losing development speed.
 
 </details>
+
+
+<details>
+<summary>145. How to organize a rollback in CI/CD for the Go service to quickly and safely roll back a failed release?</summary>
+
+#### Go
+
+A reliable rollback is not a "plan B", but part of the design of the release
+process. To roll back a Go service quickly and safely, you need to have
+reproducible artifacts, a controlled rollout, and clear rollback triggers in
+advance.
+
+#### Basic principles of the rollback-ready process:
+
+1. **Immutable artifacts**
+
+- each release has a unique tag/sha;
+
+- rollback = reissue of previously checked artifact.
+
+2. **Deploy without destructive steps**
+
+- changes must be reversible;
+
+- DB migrations are backward-compatible or with a separate rollback plan.
+
+3. **Fast Traffic Switching**
+
+- canary/blue-green/rolling with the ability to instantly reduce or reset the
+  share of a new release.
+
+#### What should be in CI/CD:
+
+1. Automatic smoke/checks after deployment.
+
+2. SLO gates (error rate, p95/p99 latency, saturation).
+
+3. Clear one-step rollback command/procedure.
+
+4. Alerts triggered early rather than after a mass incident.
+
+#### Rollback strategy in production:
+
+1. Degradation of metrics detected.
+
+2. Automatically or manually stopped the rollout.
+
+3. Switched traffic to previous stable version.
+
+4. Checked recovery of SLO.
+
+5. Postmortem and cause of regression recorded.
+
+#### The critical aspect is the database:
+
+1. Change schemes according to the expand/contract principle.
+
+2. Avoid migrations that immediately break the old code.
+
+3. Separate code deployment and dangerous DDL steps.
+
+#### Conclusion:
+
+Fast and safe rollback in Go CI/CD is possible only when it is designed in
+advance: immutable releases, managed rollout, metrics-gates, reversible changes
+and a proven operational rollback procedure.
+
+</details>

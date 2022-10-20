@@ -8782,3 +8782,63 @@ advance: immutable releases, managed rollout, metrics-gates, reversible changes
 and a proven operational rollback procedure.
 
 </details>
+
+
+<details>
+<summary>146. How does blue-green deployment work?</summary>
+
+#### Go
+
+`Blue-green deployment` is a release strategy where two identical production
+environments exist simultaneously:
+
+1. **Blue** is the current combat version.
+
+2. **Green** is a new version prepared to receive traffic.
+
+#### How it works step by step:
+
+1. The new version is deployed in `green` without affecting `blue`.
+
+2. In `green` they perform health checks, smoke tests, and basic validation.
+
+3. After successful validation, traffic is switched from `blue` to `green` (via
+   LB/ingress/router).
+
+4. The old version (`blue`) remains available as a "hot" rollback option.
+
+#### Advantages:
+
+1. **Minimum downtime** upon release.
+
+2. **Quick rollback** — it is enough to return the traffic to the previous
+   environment.
+
+3. **Safe pre-switch validation** without risk for all users.
+
+4. **Clear operating model** for release management.
+
+#### Risks and limitations:
+
+1. Requires dual resources (two environments at the same time).
+
+2. Complications with stateful components and database migrations.
+
+3. Requires thorough synchronization of configuration, secrets, and external
+   dependencies.
+
+#### Practical recommendations:
+
+1. Combine blue-green with automatic SLO-check before cutover.
+
+2. For the database, use backward-compatible migrations (expand/contract).
+
+3. Have a formalized rollback and verification procedure after switching.
+
+#### Conclusion:
+
+Blue-green deployment gives a controlled and fast release with almost instant
+rollback. This is one of the most reliable strategies for production, as long as
+the system is ready for a dual environment and disciplined state management.
+
+</details>

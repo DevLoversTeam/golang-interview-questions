@@ -840,7 +840,7 @@ data races and undefined behavior.
    goroutine; a built-in lock for each operation would make these scenarios
    slower.
 
-2. **Explicit model of competition:** Go puts control of synchronization on the
+2. **Explicit concurrency model:** Go puts control of synchronization on the
    developer, so that he chooses a mechanism for a specific workload.
 
 3. **Architecture flexibility:** different tasks require different strategies
@@ -1874,7 +1874,7 @@ complicate the runtime.
 #### When goroutines can slow down the system:
 
 1. **Excessive number of goroutines (goroutine explosion):** thousands or
-   hundreds of thousands of tasks without limiting competition put pressure on
+   hundreds of thousands of tasks without limiting concurrency put pressure on
    the scheduler and memory.
 
 2. **Fine-grained tasks:** if the work is very small, the startup/coordination
@@ -1896,7 +1896,7 @@ complicate the runtime.
 
 #### How to avoid degradation:
 
-1. Limit competition (worker pool, semaphore, bounded queues).
+1. Limit concurrency (worker pool, semaphore, bounded queues).
 
 2. Profile (`pprof`, trace) instead of relying on intuition.
 
@@ -1989,7 +1989,7 @@ buf <- 2
 
 A `nil` channel in Go is a channel without initialized internal buffer and
 synchronization mechanisms. Its behavior is strictly defined and very important
-for competitive logic.
+for concurrency logic.
 
 #### Behavior of the `nil` channel:
 
@@ -2175,7 +2175,7 @@ branch and to reduce the systematic "starvation" of individual channels.
 
 2. **Cannot encode business priority** only in `case` order in `select`.
 
-3. **The behavior is competitively correct, but non-deterministic**, which is
+3. **The behavior is concurrency-safe but non-deterministic**, which is
    normal for event-driven logic.
 
 #### How to implement priority, if it is needed:
@@ -2301,7 +2301,7 @@ simultaneous operations (parallelism).
 2. **Transparent synchronization:** The Go runtime performs lock/wakeup without
    manual control of conditional variables.
 
-3. **Reads well in the code:** the intention to "restrict competition" is
+3. **Reads well in the code:** the intention to "limit concurrency" is
    immediately apparent.
 
 #### Practical precautions:
@@ -2318,7 +2318,7 @@ simultaneous operations (parallelism).
 
 A buffered channel in Go is a canonical implementation of counting semaphore:
 simple, reliable, and well integrated into the goroutine model. This is one of
-the best ways to control the level of competition in production services.
+the best ways to control the level of concurrency in production services.
 
 #### Example:
 
@@ -2409,7 +2409,7 @@ data, they often create unnecessary overhead.
 3. **GC and memory pressure:** large channel buffers or numerous large messages
    increase memory pressure and can increase pauses/runtime costs.
 
-4. **Degradation of cache locality:** large objects pass through the competitive
+4. **Degradation of cache locality:** large objects pass through the concurrent
    pipeline worse than compact signals + access to shared storage.
 
 #### Better alternatives:
@@ -2446,7 +2446,7 @@ structures.
 #### Go
 
 A routine cannot "return" a value directly via `return` to the caller.
-Therefore, the error from the competitive task is transmitted explicitly:
+Therefore, the error from the concurrent task is transmitted explicitly:
 through the error channel or through `errgroup`, which encapsulates this
 pattern.
 
@@ -2581,7 +2581,7 @@ provide manageable parallelism without chaos, leaks, and deadlocks.
 
 - data goes through successive stages of processing;
 
-- each stage can have its own competition and backpressure.
+- each stage can have its own concurrency and backpressure.
 
 4. **Semaphore via buffered channel**
 
@@ -2813,16 +2813,16 @@ dangerous simultaneous access to the same memory without synchronization.
 
 1. Classic read/write and write/write races on shared variables.
 
-2. Missed lock/unlock in competitive areas.
+2. Missed lock/unlock in concurrent sections.
 
-3. Part of coordination errors in test scenarios with real competition.
+3. Some coordination errors in test scenarios with actual concurrency.
 
 #### What `-race` does not guarantee:
 
 1. **Does not detect all race conditions as logical bugs:** eg, incorrect
    interaction protocol without direct data race.
 
-2. **Doesn't see unexecuted code:** if tests don't cover a competitive path,
+2. **Doesn't see unexecuted code:** if tests don't cover a concurrent path,
    race may go unnoticed.
 
 3. **Does not prove bug-free:** A "clean" run means only that the tool did not
@@ -2841,11 +2841,11 @@ design invariants, and synchronization discipline.
 
 
 <details>
-<summary>51. What are the advantages of atomic operations compared to mutex for simple competitive operations?</summary>
+<summary>51. What are the advantages of atomic operations over a mutex for simple concurrent operations?</summary>
 
 #### Go
 
-`atomic` operations in Go are appropriate for very simple competitive scenarios
+`atomic` operations in Go are appropriate for very simple concurrent scenarios
 where you need to safely perform an elementary operation on a single value
 (increment, read a flag, CAS). In such cases, they may be lighter than `mutex`.
 
@@ -3006,7 +3006,7 @@ waits, while `errgroup` additionally handles errors and cancellation via
 
 1. Needs a clear "failure in one task → stop the rest" model.
 
-2. Need to quickly and cleanly implement competitive orchestration.
+2. Need to implement concurrency orchestration quickly and cleanly.
 
 3. Readability and short, maintainable code are important.
 
@@ -3142,7 +3142,7 @@ the state itself and its invariants, not the data transport.
 
 #### Go
 
-`sync.Map` is a specialized competitive map from the `sync` package, optimized
+`sync.Map` is a specialized concurrent map from the `sync` package, optimized
 primarily for read-heavy workloads and scenarios where keys are read frequently
 and rarely changed.
 
@@ -3166,7 +3166,7 @@ and rarely changed.
 
 2. **Keys mostly stable**, without aggressive churn.
 
-3. **Highly competitive read access** from many goroutines.
+3. **Highly concurrent read access** from many goroutines.
 
 #### When more is better `map + mutex`:
 
@@ -3188,7 +3188,7 @@ everywhere: minimize blocking on bulk reads.
 #### Conclusion:
 
 `sync.Map` is not a "best map overall", but a point tool for a specific load
-profile. If you have a read-mostly scenario with high competition, it can give a
+profile. If you have a read-mostly scenario with high concurrency, it can give a
 win; in other cases, simple `map + mutex` is often more transparent and
 efficient.
 
@@ -3202,7 +3202,7 @@ efficient.
 
 Concurrency tests in Go are tests that test the behavior of code under
 conditions of parallel execution of goroutines, state sharing, and resource
-competition. Their goal is to detect defects that do not appear in a linear
+contention. Their goal is to detect defects that do not appear in a linear
 scenario.
 
 #### What exactly do the following tests check:
@@ -3215,11 +3215,11 @@ scenario.
 
 4. Correct completion of goroutines (no leaks).
 
-5. Observance of invariants under competitive load.
+5. Observance of invariants under concurrent load.
 
 #### Why are they needed:
 
-1. **Early detection of competitive bugs:** many of them only show up under
+1. **Early detection of concurrency bugs:** many of them only show up under
    parallelism pressure.
 
 2. **Decreasing flaky behavior in production:** tests capture scenarios where
@@ -3228,7 +3228,7 @@ scenario.
 3. **Assertion of architectural guarantees:** such as that the system does not
    lose events and does not violate state consistency.
 
-4. **Safer refactoring:** competitive invariants remain protected by the
+4. **Safer refactoring:** concurrency invariants remain protected by the
    regression set.
 
 #### Tools and Practices in Go:
@@ -3880,7 +3880,7 @@ real or close to real load.
 
 - fixed input;
 
-- known competitive profile;
+- known concurrency profile;
 
 - stable startup environment.
 
@@ -4604,7 +4604,7 @@ application. This is especially critical for reusable packages.
 1. **Hidden shared mutable state:** A consumer of the library may not know that
    there is global state somewhere that affects behavior.
 
-2. **Competitiveness issues:** globals easily become a source of
+2. **Concurrency issues:** globals easily become a source of
    race/contention.
 
 3. **Complex testing:** tests start to depend on the run order and side effects
@@ -5538,7 +5538,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
 #### Go
 
 `ACID` are four basic properties of transactional systems that guarantee
-correctness of data even under failures, competition and high load: Atomicity,
+correctness of data even under failures, concurrency and high load: Atomicity,
 Consistency, Isolation, Durability.
 
 #### ACID decryption:
@@ -5670,7 +5670,7 @@ availability and scalability at the price of eventual consistency.
 
 Isolation levels determine how "visible" the changes of parallel transactions
 are to each other. The higher the level of isolation, the fewer anomalies, but
-usually at a higher cost in performance and competitiveness.
+usually at a higher cost in performance and concurrency.
 
 #### Classic isolation levels (SQL):
 
@@ -5701,7 +5701,7 @@ usually at a higher cost in performance and competitiveness.
 
 - guarantees a result equivalent to sequential execution of transactions;
 
-- maximum protection against anomalies, but more expensive than the competition.
+- maximum protection against anomalies, but more expensive in terms of concurrency.
 
 #### Practical conclusion:
 
@@ -5911,7 +5911,7 @@ load, and bandwidth.
 
 2. Increase write/read throughput through parallel operation of shards.
 
-3. Localize hot datasets and reduce competition for resources.
+3. Localize hot datasets and reduce resource contention.
 
 #### The main types of sharding:
 
@@ -6166,7 +6166,7 @@ determinism, speed and transparency of the reasons for the fall.
 
 2. `go test ./...` for a regular run.
 
-3. `-race` for competitive sites.
+3. `-race` for concurrent code paths.
 
 4. If necessary - `testify` (assert/require), but without excessive magic.
 
@@ -6533,7 +6533,7 @@ frameworks. It's an idiomatic approach that scales well and remains transparent.
 
 2. Mot on module boundary, not inside domain logic.
 
-3. For competitive scenarios, protect state test-double (`mutex`, atomics).
+3. For concurrent scenarios, protect test-double state (`mutex`, atomics).
 
 4. Do not duplicate the production logic in fake excessively - otherwise the
    tests become fragile.
@@ -6776,7 +6776,7 @@ isolation easily turns stable tests into flaky ones.
 4. For DB tests — transactional isolation or a separate namespace/schema per
    test.
 
-5. Run the set with `-race` for early detection of competition issues.
+5. Run the test suite with `-race` for early detection of concurrency issues.
 
 #### Conclusion:
 
@@ -7138,7 +7138,7 @@ container.
 
 3. **Multi-service composite stands**: docker-compose / Testcontainers.
 
-4. **Laconic CI for simple DB**: GitHub Actions services.
+4. **Minimal CI setup for a simple DB:** GitHub Actions services.
 
 #### Conclusion:
 
@@ -8132,7 +8132,7 @@ pre-stored result for repeated queries and reduces the load on the backend.
 
 3. TTL/invalidation control data freshness.
 
-#### What problem arises with competition:
+#### What problem arises with concurrency:
 
 During `cache miss`, popular key may receive many requests at the same time.
 Without additional control, they will all go to the backend in parallel — this
@@ -8295,7 +8295,7 @@ via a queue/workers.
 
 6. **Backpressure**
 
-- restriction of worker competition to avoid overloading DB/dependencies.
+- limiting worker concurrency to avoid overloading the DB or dependencies.
 
 #### How the client gets the result:
 
@@ -8705,7 +8705,7 @@ reproducible build, automated tests, secure deployment, and controlled rollback.
 
 2. Matrix-build for multiple `GOOS/GOARCH` as needed.
 
-3. Early detection of competitive defects (`-race`) in relevant jobs.
+3. Early detection of concurrency defects (`-race`) in relevant jobs.
 
 #### Conclusion:
 

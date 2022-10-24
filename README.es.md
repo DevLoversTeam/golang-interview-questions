@@ -97,3 +97,55 @@ pensamiento en el código y proporciona un buen equilibrio entre simplicidad y
 eficiencia.
 
 </details>
+
+
+<details>
+<summary>3. ¿Cuáles son las características clave de Go en comparación con otros idiomas?</summary>
+
+#### Go
+
+Go se destaca porque combina una sintaxis concisa con un modelo de ejecución de
+ingeniería muy práctico: el lenguaje no sobrecarga al desarrollador con una
+complejidad innecesaria, pero proporciona herramientas para construir sistemas
+rápidos y confiables.
+
+#### Características clave de Go:
+
+1. **Sintaxis simple y estricta:** el código es fácil de leer y la uniformidad
+   estilística se mantiene automáticamente a través de `go fmt`.
+
+2. **Compilar en un binario nativo:** una aplicación generalmente se compila en
+   un único ejecutable sin grandes dependencias externas al inicio.
+
+3. **Tipo estático con alta previsibilidad:** se detecta una gran cantidad de
+   errores en la etapa de compilación, lo que aumenta la confiabilidad en la
+   producción.
+
+4. **Simultaneidad incorporada:** `goroutine` y `channel` hacen de la
+   programación paralela un mecanismo natural en lugar de auxiliar.
+
+5. **Ciclo de desarrollo rápido:** la compilación relativamente rápida y las
+   herramientas estándar aceleran las pruebas y la entrega de cambios.
+
+6. **Biblioteca estándar sólida:** redes, HTTP, criptografía, manipulación de
+   archivos, creación de perfiles y pruebas disponibles listas para usar.
+
+7. **Modelo de error explícito:** En Go, los errores se manejan explícitamente a
+   través de `error`, lo que hace que el control de estado sea transparente y
+   controlable.
+
+8. **GC y memoria administrada:** El lenguaje simplifica el desarrollo backend
+   del sistema sin obligarlo a administrar manualmente el ciclo de vida de la
+   mayoría de los objetos.
+
+9. **Un enfoque modular práctico:** `go mod` estandariza la gestión de
+   dependencias y crea reproducibilidad.
+
+#### Conclusión:
+
+A diferencia de muchos lenguajes que gravitan hacia la máxima abstracción o la
+controlabilidad de bajo nivel, Go mantiene intencionadamente un equilibrio de
+ingeniería: simplicidad, rendimiento, escalabilidad y conveniencia para el
+desarrollo en equipo.
+
+</details>

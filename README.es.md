@@ -149,3 +149,54 @@ ingeniería: simplicidad, rendimiento, escalabilidad y conveniencia para el
 desarrollo en equipo.
 
 </details>
+
+
+<details>
+<summary>4. ¿Cuál es la diferencia entre el paradigma de programación imperativo y declarativo? Dar ejemplos de idiomas.</summary>
+
+#### Go
+
+Los paradigmas imperativo y declarativo difieren principalmente en el enfoque de
+la descripción: el primero explica **cómo** realizar la tarea paso a paso, el
+segundo — **qué exactamente** se debe obtener como resultado.
+
+#### Paradigma imperativo:
+
+1. **Esencia:** El programador especifica explícitamente la secuencia de
+   instrucciones, transiciones de estado, bucles, bifurcaciones y orden de
+   ejecución.
+
+2. **Enfoque:** control de algoritmos y control de flujo de ejecución.
+
+3. **Rasgos típicos:** variables, asignaciones, `for`, `if`, mutación de datos.
+
+4. **Ejemplos de lenguajes:** Go, C, C++, Rust (en la mayoría de las prácticas),
+   Java.
+
+#### Paradigma declarativo:
+
+1. **Esencia:** describe el resultado deseado o las propiedades del sistema sin
+   detallar los pasos de implementación.
+
+2. **Enfoque:** modelo de datos, reglas y restricciones, no mecánica
+   algorítmica.
+
+3. **Características típicas:** expresiones de nivel superior, minimización de
+   mutaciones explícitas, abstracción del orden de ejecución.
+
+4. **Ejemplos de lenguajes/enfoques:** SQL, HCL (Terraform), HTML/CSS, estilos
+   funcionales en Haskell y parcialmente en Elixir.
+
+#### Conclusión práctica:
+
+- En sistemas reales, los paradigmas a menudo se combinan.
+
+- Go es principalmente de naturaleza imperativa, pero algunos elementos de
+  declaratividad aparecen en configuraciones, descripciones de esquemas, DSL y
+  consultas de datos.
+
+- Para la entrevista, es importante enfatizar que la elección del paradigma no
+  es una cuestión de "mejor o peor", sino de hacer coincidir la tarea, el equipo
+  y los requisitos de soporte del código.
+
+</details>

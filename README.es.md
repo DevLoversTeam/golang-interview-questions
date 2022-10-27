@@ -252,3 +252,65 @@ de ingeniería con rendimiento y conveniencia práctica: desde escribir código
 hasta su implementación, monitoreo y soporte a largo plazo.
 
 </details>
+
+
+<details>
+<summary>6. ¿Qué son las variables `shadowing` y cómo pueden provocar errores en la lógica empresarial?</summary>
+
+#### Go
+
+`Shadowing` (sombreado) es cuando se declara una nueva variable en el ámbito
+interno con el mismo nombre que la externa. Como resultado, el código no
+funciona con la variable "esperada", sino con su copia local por nombre.
+
+#### Cómo ocurre con mayor frecuencia:
+
+1. **Declaración breve `:=` en un bloque anidado:** el desarrollador espera una
+   asignación y, de hecho, se crea una nueva variable.
+
+2. **El manejo de errores (`err`) en `if`/`for`/`switch`:** local `err` eclipsa
+   al externo, lo que provoca que las comprobaciones de estado posteriores
+   fallen.
+
+3. **Trabajar con estado en funciones largas:** el sombreado de variables
+   intermedias dificulta la lectura y aumenta el riesgo de defectos lógicos.
+
+#### Por qué esto es peligroso para la lógica empresarial:
+
+1. **Verificaciones de condición falsa:** el sistema puede saltar a la rama de
+   ejecución incorrecta porque se está verificando la variable "incorrecta".
+
+2. **Estado perdido o incorrecto:** por ejemplo, el resultado del cálculo
+   permaneció en el bloque local y el estado externo no se actualizó.
+
+3. **Depuración compleja:** visualmente el nombre es el mismo, pero
+   semánticamente son objetos diferentes; el error se manifiesta de forma
+   discreta y a menudo sólo en casos de combate.
+
+4. **Defectos silenciosos sin pánico:** un programa puede compilarse y
+   ejecutarse, pero devolver un resultado comercial incorrecto.
+
+#### Cómo prevenir `shadowing`:
+
+- Distingue deliberadamente entre `=` y `:=` en todos los bloques anidados.
+
+- Mantenga breve la visibilidad de las variables y evite funciones excesivamente
+  largas.
+
+- Utilice nombres claros y semánticamente precisos, especialmente para estados y
+  errores.
+
+- Conecte el análisis estático (`go vet`, `golangci-lint`) con reglas de
+  detección de sombreado.
+
+- En lugares críticos de la lógica, agregue pruebas para escenarios negativos y
+  condiciones de contorno.
+
+#### Conclusión:
+
+`Shadowing` no es una peculiaridad sintáctica, sino una fuente de errores
+lógicos insidiosos. En el código Go de producción, la disciplina de la
+declaración de variables afecta directamente la corrección del comportamiento
+comercial del sistema.
+
+</details>

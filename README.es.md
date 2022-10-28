@@ -314,3 +314,57 @@ declaración de variables afecta directamente la corrección del comportamiento
 comercial del sistema.
 
 </details>
+
+
+<details>
+<summary>7. ¿Por qué utilizar `struct{}` (una estructura vacía) y en qué escenarios es efectivo?</summary>
+
+#### Go
+
+`struct{}` en Go es una estructura vacía, es decir, un tipo sin campo. Su
+propiedad clave: no lleva una carga útil de datos, solo registra el hecho mismo
+de la existencia de un valor o evento.
+
+#### Por qué `struct{}` es eficaz:
+
+1. **Volumen de información nulo:** el tipo no contiene campos, por lo que se
+   utiliza como token, no como contenedor de datos.
+
+2. **Semántica clara de intención:** el código muestra explícitamente que el
+   hecho "es/no es" es importante, no la carga útil.
+
+3. **Reducir asignaciones redundantes en estructuras de servicios:** en muchos
+   patrones, esta es una opción más práctica que `bool` o valores arbitrarios
+   cuando no se necesitan datos.
+
+#### Escenarios de uso típicos:
+
+1. **Establecido a través de `map[K]struct{}`:** `map` en Go es una clave-valor,
+   y para un conjunto solo necesitamos claves únicas. `struct{}` aquí idealmente
+   significa "clave presente".
+
+2. **Los canales de señal `chan struct{}`:** se utilizan para la notificación de
+   "evento ocurrido" (detener/realizar/apagar) cuando no es necesario transmitir
+   datos.
+
+3. **Tipos de tokens y contratos API:** Una estructura vacía puede actuar como
+   un token semántico ligero en los protocolos internos de la aplicación.
+
+4. **Incrustación de composición de comportamiento:** `struct{}` a veces se
+   utiliza como elemento técnico de composición cuando se requiere una
+   estructura sin estado.
+
+#### Cuándo no utilizar:
+
+- Cuando se requiere el estado real o los atributos de una entidad.
+
+- Cuando `bool` proporciona una semántica empresarial más clara (por ejemplo, un
+  indicador de condición explícito en lugar de un hecho establecido).
+
+#### Resumen:
+
+`struct{}` es una herramienta para una intención precisa: si no se necesitan
+datos, pero se debe indicar un hecho, presencia o señal, una estructura vacía es
+una solución elegante y eficiente en código Go.
+
+</details>

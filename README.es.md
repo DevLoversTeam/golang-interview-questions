@@ -368,3 +368,89 @@ datos, pero se debe indicar un hecho, presencia o señal, una estructura vacía 
 una solución elegante y eficiente en código Go.
 
 </details>
+
+
+<details>
+<summary>8. ¿Cómo funciona la estructura interna `slice` y qué sucede cuando la pasas a una función?</summary>
+
+#### Go
+
+En Go, `slice` no es la matriz en sí, sino un descriptor liviano
+"complementario" sobre una sección de la matriz. Es por eso que el
+comportamiento de `slice` difiere de la copia normal de matrices y, a menudo,
+causa errores en las entrevistas y en el código real.
+
+#### Modelo interno `slice`:
+
+`slice` conceptualmente consta de tres partes:
+
+1. **Puntero a la matriz base** (`ptr`)
+
+2. **Longitud** (`len`): cuántos artículos están disponibles ahora
+
+3. **Capacidad** (`cap`): cuántos elementos están disponibles hasta el límite de
+   la matriz base
+
+Es decir, `slice` almacena metadatos sobre la región en la memoria, en lugar de
+duplicar todos los elementos.
+
+#### ¿Qué sucede cuando pasas `slice` a una función?
+
+1. **Se copia el encabezado `slice` (ptr/len/cap), no toda la matriz.**
+
+2. **Ambas partes (persona que llama y destinatario) miran inicialmente la misma
+   matriz base.**
+
+3. **El cambio de elementos mediante el índice** (`s[i] = ...`) en la función
+   suele ser visible desde el exterior, porque los datos de la matriz compartida
+   cambian.
+
+4. **Cambiar el encabezado en sí** (`s = s[:n]`, `s = append(...)`) en una
+   función no cambia el encabezado en la persona que llama a menos que devuelva
+   un nuevo `slice`.
+
+#### Matiz clave con `append`:
+
+- Si hay suficiente `cap` durante `append`, la entrada va a la misma matriz
+  base.
+
+- Si falta `cap`, el tiempo de ejecución asigna una nueva matriz, copia los
+  datos allí y el `slice` local en la función comienza a hacer referencia a otra
+  memoria.
+
+Entonces, después de `append` la función ya puede funcionar con la nueva matriz,
+mientras que la antigua `slice` permanecerá afuera si no se devuelve el nuevo
+valor.
+
+#### Conclusión práctica:
+
+- Quiere cambiar elementos; puede pasar `slice` tal como está.
+
+- Quiere cambiar la longitud/capacidad o el resultado de `append`: devolver el
+  `slice` actualizado de la función (o pasar un puntero a `slice` cuando esté
+  verdaderamente justificado arquitectónicamente).
+
+#### Ejemplo:
+
+```go
+package main
+
+import "fmt"
+
+func grow(s []int) {
+	s = append(s, 99) // змінюємо локальний заголовок slice
+}
+
+func mutate(s []int) {
+	s[0] = 42 // змінюємо спільний базовий масив
+}
+
+func main() {
+	s := []int{1, 2, 3}
+	mutate(s)
+	grow(s)
+	fmt.Println(s) // [42 2 3], append у grow не змінив заголовок у викликачі
+}
+```
+
+</details>

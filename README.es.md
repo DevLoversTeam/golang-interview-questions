@@ -454,3 +454,63 @@ func main() {
 ```
 
 </details>
+
+
+<details>
+<summary>9. ¿Por qué `make([]T, 0, n)` es mejor que `var s []T` dadas las dimensiones conocidas?</summary>
+
+#### Go
+
+Cuando se conoce de antemano el número aproximado o exacto de elementos, la
+construcción `make([]T, 0, n)` casi siempre es más práctica que `var s []T`
+porque reserva inmediatamente la capacidad requerida y reduce el número de
+reasignaciones de memoria.
+
+#### Qué distingue estos dos enfoques:
+
+1. **`var s []T`**
+
+- crea `nil`-slice de `len=0`, `cap=0`;
+
+- el primer `append` hace que el tiempo de ejecución asigne memoria;
+
+- a medida que los datos crecen, se producen nuevas reasignaciones y copias.
+
+2. **`make([]T, 0, n)`**
+
+- crea un segmento a partir de `len=0`, pero ya a partir de `cap=n`;
+
+- elementos se agregan a través de `append` sin reasignación hasta que se agote
+  `cap`;
+
+- menos copias de datos y un rendimiento más estable.
+
+#### Por qué es importante en la práctica:
+
+1. **Menos asignaciones en el montón:** reduce la carga de GC.
+
+2. **Mejor comportamiento de latencia:** menos "saltos" en el tiempo de
+   reasignación.
+
+3. **Mayor rendimiento en rutas activas:** especialmente en bucles, análisis,
+   agregación y serialización.
+
+4. **Previsibilidad de recursos:** es más fácil estimar la memoria para un
+   escenario específico.
+
+#### Cuando la diferencia es particularmente notable:
+
+- Gran cantidad de `append` en bucles.
+
+- Procesamiento de flujos de datos en servicios backend.
+
+- Funciones llamadas con frecuencia donde incluso las asignaciones pequeñas se
+  acumulan y generan costos significativos.
+
+#### Conclusión:
+
+Si el tamaño de la colección se conoce o se estima bien de antemano, `make([]T,
+0, n)` es una opción madura en ingeniería: ofrece menos asignaciones, mejor
+rendimiento y un comportamiento más estable bajo carga.
+
+</details>

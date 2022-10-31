@@ -514,3 +514,73 @@ Si el tamaño de la colección se conoce o se estima bien de antemano, `make([]T
 rendimiento y un comportamiento más estable bajo carga.
 
 </details>
+
+
+<details>
+<summary>10. ¿Cómo controla una expresión de sector `a[low:high:max]` `cap` un nuevo sector?</summary>
+
+#### Go
+
+En Go, el formulario de sector completo `a[low:high:max]` le permite controlar
+no solo la longitud (`len`) sino también la capacidad (`cap`) del nuevo `slice`.
+Esta es una herramienta importante para controlar los efectos secundarios
+durante `append`.
+
+#### Fórmulas:
+
+Para `s := a[low:high:max]`:
+
+1. `len(s) = high - low`
+
+2. `cap(s) = max - low`
+
+Bajo la condición de límites correctos:
+
+- `0 <= low <= high <= max <= cap(a)` (para base de rebanada)
+
+#### Lo que aporta prácticamente:
+
+1. **Limitación de capacidad visible:** puede "cortar" el acceso a la cola de la
+   matriz subyacente incluso si existe físicamente.
+
+2. **Más seguro `append`:** si `cap` se reduce artificialmente, `append`
+   reasignará la memoria más rápido en lugar de sobrescribir los datos
+   adyacentes en la matriz compartida.
+
+3. **Mejor aislamiento entre fragmentos de código:** esto es especialmente útil
+   cuando un segmento se pasa a otra función o capa del sistema y no desea que
+   "crezca" en el área de otra persona.
+
+#### Ejemplo conceptual:
+
+- `a[2:5]` da `len=3`, `cap` se extiende hasta el final de la matriz base.
+
+- `a[2:5:5]` proporciona `len=3`, `cap=3`; además, `append` está agotado y
+  fuerza una nueva matriz.
+
+#### Conclusión:
+
+El tercer índice en `a[low:high:max]` es la palanca de control de precisión
+`cap`. Es necesario cuando es importante controlar el crecimiento de `slice`,
+evitar la sobrescritura inesperada de la memoria compartida y hacer que el
+comportamiento del código sea predecible.
+
+#### Ejemplo:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	a := []int{0, 1, 2, 3, 4, 5}
+	s := a[2:4:4] // len=2 (2,3), cap=2
+	fmt.Println(len(s), cap(s)) // 2 2
+
+	s = append(s, 99) // новий backing array, а не розширення в a
+	fmt.Println(a)    // [0 1 2 3 4 5]
+	fmt.Println(s)    // [2 3 99]
+}
+```
+
+</details>

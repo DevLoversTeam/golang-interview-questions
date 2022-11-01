@@ -584,3 +584,56 @@ func main() {
 ```
 
 </details>
+
+
+<details>
+<summary>11. ¿Se garantiza que un puntero a un elemento de segmento seguirá siendo válido después de llamar a `append`?</summary>
+
+#### Go
+
+Respuesta corta: **no, no garantizado**. Después de `append`, un puntero a un
+elemento del antiguo `slice` puede perder su relevancia para el nuevo `slice` si
+la matriz subyacente ha sido reasignada.
+
+#### Por qué sucede esto:
+
+1. `append` agrega elementos dentro del `cap` existente si hay suficiente
+   espacio.
+
+2. Si `cap` se agota, el tiempo de ejecución crea una nueva matriz, copia los
+   datos y devuelve `slice`, que ya hace referencia a la nueva dirección.
+
+3. Los punteros tomados anteriormente permanecen vinculados a la matriz
+   anterior, no al `slice` actualizado.
+
+#### Consecuencias prácticas:
+
+1. **El alias de puntero se vuelve peligroso:** la lógica puede "buscar" en un
+   área de memoria desactualizada.
+
+2. **Errores inesperados en las modificaciones:** los cambios a través del
+   puntero anterior no afectan el nuevo `slice` después de la reubicación.
+
+3. **Depuración difícil:** el código se compila y, a menudo, se ejecuta, pero
+   muestra un comportamiento impredecible bajo carga o en otros volúmenes de
+   datos.
+
+#### Cómo escribir de forma segura:
+
+- No almacene punteros de larga duración a `slice` elementos que potencialmente
+  crecerán a través de `append`.
+
+- Si el puntero es realmente necesario, garantice la estabilidad de la memoria:
+  reserve previamente la capacidad (`make(..., 0, n)`) o no ejecute `append`
+  después de tomar direcciones.
+
+- A menudo es más seguro pasar un índice o devolver un nuevo `slice` y vincular
+  todas las referencias derivadas.
+
+#### Conclusión:
+
+Después de `append`, la validez de los punteros a `slice` elementos no es un
+contrato Go. El código seguro debe asumir que `append` puede cambiar la
+dirección base de los datos.
+
+</details>

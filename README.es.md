@@ -637,3 +637,59 @@ contrato Go. El código seguro debe asumir que `append` puede cambiar la
 dirección base de los datos.
 
 </details>
+
+
+<details>
+<summary>12. ¿Cómo eliminar elementos de manera eficiente de un segmento sin conservar el orden en Go?</summary>
+
+#### Go
+
+Si el orden de los elementos no importa, la estrategia de eliminación más eficaz
+es reemplazar el elemento que se elimina con el último elemento de `slice` y
+luego acortar `slice` en uno.
+
+#### La idea del enfoque:
+
+1. Busque el índice `i` del elemento a eliminar.
+
+2. Asignar `s[i] = s[len(s)-1]`.
+
+3. Reducir longitud: `s = s[:len(s)-1]`.
+
+#### Por qué es eficaz:
+
+1. **O(1) en el tiempo** (sin cambiar todos los elementos posteriores).
+
+2. **Copias mínimas** en comparación con la eliminación en orden.
+
+3. **Se escala bien** en colecciones grandes y bucles activos.
+
+#### A qué prestar atención:
+
+- El orden de los elementos cambia después de la operación.
+
+- Es necesario comprobar la exactitud del índice.
+
+- Para `slice` con tipos de puntero, a veces es apropiado anular el elemento de
+  cola antes del truncamiento para evitar mantener referencias redundantes en la
+  memoria.
+
+#### Conclusión:
+
+Cuando el orden estable no es un requisito de lógica empresarial, "intercambiar
+con último + truncar" es la forma canónica y más rápida de eliminar un elemento
+de `slice` en Go.
+
+#### Ejemplo:
+
+```go
+func removeUnordered[T any](s []T, i int) []T {
+	last := len(s) - 1
+	s[i] = s[last]
+	var zero T
+	s[last] = zero // опційно: щоб не тримати зайве посилання
+	return s[:last]
+}
+```
+
+</details>

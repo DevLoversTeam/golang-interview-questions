@@ -693,3 +693,68 @@ func removeUnordered[T any](s []T, i int) []T {
 ```
 
 </details>
+
+
+<details>
+<summary>13. ¿Cuál es el orden de iteración clave en `map` y se puede confiar en él? ¿Cómo afecta esto a las pruebas y la serialización?</summary>
+
+#### Go
+
+En Go, el orden de iteración de las claves en `map` es **no determinista**. Esto
+significa que durante `for range` la secuencia de teclas puede variar entre
+ejecuciones del programa e incluso entre iteraciones individuales dentro de una
+sola ejecución.
+
+#### ¿Puedes confiar en el orden?
+
+1. **No, no puedes.**
+
+2. El pedido en `map` no forma parte del contrato de idiomas.
+
+3. Cualquier lógica que implícitamente se base en un orden "estable" es
+   potencialmente defectuosa.
+
+#### Cómo afecta las pruebas:
+
+1. **Pruebas inestables:** las comparaciones de cadenas/matrices formadas con
+   `map` pueden fallar aleatoriamente debido al orden diferente de los
+   elementos.
+
+2. **Regresiones falsas:** no hay cambios en la lógica de negocios, pero la
+   prueba falla debido a una salida inestable.
+
+3. **Enfoque correcto:** las pruebas requieren:
+
+- comparar estructuras como conjuntos/colecciones asociativas;
+
+- o ordenar previamente las claves y generar un resultado determinista.
+
+#### Cómo afecta esto a la serialización:
+
+1. Si la serialización se basa en una omisión directa `map`, el resultado del
+   texto puede tener un orden diferente de campos/pares clave-valor.
+
+2. Esto dificulta:
+
+- instantánea/pruebas doradas;
+
+- hash de cargas útiles;
+
+- comparación de artefactos en CI.
+
+3. Para una salida estable, debes:
+
+- obtener claves por separado;
+
+- ordenarlos;
+
+- forma el resultado en una secuencia fija.
+
+#### Conclusión:
+
+`map` en Go está optimizado para un acceso rápido mediante clave, no para
+preservar el orden. Por lo tanto, las pruebas, el registro, la firma de datos y
+la serialización deben introducir deliberadamente el determinismo mediante la
+clasificación de claves u otras reglas canónicas.
+
+</details>

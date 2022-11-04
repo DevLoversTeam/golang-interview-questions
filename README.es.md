@@ -758,3 +758,62 @@ la serialización deben introducir deliberadamente el determinismo mediante la
 clasificación de claves u otras reglas canónicas.
 
 </details>
+
+
+<details>
+<summary>14. ¿Cómo iterar sobre `map` en un orden predecible?</summary>
+
+#### Go
+
+Dado que `map` en Go no garantiza un orden transversal estable, la iteración
+prevista debe organizarse explícitamente: primero recopile las claves, luego
+ordénelas y solo luego lea los valores en este orden fijo.
+
+#### Enfoque canónico (Go 1.23+):
+
+1. Utilice `maps.Keys` para obtener un iterador de clave.
+
+2. Utilice `slices.Sorted` (`slices.SortedFunc`) para obtener un segmento de
+   clave ordenado.
+
+3. Iterar sobre el segmento ordenado.
+
+#### Por qué es correcto:
+
+1. **Determinismo:** la misma entrada da el mismo orden de salida.
+
+2. **Pruebas estables:** los bloqueos aleatorios debido a una secuencia
+   diferente desaparecen.
+
+3. **Serialización prevista:** es más fácil realizar pruebas de oro, firmas y
+   comparar artefactos.
+
+#### Matices importantes:
+
+- Se debe definir un criterio de clasificación explícito para claves de
+  estructura o tipos personalizados.
+
+- La dificultad aumenta debido a la clasificación (`O(n log n)`), pero ese es el
+  precio de la previsibilidad.
+
+- Si el orden es crítico en una ruta activa, a veces es apropiado considerar una
+  estructura de datos diferente (por ejemplo, mantener una lista ordenada de
+  claves por separado).
+
+#### Conclusión:
+
+La iteración prevista de `map` en Go es siempre una estrategia consciente de
+tres fases: "recopilar claves → ordenar → recorrer". Este patrón se considera el
+estándar de producción para una producción estable. Un formulario compacto a
+través de `slices.Sorted(maps.Keys(m))` está disponible desde Go 1.23.
+
+#### Ejemplo:
+
+```go
+keys := slices.Sorted(maps.Keys(m))
+for _, k := range keys {
+	fmt.Printf("%v=%v\n", k, m[k])
+}
+```
+
+</details>

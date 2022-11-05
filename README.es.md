@@ -817,3 +817,56 @@ for _, k := range keys {
 ```
 
 </details>
+
+
+<details>
+<summary>15. ¿Por qué no puedo obtener la dirección del elemento del mapa?</summary>
+
+#### Go
+
+En Go, no puede tomar la dirección del elemento `map` (por ejemplo, `&m[key]`),
+porque el valor en `map` no tiene una dirección estable en la memoria. Durante
+el crecimiento, el reequilibrio o la reorganización interna, el tiempo de
+ejecución `map` puede mover elementos entre depósitos.
+
+#### Razón clave de la limitación:
+
+1. **Inestabilidad de ubicación:** `map` cambia la estructura interna
+   dinámicamente.
+
+2. **Peligro de punteros "colgantes":** la dirección obtenida hoy puede dejar de
+   ser válida después de operaciones posteriores con `map`.
+
+3. **Garantía de seguridad del lenguaje:** el compilador prohíbe esta operación
+   para evitar errores de memoria ocultos.
+
+#### Consecuencias prácticas:
+
+1. No puede modificar un campo de estructura directamente a través de
+   `m[key].Field = ...` si el valor del mapa es una estructura.
+
+2. El patrón de actualización para map-value-struct tiene este aspecto:
+
+- leer valor en variable temporal;
+
+- cambiarlo;
+
+- escribe nuevamente a `map`.
+
+#### Cuando se necesita mutabilidad en:
+
+- Utilice `map[K]*T` en lugar de `map[K]T` si necesita trabajar con el mismo
+  objeto mediante un puntero.
+
+- Pero tenga en cuenta las ventajas y desventajas: asignaciones adicionales,
+  problemas con el ciclo de vida de los objetos y la necesidad de sincronización
+  con acceso simultáneo.
+
+#### Conclusión:
+
+La prohibición de tomar la dirección del elemento `map` es un diseño deliberado
+de Go a favor de la seguridad de la memoria. Si se requieren cambios "in situ",
+elija un bucle de lectura, modificación y escritura o `map` con valores de
+puntero.
+
+</details>

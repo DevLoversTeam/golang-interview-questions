@@ -870,3 +870,53 @@ elija un bucle de lectura, modificación y escritura o `map` con valores de
 puntero.
 
 </details>
+
+
+<details>
+<summary>16. ¿Por qué `map` no es seguro para subprocesos en Go?</summary>
+
+#### Go
+
+`map` en Go no es seguro para subprocesos por diseño: el acceso simultáneo desde
+múltiples gorutinas sin sincronización (especialmente cuando hay un registro)
+genera carreras de datos y comportamientos indefinidos.
+
+#### ¿Por qué se hace esto?
+
+1. **Rendimiento en el escenario base:** la mayoría de los `map` se usan
+   localmente en una sola rutina; un bloqueo incorporado para cada operación
+   haría que estos escenarios fueran más lentos.
+
+2. **Modelo explícito de competencia:** Go pone el control de la sincronización
+   en manos del desarrollador, para que elija un mecanismo para una carga de
+   trabajo específica.
+
+3. **Flexibilidad de la arquitectura:** diferentes tareas requieren diferentes
+   estrategias (mutex, fragmentación, enfoque de actor, `sync.Map`), y un
+   bloqueo automático "único para todos" no es óptimo para todos los casos.
+
+#### Qué significa esto en la práctica:
+
+1. **Está prohibida la lectura y escritura simultáneas sin protección.**
+
+2. **Está prohibido escribir + escribir sin protección.**
+
+3. **Leer + solo lectura** puede ser seguro si nadie modifica `map`.
+
+#### Cómo hacerlo bien:
+
+- `map` + `sync.Mutex` o `sync.RWMutex` para sincronización administrada.
+
+- `sync.Map` para patrones de acceso específicos (muchas lecturas, escrituras
+  raras o claves independientes).
+
+- Aislamiento del estado arquitectónico a través de una rutina y canales
+  "propietarios".
+
+#### Conclusión:
+
+`map` la seguridad sin flujo lista para usar no es un defecto, sino un
+compromiso consciente de Go: gastos generales mínimos en el caso general y
+control total de la concurrencia en manos del ingeniero.
+
+</details>

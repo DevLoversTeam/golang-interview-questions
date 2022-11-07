@@ -920,3 +920,73 @@ compromiso consciente de Go: gastos generales mínimos en el caso general y
 control total de la concurrencia en manos del ingeniero.
 
 </details>
+
+
+<details>
+<summary>17. ¿Puede una estructura ser una clave en `map` y cuáles son las restricciones al respecto? ¿En qué es mejor que los mapas anidados?</summary>
+
+#### Go
+
+Sí, en Go una estructura puede ser clave en `map` **si se compara**
+(`comparable`). Esto significa que todos sus campos también deben ser
+comparables.
+
+#### Restricciones para la clave de estructura:
+
+1. **Todos los campos de la estructura deben ser comparables.**
+
+- Permitido, en particular: números, cadenas, bool, punteros, matrices (con
+  elementos comparables), otras estructuras comparables.
+
+- Campos prohibidos de tipos en la clave: `slice`, `map`, `func` (no son
+  comparables).
+
+2. **La comparación se basa en el valor de todos los campos.**
+
+- Dos claves se consideran iguales solo si todos los campos correspondientes son
+  iguales.
+
+3. **La clave debe estar estable después de la inserción.**
+
+- Cambiar el "sentido" de una clave a través de un estado mutable externo es una
+  mala práctica porque destruye la previsibilidad del acceso.
+
+#### Por qué struct-key suele ser mejor que `map` anidado:
+
+1. **Un modelo de datos más simple:**
+
+- En lugar de `map[A]map[B]V`, puede usar `map[CompositeKey]V`, donde
+  `CompositeKey` es una estructura con los campos `A`, `B`.
+
+2. **Menos texto repetitivo y controles en `nil`:**
+
+- En `map` anidados, se deben inicializar los mapas internos y manejar las
+  claves intermedias faltantes.
+
+3. **Mejor localidad lógica:**
+
+- Todas las dimensiones clave se recopilan en un solo tipo, lo que mejora la
+  legibilidad y el mantenimiento.
+
+4. **Menos margen de error:**
+
+- Es más fácil evitar estructuras parcialmente inicializadas y rutas de acceso
+  inconsistentes.
+
+#### Cuando está anidado `map` puede ser apropiado:
+
+- Cuando se requiere semántica de datos jerárquicos.
+
+- Cuando se opera frecuentemente con cortes intermedios al nivel de la primera
+  tecla.
+
+- Cuando diferentes niveles tienen reglas de ciclo de vida independientes.
+
+#### Conclusión:
+
+La clave de estructura de Go es una herramienta poderosa y limpia para
+direccionamiento compuesto. Si el tipo de clave está diseñado correctamente y es
+`comparable`, esta solución suele ser más elegante y confiable que la `map`
+anidada.
+
+</details>

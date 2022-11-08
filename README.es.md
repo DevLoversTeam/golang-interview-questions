@@ -990,3 +990,55 @@ direccionamiento compuesto. Si el tipo de clave está diseñado correctamente y 
 anidada.
 
 </details>
+
+
+<details>
+<summary>18. ¿Cómo comparar dos estructuras: cuándo se compila y cuándo no?</summary>
+
+#### Go
+
+En Go, se pueden comparar dos estructuras con el operador `==` o `!=` solo
+cuando el tipo de estructura es `comparable`. En la práctica, esto significa:
+**se deben comparar todos los campos de la estructura**.
+
+#### Cuando se compila la comparación:
+
+1. Las estructuras son del mismo tipo.
+
+2. Cada campo de la estructura es de tipo comparable.
+
+3. La comparación se realiza sobre el valor de todos los campos.
+
+#### Cuando la comparación no se compila:
+
+1. Si al menos un campo tiene un tipo no comparable:
+
+- `slice`
+
+- `map`
+
+- `func`
+
+2. Si intenta comparar diferentes tipos de estructuras, incluso con campos
+   similares.
+
+#### Aclaraciones importantes:
+
+1. **Las matrices se comparan** si se comparan sus elementos.
+
+2. **Se comparan punteros** (se comparan direcciones).
+
+3. **Las interfaces se comparan** si también se compara el valor dinámico
+   interno; de lo contrario, es posible que se produzca un pánico en tiempo de
+   ejecución durante la comparación.
+
+#### Conclusión práctica:
+
+- Si la estructura está compuesta exclusivamente de campos comparables, no dude
+  en utilizar `==`.
+
+- Si la estructura es `slice/map/func`, utilice una comparación de campos
+  explícita o enfoques separados (como una lógica de comparación especializada)
+  en lugar de un operador de igualdad directo.
+
+</details>

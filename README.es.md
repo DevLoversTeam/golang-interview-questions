@@ -1042,3 +1042,72 @@ cuando el tipo de estructura es `comparable`. En la práctica, esto significa:
   en lugar de un operador de igualdad directo.
 
 </details>
+
+
+<details>
+<summary>19. ¿Cómo implementar una comparación de dos estructuras si contienen sectores o mapas? ¿Qué es `reflect.DeepEqual()`?</summary>
+
+#### Go
+
+Si la estructura contiene `slice` o `map`, una comparación directa a través de
+`==` no se compila. En tales casos, la comparación debe realizarse por separado:
+ya sea manualmente o con la ayuda de utilidades de comparación profunda.
+
+#### Enfoques básicos:
+
+1. **Comparación de campos explícita (recomendada para lógica crítica):**
+
+- comparar campos simples directamente;
+
+- para `slice` verifique la longitud y los elementos;
+
+- para `map` verifique el número de claves y valores coincidentes.
+
+2. **`reflect.DeepEqual(a, b)`:**
+
+- realiza una comparación recursiva ("profunda") de estructuras complejas;
+
+- útil para comprobaciones rápidas, prototipos y parte de escenarios de prueba.
+
+#### ¿Qué es `reflect.DeepEqual()`?:
+
+`reflect.DeepEqual()` es una función del paquete estándar `reflect` que intenta
+determinar la igualdad profunda de dos valores atravesando campos anidados,
+elementos de colección y estructuras de datos de forma recursiva.
+
+#### Matices `reflect.DeepEqual` que es importante recordar:
+
+1. **La semántica puede no coincidir con la igualdad empresarial:**
+
+- por ejemplo, `nil`-slice y vaciar `[]T{}` a menudo se tratan de manera
+  diferente.
+
+2. **Diagnóstico menos transparente:**
+
+- al caer, es más difícil entender qué campo es diferente sin herramientas
+  adicionales.
+
+3. **Rendimiento:**
+
+- la reflexión es más lenta que la comparación manual especializada en rutas
+  activas.
+
+#### Cuándo elegir:
+
+1. **Reglas-de-negocio-de-producción:** comparación explícita de dominios
+   (semántica clara).
+
+2. **Pruebas y comprobaciones auxiliares:** `reflect.DeepEqual` o bibliotecas de
+   pruebas más especializadas.
+
+3. **Escenarios críticos:** evite la reflexión "mágica" cuando se requiere una
+   estricta verificación de equivalencia.
+
+#### Conclusión:
+
+Para estructuras con `slice/map`, la comparación correcta es principalmente una
+cuestión de semántica, no de técnica. `reflect.DeepEqual()` es una herramienta
+útil, pero un método de comparación explícito basado en dominios sigue siendo el
+método de ingeniería más confiable.
+
+</details>

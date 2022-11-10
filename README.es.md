@@ -1111,3 +1111,58 @@ cuestión de semántica, no de técnica. `reflect.DeepEqual()` es una herramient
 método de ingeniería más confiable.
 
 </details>
+
+
+<details>
+<summary>20. ¿Qué sucede al realizar conversiones entre tipos con nombre con la misma estructura si tienen métodos diferentes?</summary>
+
+#### Go
+
+En Go, la conversión entre tipos con nombre con la misma estructura secundaria
+se aplica **solo a valores de datos**, pero no "porta" métodos. Es decir,
+después de la conversión, obtienes un nuevo valor de otro tipo con nombre y su
+propio conjunto de métodos.
+
+#### El principio fundamental:
+
+1. **La conversión cambia el tipo del valor en lugar de unificar el
+   comportamiento de los tipos.**
+
+2. **Los métodos pertenecen al tipo con nombre específico** en el que se
+   declaran.
+
+3. Después de `T2(vT1)`, los métodos `T2` están disponibles y los métodos `T1`
+   ya no son accesibles directamente.
+
+#### Qué se guarda durante la conversión:
+
+1. Representación bit/booleana de campos (según reglas de compatibilidad de
+   tipos).
+
+2. Valor de datos.
+
+#### Lo que no se guarda:
+
+1. Conjunto de métodos del tipo original.
+
+2. Coincidencia automática de interfaz proporcionada por el tipo original.
+
+#### Consecuencias prácticas:
+
+1. Dos tipos con los mismos campos pueden tener un comportamiento diferente en
+   la API.
+
+2. Después de la conversión, es posible que el código no se pueda compilar en
+   lugares donde se esperaba una interfaz implementada solo por el tipo de
+   fuente.
+
+3. Esto es útil para el modelado de dominios: misma estructura de datos pero
+   diferentes roles y contratos semánticos.
+
+#### Conclusión:
+
+En Go, la conversión entre tipos con nombre cambia la "identidad" del tipo, no
+copia el comportamiento. Los datos pueden ser los mismos, pero los métodos y las
+capacidades de la interfaz están definidos únicamente por el tipo de destino.
+
+</details>

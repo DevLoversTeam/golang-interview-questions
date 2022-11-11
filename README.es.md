@@ -1166,3 +1166,56 @@ copia el comportamiento. Los datos pueden ser los mismos, pero los métodos y la
 capacidades de la interfaz están definidos únicamente por el tipo de destino.
 
 </details>
+
+
+<details>
+<summary>21. ¿Qué es `Memory Alignment` (alineación) y cómo afecta el tamaño de las estructuras?</summary>
+
+#### Go
+
+`Memory Alignment` (alineación) es una regla para colocar datos en la memoria en
+direcciones múltiplos de un determinado paso (requisito de alineación) para un
+tipo específico. El procesador y el tiempo de ejecución leen dichos datos de
+forma más rápida y segura cuando se cumplen estos requisitos.
+
+#### Cómo funciona en frameworks:
+
+1. Cada campo tiene su propio requisito de alineación (por ejemplo, `int64`
+   generalmente requiere una alineación más estricta que `byte`).
+
+2. Entre los campos, el compilador puede agregar **relleno** (bytes de servicio
+   de marcador de posición) para que el siguiente campo comience en la dirección
+   correcta.
+
+3. También puede haber relleno de cola al final de una estructura para que una
+   matriz de dichas estructuras conserve la alineación correcta de cada
+   elemento.
+
+#### Impacto en el tamaño de la estructura:
+
+1. **El tamaño de la estructura suele ser mayor que la suma de los tamaños de
+   los campos** debido al relleno.
+
+2. **El orden de los campos importa:** una mala ubicación (`byte`, `int64`,
+   `byte`, ...) puede aumentar significativamente el tamaño total.
+
+3. **La agrupación óptima de campos** (de mayor a menor alineación) generalmente
+   reduce el uso de memoria.
+
+#### Por qué es importante en la práctica:
+
+1. Tamaño de estructura más pequeño = mejor localidad de caché.
+
+2. Menos consumo de RAM en matrices/cachés/índices grandes.
+
+3. Mayor rendimiento en rutas activas debido a la reducción de la presión de la
+   memoria.
+
+#### Conclusión de ingeniería:
+
+La alineación no es un "exótico de bajo nivel", sino un factor de rendimiento
+práctico. En Go, el orden correcto de los campos en una estructura afecta
+directamente a su tamaño y, por tanto, a la eficiencia de la memoria y a la
+velocidad del sistema.
+
+</details>

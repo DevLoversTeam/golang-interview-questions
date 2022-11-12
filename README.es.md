@@ -1219,3 +1219,58 @@ directamente a su tamaño y, por tanto, a la eficiencia de la memoria y a la
 velocidad del sistema.
 
 </details>
+
+
+<details>
+<summary>22. ¿Por qué pasar una estructura grande "por valor" suele ser más lento que pasar un puntero?</summary>
+
+#### Go
+
+Pasar una estructura grande por valor significa copiar todo su contenido cada
+vez que se llama a la función. Para tipos masivos, esto puede resultar
+significativamente más costoso que pasar un único puntero a los mismos datos.
+
+#### Por qué hay una diferencia en el rendimiento:
+
+1. **Costo de copia de memoria:** cuanto mayor es la estructura, más bytes se
+   deben copiar en las llamadas de E/S.
+
+2. **Carga en la caché del procesador:** las copias masivas aumentan el tráfico
+   de memoria y pueden degradar la localidad de la caché en áreas de código
+   activo.
+
+3. **Efecto en cascada en bucles y canalizaciones:** si una estructura se pasa
+   varias veces, se acumulan gastos generales.
+
+4. **Impacto potencial en las asignaciones:** En algunos escenarios, el
+   comportamiento de copia y escape puede aumentar el tiempo de ejecución y la
+   presión del GC.
+
+#### Cuando un puntero suele ser mejor:
+
+1. Cuando la estructura es grande y con frecuencia se pasa entre funciones.
+
+2. Cuando necesita cambiar el estado compartido sin necesidad de realizar copias
+   adicionales.
+
+3. Cuando el comportamiento de latencia estable bajo carga es importante.
+
+#### Pero no siempre un puntero es automáticamente mejor:
+
+1. Para estructuras pequeñas, pasar por valor puede ser más simple y bastante
+   eficiente.
+
+2. Value proporciona un mejor aislamiento de estado (sin estado mutable
+   compartido implícito).
+
+3. Pointer agrega riesgos de alias y la necesidad de una sincronización más
+   cuidadosa en el código de la competencia.
+
+#### Conclusión práctica:
+
+En Go, la elección entre valor y puntero no se hace de forma dogmática, sino en
+función del perfil de los datos: las grandes estructuras y las llamadas
+frecuentes favorecen al puntero; Los datos pequeños de tipo inmutable suelen ser
+apropiados para pasar por valor.
+
+</details>

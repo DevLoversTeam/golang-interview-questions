@@ -1331,3 +1331,63 @@ secuencial, `slice` generalmente ofrece un mejor rendimiento y una menor
 sobrecarga.
 
 </details>
+
+
+<details>
+<summary>24. ¿Cómo comprobar si una variable implementa una interfaz?</summary>
+
+#### Go
+
+En Go, la implementación de una interfaz está implícita: se considera que un
+tipo implementa una interfaz si tiene todo el conjunto de métodos requerido. Por
+lo tanto, la verificación es posible tanto en la etapa de compilación como en
+tiempo de ejecución.
+
+#### 1) Verificación en la etapa de compilación (recomendado):
+
+El enfoque más confiable es agregar una afirmación en tiempo de compilación:
+
+```go
+var _ MyInterface = (*MyType)(nil)
+```
+
+Qué significa esto:
+
+1. Si `*MyType` no implementa `MyInterface`, el código no se compilará.
+
+2. Esto documenta el tipo de contrato directamente en el código base.
+
+3. Especialmente útil para API públicas, adaptadores y comandos grandes.
+
+#### 2) Verificar durante la ejecución (tiempo de ejecución):
+
+Cuando hay un valor de tipo `any`/interfaz, se utiliza el tipo de aserción:
+
+```go
+v, ok := x.(MyInterface)
+```
+
+1. `ok == true`: el valor implementa la interfaz.
+
+2. `ok == false` — no se implementa.
+
+3. La variante sin `ok` puede causar pánico, por lo que el código de producción
+   generalmente usa la forma segura con `ok`.
+
+#### Puntero versus receptor de valor: un matiz crítico:
+
+1. Los conjuntos de métodos `T` y `*T` son diferentes.
+
+2. A menudo es `*T` quien implementa la interfaz y `T` no.
+
+3. En la entrevista es importante hablar claramente de este punto, porque es una
+   fuente típica de errores.
+
+#### Conclusión:
+
+La mejor práctica es corregir la implementación de la interfaz con una aserción
+en tiempo de compilación y utilizar la verificación en tiempo de ejecución
+mediante una aserción donde el tipo de valor se conoce solo en tiempo de
+ejecución.
+
+</details>

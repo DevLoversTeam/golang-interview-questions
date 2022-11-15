@@ -1391,3 +1391,95 @@ mediante una aserción donde el tipo de valor se conoce solo en tiempo de
 ejecución.
 
 </details>
+
+
+<details>
+<summary>25. ¿Qué son `type assertion` y `type switch`? ¿Cuáles son sus beneficios y cómo manejar las afirmaciones sin pánico?</summary>
+
+#### Go
+
+`type assertion` y `type switch` en Go son mecanismos para trabajar con valores
+de interfaz cuando es necesario especificar el tipo real (dinámico) en tiempo de
+ejecución.
+
+#### ¿Qué es `type assertion`?:
+
+`type assertion` tiene la forma:
+
+```go
+v, ok := x.(T)
+```
+
+1. `x` — valor del tipo de interfaz.
+
+2. `T` es el tipo al que intentamos conducir.
+
+3. `ok == true` significa que el tipo dinámico es compatible con `T`.
+
+#### Beneficio `type assertion`:
+
+1. Permite el acceso a un comportamiento específico de un tipo específico.
+
+2. Permite el trabajo seguro con `any`/interfaces en adaptadores,
+   decodificadores, middleware.
+
+3. Útil cuando se espera un tipo específico.
+
+#### Cómo evitar el pánico:
+
+Forma peligrosa:
+
+```go
+v := x.(T) // panic, якщо x не є T
+```
+
+Forma segura:
+
+```go
+v, ok := x.(T)
+if !ok {
+    // обробити невідповідність типу
+}
+```
+
+El estándar de producción es el formulario de dos dígitos con `ok`.
+
+#### ¿Qué es `type switch`?:
+
+`type switch` es una manera conveniente de manejar varios tipos posibles a la
+vez:
+
+```go
+switch v := x.(type) {
+case string:
+    // ...
+case int:
+    // ...
+default:
+    // ...
+}
+```
+
+#### Beneficio `type switch`:
+
+1. Hace que la bifurcación de tipos sea legible.
+
+2. Reduce la cascada de múltiples afirmaciones.
+
+3. Proporciona una ruta `default` explícita para tipos desconocidos.
+
+#### Cuándo usar qué:
+
+1. **`type assertion`**: al comprobar un tipo esperado.
+
+2. **`type switch`**: cuando permitimos varios tipos y necesitamos una lógica
+   diferente para cada uno.
+
+#### Conclusión:
+
+`type assertion` y `type switch` son una forma controlada de "exponer" un tipo
+de valor de interfaz dinámica. Para evitar fallas, la aserción debe realizarse
+en forma segura `v, ok := ...` y tener siempre un script de procesamiento `ok ==
+false`.
+
+</details>

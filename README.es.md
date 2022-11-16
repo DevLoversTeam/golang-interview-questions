@@ -1483,3 +1483,54 @@ en forma segura `v, ok := ...` y tener siempre un script de procesamiento `ok ==
 false`.
 
 </details>
+
+
+<details>
+<summary>26. ¿Por qué `interface{}` y `any` son idénticos, pero `*interface{}` casi siempre es un error?</summary>
+
+#### Go
+
+En Go, `any` es solo un alias (`alias`) para `interface{}`. Es decir, desde el
+punto de vista de un sistema típico, son absolutamente iguales: la diferencia es
+sólo estilística y semántica en la legibilidad del código.
+
+#### Por qué `interface{}` == `any`:
+
+1. `any` se introduce para mayor claridad, especialmente en código genérico.
+
+2. El compilador interpreta `any` y `interface{}` como el mismo tipo.
+
+3. El comportamiento durante la asignación, aserción y cambio es idéntico.
+
+#### Por qué `*interface{}` casi siempre es un error:
+
+1. **Una interfaz ya es un "contenedor de referencia" para valor + tipo.**
+   Agregar otro nivel de puntero generalmente no tiene sentido.
+
+2. **Complicación de la semántica nula:** con `*interface{}` aparece otra capa
+   de estados (puntero `nil`, puntero distinto de cero en interfaz nula, etc.),
+   lo que genera errores no obvios.
+
+3. **Mala legibilidad y diseño de API:** este tipo casi siempre indica que el
+   modelo de datos o la firma de la función está mal diseñado.
+
+4. **En lugar de `*interface{}` normalmente es suficiente:**
+
+- o pasar `interface{}`/`any` por valor;
+
+- o utilice un tipo de puntero específico (`*T`) si se requiere la mutabilidad
+  del objeto `T`.
+
+#### Cuándo puede ocurrir `*interface{}`:
+
+- En escenarios técnicos limitados (donde es necesario cambiar exactamente una
+  variable de interfaz como una celda), pero en el código de producción
+  aplicado, este es un patrón poco común y en su mayoría indeseable.
+
+#### Conclusión:
+
+`any` y `interface{}` son idénticos. En cambio, `*interface{}` es en la mayoría
+de los casos una abstracción innecesaria que complica el código y aumenta el
+riesgo de errores lógicos.
+
+</details>

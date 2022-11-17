@@ -1534,3 +1534,61 @@ de los casos una abstracción innecesaria que complica el código y aumenta el
 riesgo de errores lógicos.
 
 </details>
+
+
+<details>
+<summary>27. ¿Cuándo se debe utilizar `interface{}` (`any`) y cuándo se considera de mal tono?</summary>
+
+#### Go
+
+`any` (es decir, `interface{}`) es apropiado cuando el tipo de valor es
+objetivamente desconocido en el límite de API. Sin embargo, el uso excesivo de
+`any` en la lógica de dominio generalmente degrada la seguridad de tipos y
+dificulta el mantenimiento.
+
+#### Cuando `any` está verdaderamente justificado:
+
+1. **Capas de infraestructura y contenedores universales:** registro,
+   contenedores genéricos, middleware, bibliotecas de bajo nivel.
+
+2. **Decodificación de formatos débilmente tipados:** como partes JSON con
+   esquema impredecible.
+
+3. **Puntos de integración con API externas:** cuando el contrato es dinámico y
+   el tipo estricto no se puede fijar de antemano.
+
+4. **Pasos de refactorización de transición:** como un compromiso temporal con
+   un posterior retorno a tipos concretos.
+
+#### Cuando es de mal tono:
+
+1. **En un modelo de negocio donde se conoce el tipo:** `any` oculta errores
+   hasta el tiempo de ejecución en lugar del tiempo de compilación.
+
+2. **Cuando `any` reemplaza el diseño de API normal:** múltiples afirmaciones y
+   cambios de tipo en cualquier otro lugar son un síntoma de contratos
+   indefinidos.
+
+3. **Cuando puedes usar genéricos o una interfaz con un método mínimo:** esto
+   proporciona restricciones más estrictas y legibles.
+
+4. **Cuando `any` se vuelve "por todas partes" por inercia:** el código se
+   vuelve frágil, más difícil de probar y más difícil de evolucionar.
+
+#### Regla general:
+
+- Elija de forma predeterminada **tipo específico**.
+
+- Si se requiere abstracción de comportamiento: **interfaz con contrato claro**.
+
+- Si se requiere generalización de datos: **genéricos**.
+
+- `any` deje los límites del sistema verdaderamente dinámicos.
+
+#### Conclusión:
+
+`any` es una herramienta útil, pero no es una respuesta única para todos. En el
+código Go maduro, se usa puntualmente: donde la ambigüedad de tipos es natural y
+no donde se puede y se debe expresar un contrato estricto.
+
+</details>

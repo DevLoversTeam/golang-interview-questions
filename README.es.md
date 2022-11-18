@@ -1592,3 +1592,63 @@ código Go maduro, se usa puntualmente: donde la ambigüedad de tipos es natural
 no donde se puede y se debe expresar un contrato estricto.
 
 </details>
+
+
+<details>
+<summary>28. ¿Cuál es la ventaja de aceptar interfaces y devolver estructuras específicas?</summary>
+
+#### Go
+
+En Go, existe un principio común y extremadamente práctico: **aceptar
+interfaces, devolver estructuras**. Su fortaleza radica en mantener las
+dependencias de entrada flexibles y los contratos de salida claros y ricos en
+funciones.
+
+#### ¿Qué significa "aceptar interfaces":
+
+1. La función/método acepta un contrato de comportamiento mínimo (por ejemplo,
+   `io.Reader`) en lugar de un tipo codificado.
+
+2. Esto reduce el acoplamiento entre módulos.
+
+3. Simplifica las pruebas: fácil de sustituir stub/simulacro/falso con los
+   métodos requeridos.
+
+#### ¿Qué significa "estructuras de retorno"?
+
+1. La llamada recibe un tipo concreto con su conjunto completo de métodos.
+
+2. API se vuelve más transparente: el usuario ve las capacidades reales del
+   objeto.
+
+3. Es más fácil evolucionar un tipo sin romper los contratos de interfaz
+   externa.
+
+#### Por qué esta combinación es efectiva:
+
+1. **A la entrada – abstracción, a la salida – concreción.**
+
+2. **Mayor flexibilidad de integración** sin perder expresividad de API.
+
+3. **Mejor mantenibilidad:** los límites del módulo son claros, las dependencias
+   están controladas.
+
+4. **Refactorización más sencilla:** Los cambios internos son más fáciles de
+   realizar sin ediciones en cascada.
+
+#### Cuándo tener cuidado:
+
+1. No cree interfaces alternativas sin una necesidad real.
+
+2. Una interfaz debe residir donde se consume, no donde se implementa.
+
+3. Si solo se necesita una implementación y no hay ningún beneficio de prueba,
+   demasiada abstracción puede perjudicar la legibilidad.
+
+#### Conclusión:
+
+Aceptar interfaces y devolver estructuras concretas es un equilibrio entre
+extensibilidad y claridad. Le permite escribir código Go que es al mismo tiempo
+conveniente de probar, fácil de mantener y desarrollar de forma natural.
+
+</details>

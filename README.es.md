@@ -1652,3 +1652,51 @@ extensibilidad y claridad. Le permite escribir código Go que es al mismo tiempo
 conveniente de probar, fácil de mantener y desarrollar de forma natural.
 
 </details>
+
+
+<details>
+<summary>29. ¿Por qué Go utiliza interfaces de método único (por ejemplo, `io.Reader`, `fmt.Stringer`) y qué beneficio arquitectónico proporciona?</summary>
+
+#### Go
+
+Las interfaces de método único en Go son un contrato de comportamiento
+concentrado: describen exactamente una capacidad de un objeto, sin sobrecargar
+la API. Es por eso que `io.Reader`, `io.Writer`, `fmt.Stringer` se convirtieron
+en los componentes fundamentales del ecosistema.
+
+#### Por qué este enfoque es tan poderoso:
+
+1. **Contrato mínimo:** el tipo solo necesita implementar un método para
+   integrarse con una gran cantidad de componentes.
+
+2. **Acoplamiento bajo:** Los módulos dependen de una capacidad, no de una
+   implementación específica o de una interfaz grande y "gorda".
+
+3. **Compositibilidad:** las capacidades complejas se construyen fácilmente a
+   partir de combinaciones de pequeñas interfaces.
+
+4. **Prueba simple:** una pequeña falsificación/stub con un método es suficiente
+   para la prueba.
+
+#### Beneficio arquitectónico:
+
+1. **Intercambiabilidad de implementaciones similar a un complemento:** el
+   archivo, el socket de red y el búfer en memoria pueden funcionar igual que
+   `io.Reader`.
+
+2. **Límites de módulo estables:** las dependencias entre las capas del sistema
+   se vuelven claras y evolutivamente estables.
+
+3. **Fácil evolución del código:** se puede agregar una nueva implementación sin
+   cambiar los consumidores si se conserva el contrato.
+
+4. **Legibilidad de la intención:** la firma de la función responde
+   inmediatamente a la pregunta "qué se requiere del argumento".
+
+#### Conclusión práctica:
+
+Las interfaces de método único no son una decoración estilística, sino una
+estrategia arquitectónica de Go: contratos pequeños, alta componibilidad, fácil
+prueba y escalabilidad controlada del sistema.
+
+</details>

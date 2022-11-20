@@ -1700,3 +1700,73 @@ estrategia arquitectónica de Go: contratos pequeños, alta componibilidad, fác
 prueba y escalabilidad controlada del sistema.
 
 </details>
+
+
+<details>
+<summary>30. ¿Por qué está `nil != nil` en Go y cómo se relaciona con las interfaces?</summary>
+
+#### Go
+
+La frase "`nil != nil`" en Go generalmente se refiere a interfaces y significa
+que un valor de interfaz puede contener **tipo + valor** donde el valor interno
+es `nil`, pero la interfaz en sí no es `nil`.
+
+#### Cómo está organizada conceptualmente la interfaz:
+
+La interfaz consta de dos partes:
+
+1. **Tipo dinámico**
+
+2. **Valor dinámico**
+
+Una interfaz es `nil` solo cuando faltan **ambas** partes.
+
+#### Dónde ocurre la trampa:
+
+1. Tenemos `var p *MyType = nil`.
+
+2. Asignar `var i any = p`.
+
+3. Ahora `i` contiene:
+
+- tipo: `*MyType`
+
+- valor: `nil`
+
+Entonces `i != nil` porque la parte típica está llena.
+
+#### Consecuencias prácticas:
+
+1. La verificación `if err != nil` o `if x != nil` puede no comportarse como
+   espera el desarrollador si se escribe nil en la interfaz.
+
+2. Esta es una fuente típica de errores en errores, fábricas, middleware y
+   código DI.
+
+#### Cómo evitar problemas:
+
+1. Devuelve `nil` exactamente como "interfaz vacía", sin escribir nil dentro de
+   la interfaz.
+
+2. Construya `error` y otros resultados de la interfaz con cuidado.
+
+3. Cuando sea necesario, realice una verificación explícita de un tipo
+   específico mediante aserción/cambio.
+
+#### Conclusión:
+
+En Go, "`nil != nil`" no es una paradoja, sino una consecuencia de la naturaleza
+de dos componentes de la interfaz. La regla clave es que una interfaz es `nil`
+solo cuando no contiene ni un tipo dinámico ni un valor dinámico.
+
+#### Ejemplo:
+
+```go
+var p *bytes.Buffer = nil
+var x any = p
+
+fmt.Println(p == nil) // true
+fmt.Println(x == nil) // false: type=*bytes.Buffer, value=nil
+```
+
+</details>

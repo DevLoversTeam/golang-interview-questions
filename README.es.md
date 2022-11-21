@@ -1770,3 +1770,59 @@ fmt.Println(x == nil) // false: type=*bytes.Buffer, value=nil
 ```
 
 </details>
+
+
+<details>
+<summary>31. ¿Se pueden invocar métodos con valores `nil` y dónde se usa activamente?</summary>
+
+#### Go
+
+Sí, en Go, se puede llamar a un método con un valor `nil`, **si esto está
+permitido desde el punto de vista del tipo de receptor**. La mayoría de las
+veces estamos hablando de métodos con un receptor de puntero (`*T`), donde el
+receptor puede ser `nil`.
+
+#### Idea clave:
+
+1. Llamar a un método en un puntero `nil` es técnicamente posible.
+
+2. La pregunta es qué hace el código del método en su interior.
+
+3. Si el método nombra al receptor sin verificarlo, entraremos en pánico.
+
+#### Cuando funciona de forma segura:
+
+1. El método  maneja explícitamente el receptor `nil`:
+
+- devuelve el valor predeterminado;
+
+- devuelve error;
+
+- se comporta como no operativo.
+
+2. Este diseño a veces se utiliza deliberadamente para una API conveniente.
+
+#### Dónde se usa realmente esto:
+
+1. **Tipos de error y contenedores:** los métodos en tipos de puntero pueden
+   funcionar correctamente con `nil` para simplificar el manejo de errores.
+
+2. **Estructuras vinculadas/de lista/en forma de árbol:** `nil`-node se puede
+   interpretar como un estado vacío con un comportamiento correcto.
+
+3. **Objetos de servicio con componentes opcionales:** El receptor `nil` a veces
+   se utiliza en modo "deshabilitado" o "vacío".
+
+#### Un matiz importante con las interfaces:
+
+Si un puntero `nil` está incluido en una interfaz, es posible que la interfaz en
+sí no sea `nil`. Por lo tanto, las comprobaciones de `nil` deben realizarse con
+cuidado para evitar una confianza falsa.
+
+#### Conclusión práctica:
+
+Los métodos sobre valores `nil` en Go son una herramienta legítima, pero solo
+con un diseño API consciente: ya sea un manejo seguro de `nil` dentro del método
+o documentación clara de que no se permite una llamada a `nil`.
+
+</details>

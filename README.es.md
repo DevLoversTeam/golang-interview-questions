@@ -1826,3 +1826,77 @@ con un diseño API consciente: ya sea un manejo seguro de `nil` dentro del méto
 o documentación clara de que no se permite una llamada a `nil`.
 
 </details>
+
+
+<details>
+<summary>32. ¿Cómo decirle a la rutina principal que espere a que finalicen todas las rutinas de los trabajadores?</summary>
+
+#### Go
+
+La forma canónica de esperar a que se completen todas las gorutinas en
+funcionamiento en Go es utilizar `sync.WaitGroup`. Proporciona un patrón simple
+y sólido: incrementa el contador antes de comenzar el trabajo, disminúyelo una
+vez finalizado y llama a `Wait()` en la rutina principal.
+
+#### Esquema básico:
+
+1. Crear `var wg sync.WaitGroup`.
+
+2. Antes de cada llamada de rutina `wg.Add(1)`.
+
+3. Dentro de la rutina ejecute `defer wg.Done()`.
+
+4. En la rutina principal llame a `wg.Wait()`.
+
+#### Por qué funciona:
+
+1. `WaitGroup` cuenta el número de tareas sin terminar.
+
+2. `Wait()` bloquea la ejecución hasta que el contador llega a cero.
+
+3. Esto garantiza que `main` no terminará antes de que comiencen las rutinas de
+   trabajo.
+
+#### Errores típicos a evitar:
+
+1. Llame a `Add(1)` **después** del inicio de la gorutina (riesgo de carrera y
+   terminación incorrecta).
+
+2. Olvídese de `Done()` en el error o en la rama temprana `return`.
+
+3. Reutilizando el mismo `WaitGroup` en diferentes fases sin una sincronización
+   clara.
+
+#### Cuando es mejor `errgroup`:
+
+Si además de esperar también necesitas:
+
+1. recoge el primer error,
+
+2. cancelar otras tareas a través de `context`,
+
+entonces es más práctico utilizar `errgroup.Group`.
+
+#### Conclusión:
+
+Para la tarea "esperar a que se completen todas las rutinas", la herramienta
+estándar es `sync.WaitGroup`: contrato simple, comportamiento predecible y
+confiabilidad de producción.
+
+#### Ejemplo:
+
+```go
+var wg sync.WaitGroup
+
+for i := 0; i < 3; i++ {
+	wg.Add(1)
+	go func(id int) {
+		defer wg.Done()
+		fmt.Println("worker", id)
+	}(i)
+}
+
+wg.Wait()
+```
+
+</details>

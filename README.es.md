@@ -1900,3 +1900,58 @@ wg.Wait()
 ```
 
 </details>
+
+
+<details>
+<summary>33. ¿Por qué se usó el patrón `value := value` en bucles? ¿Es relevante después de Go 1.22?</summary>
+
+#### Go
+
+La plantilla `value := value` se usó históricamente en bucles `for range` para
+crear una copia local separada de una variable y capturarla de forma segura en
+un cierre, particularmente en una rutina.
+
+#### Por qué era necesario esto antes de Go 1.22:
+
+1. La variable de iteración en `range` en realidad se reutilizó entre
+   iteraciones.
+
+2. Un cierre a menudo capturaría la misma variable en lugar de su valor
+   "actual".
+
+3. Como resultado, la rutina vio datos inesperados (generalmente el último
+   valor).
+
+Por eso escribieron:
+
+`v := v`
+
+para crear una nueva variable dentro de una iteración.
+
+#### Qué ha cambiado desde Go 1.22:
+
+1. Se ha cambiado la semántica de `range`: para cada iteración, las variables
+   del bucle tienen valores separados para capturar en el cierre.
+
+2. Se ha solucionado un error típico con un valor "tarde" en goroutines a nivel
+   de idioma.
+
+3. En la mayoría de los casos modernos, la plantilla `value := value` ya no es
+   necesaria.
+
+#### ¿Es la plantilla relevante hoy?
+
+1. **Para código que se garantiza que funciona en Go 1.22+** - normalmente no.
+
+2. **Para proyectos con versiones anteriores de Go** - sí, puede ser necesario.
+
+3. **Para entornos/bibliotecas mixtas** debe buscar la versión más baja
+   compatible.
+
+#### Conclusión práctica:
+
+`value := value` era un patrón protector contra la trampa específica `range`.
+Después de Go 1.22, su necesidad desapareció en gran medida, pero sigue siendo
+relevante en el código heredado o cuando se admiten versiones anteriores.
+
+</details>

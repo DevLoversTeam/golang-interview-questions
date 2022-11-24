@@ -1955,3 +1955,56 @@ Después de Go 1.22, su necesidad desapareció en gran medida, pero sigue siendo
 relevante en el código heredado o cuando se admiten versiones anteriores.
 
 </details>
+
+
+<details>
+<summary>34. ¿El uso de gorutinas puede ralentizar el sistema y en qué casos?</summary>
+
+#### Go
+
+Sí, puede. A pesar de la naturaleza liviana de las gorutinas, no son
+"gratuitas". El uso inadecuado o excesivo de ellos puede reducir el rendimiento,
+aumentar la latencia y complicar el tiempo de ejecución.
+
+#### Cuando las gorutinas pueden ralentizar el sistema:
+
+1. **Número excesivo de gorutinas (explosión de gorutinas):** miles o cientos de
+   miles de tareas sin limitar la competencia ejercen presión sobre el
+   programador y la memoria.
+
+2. **Tareas detalladas:** si el trabajo es muy pequeño, la sobrecarga de
+   inicio/coordinación puede ser mayor que el trabajo útil.
+
+3. **Sincronización intensiva:** el bloqueo frecuente (`mutex`, canales,
+   `select`) crea contención y reduce el rendimiento.
+
+4. **Error en el intercambio de datos a través de canales:** el reenvío
+   redundante de grandes cargas útiles o topologías complejas de entrada y
+   salida pueden costar más que los modelos más simples.
+
+5. **Falta de contrapresión:** cuando los productores generan trabajo más rápido
+   de lo que los consumidores lo procesan, las colas se acumulan, la memoria y
+   los retrasos crecen.
+
+6. **Problemas de E/S y recursos externos:** el paralelismo excesivo puede
+   sobrecargar la base de datos, la red, el sistema de archivos o las API de
+   terceros, degradando el sistema general en lugar de acelerarlo.
+
+#### Cómo evitar la degradación:
+
+1. Limitar la competencia (grupo de trabajadores, semáforo, colas acotadas).
+
+2. Perfil (`pprof`, rastreo) en lugar de confiar en la intuición.
+
+3. Reduce el estado mutable compartido y la contención de bloqueo.
+
+4. Seleccione el tamaño del paralelismo según la carga de trabajo y los recursos
+   reales.
+
+#### Conclusión:
+
+Las rutinas aceleran el sistema sólo cuando se controla el paralelismo. En
+producción, el principio es simple: no "más gorutinas", sino "suficientes
+gorutinas con los límites y la sincronización correctos".
+
+</details>

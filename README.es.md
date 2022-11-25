@@ -2008,3 +2008,76 @@ producción, el principio es simple: no "más gorutinas", sino "suficientes
 gorutinas con los límites y la sincronización correctos".
 
 </details>
+
+
+<details>
+<summary>35. ¿Cuál es la diferencia entre canales con y sin búfer? ¿Cuándo es apropiado utilizar segmento + mutex en lugar de canales?</summary>
+
+#### Go
+
+Los canales en Go se pueden almacenar en búfer o sin búfer, y esta diferencia
+define la semántica de sincronización entre gorutinas. La elección del tipo de
+canal es una elección del modelo de coordinación, no sólo una "cuestión
+técnica".
+
+#### Canal sin búfer (`make(chan T)`):
+
+1. **Intercambio sincrónico:** `send` se bloquea hasta que otra gorutina ejecute
+   el `receive` correspondiente (y viceversa).
+
+2. **Transferencia clara:** es buena cuando se requiere una sincronización
+   estricta de pasos.
+
+3. **Cola mínima:** los datos no se acumulan en el canal.
+
+#### Canal almacenado en búfer (`make(chan T, n)`):
+
+1. **Más interacción asincrónica:** `send` no bloquea mientras haya espacio en
+   el búfer.
+
+2. **Cola administrada:** permite suavizar picos de carga cortos.
+
+3. **Contrapresión debido a la capacidad:** cuando el buffer está lleno, `send`
+   se bloquea nuevamente.
+
+#### Cuando `slice + mutex` es apropiado en lugar de canales:
+
+1. **Requiere un búfer compartido con operaciones no triviales:** eliminación
+   por lotes, reordenamiento, acceso aleatorio, reglas de agregación complejas.
+
+2. **Cuando el modelo es "estado compartido con bloqueo explícito" y no es un
+   flujo de mensajes:** los canales no siempre son la herramienta más sencilla
+   para colecciones mutables.
+
+3. **Cuando la optimización sutil de la memoria/diseño es importante:** `slice`
+   brinda un control más directo sobre la estructura de datos y las operaciones.
+
+4. **Cuando la arquitectura del canal crea una complejidad innecesaria:** a
+   veces `mutex` + una invariante clara es más simple, más legible y más rápida.
+
+#### Regla práctica de elección:
+
+1. **Canales**: para pasar eventos/mensajes entre rutinas independientes
+   similares a actores.
+
+2. **`slice + mutex`**: para administrar una colección compartida con un amplio
+   conjunto de operaciones estatales.
+
+#### Conclusión:
+
+Los canales con y sin búfer difieren en el nivel de sincronicidad del
+intercambio. La alternativa `slice + mutex` se justifica cuando desea una
+estructura de estado compartido administrada en lugar de un transporte de
+mensajes.
+
+#### Ejemplo:
+
+```go
+unbuf := make(chan int)    // надсилання чекає отримувача
+buf := make(chan int, 100) // надсилання не блокується, поки є місце
+
+buf <- 1
+buf <- 2
+```
+
+</details>

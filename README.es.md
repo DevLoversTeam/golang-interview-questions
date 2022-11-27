@@ -2129,3 +2129,74 @@ propiedad es a la vez una fuente de errores comunes y una poderosa técnica de
 control `select` cuando se usa deliberadamente.
 
 </details>
+
+
+<details>
+<summary>37. ¿Cómo y por qué utilizar canales `nil` en `select`? ¿Por qué el canal `nil` se bloquea para siempre y cómo usarlo?</summary>
+
+#### Go
+
+El canal `nil` en `select` es una forma controlada de habilitar o deshabilitar
+dinámicamente ramas individuales. Dado que las operaciones en el canal `nil` no
+se pueden completar, el `case` correspondiente queda inactivo.
+
+#### Por qué el canal `nil` se bloquea para siempre:
+
+1. El canal no está inicializado (`var ch chan T`), es decir, no tiene una
+   estructura de tiempo de ejecución para envío/recepción.
+
+2. `send` y `receive` no tienen un "punto de encuentro", por lo que esperan
+   indefinidamente.
+
+3. En `select` esto significa: un caso con este canal nunca será seleccionado.
+
+#### Cómo usarlo en `select`:
+
+1. **Desactivar dinámicamente el origen del evento:** asigne `ch = nil` y la
+   rama `case <-ch:` ya no estará activada.
+
+2. **Gestión del ciclo de vida de las etapas de la canalización:** después de
+   completar una determinada etapa, la canalización se restablece para excluirla
+   de una selección posterior.
+
+3. **Evitar indicadores de estado redundantes:** en lugar de `if` adicionales
+   dentro del bucle, la lógica de estado se transfiere al propio mecanismo
+   `select`.
+
+#### Precauciones prácticas:
+
+1. Si todos los canales en `select` se convierten en `nil` y no hay ningún
+   `default`, obtendrá un bloqueo permanente.
+
+2. `close(nil)` provoca pánico, por lo que no se deben confundir anular y
+   cerrar.
+
+3. El código con `nil`-canales necesita invariantes claras; de lo contrario, es
+   fácil obtener un punto muerto que es difícil de depurar.
+
+#### Conclusión:
+
+El canal `nil` en `select` es un elegante interruptor de actividad de caso. Es
+útil para la lógica de concurrencia controlada siempre que los estados se
+controlen cuidadosamente y se evite una situación en la que todos los caminos
+queden estancados.
+
+#### Ejemplo:
+
+```go
+var in <-chan int = source
+for {
+	select {
+	case v, ok := <-in:
+		if !ok {
+			in = nil // вимикаємо гілку
+			continue
+		}
+		_ = v
+	case <-ctx.Done():
+		return
+	}
+}
+```
+
+</details>

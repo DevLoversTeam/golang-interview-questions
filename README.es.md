@@ -2200,3 +2200,58 @@ for {
 ```
 
 </details>
+
+
+<details>
+<summary>38. ¿Cuándo es apropiado utilizar `select` con la rama `default` y qué escenarios cubre?</summary>
+
+#### Go
+
+`select` con rama `default` hace que la operación sea sin bloqueo: si no hay
+ningún canal listo para ser intercambiado, el control pasa inmediatamente a
+`default`. Esto es útil para una reactividad controlada, pero peligroso cuando
+se usa sin pensar.
+
+#### Cuando corresponda:
+
+1. **Escenarios de intentar-enviar/intentar-recibir:** se debe intentar el
+   intercambio y, si no es posible ahora, tomar una ruta alternativa sin
+   bloquear.
+
+2. **Bucles de eventos con trabajo en segundo plano:** cuando, mientras espera
+   eventos, la gorutina debe realizar acciones auxiliares (latidos, limpieza,
+   telemetría de luz).
+
+3. **Contrapresión y deslastre de carga controlado:** si el búfer está lleno,
+   `default` puede rechazar/retrasar la tarea en lugar de bloquear todo el
+   bucle.
+
+4. **Tiempos de espera suaves/sondeo de estado:** en combinación con
+   `time.Ticker` u otra lógica le permite no "colgarse" esperando un canal.
+
+#### Qué riesgos cubre y crea:
+
+1. **Cubre el riesgo de congelación** en zonas críticas donde el bloqueo es
+   inaceptable.
+
+2. **Pero puede crear un bucle ocupado** (CPU activa girando) si `default` se
+   activa con demasiada frecuencia sin pausa o trabajo significativo.
+
+#### Precauciones prácticas:
+
+1. No utilice `default` si desea bloquear la sincronización.
+
+2. En bucles, agregue control de ritmo (`ticker`, `sleep`, límites) para evitar
+   el consumo desperdiciado de CPU.
+
+3. Corregir claramente la política: qué hacemos cuando el canal no está listo
+   (eliminar, reintentar, poner en cola, registrar, métrica).
+
+#### Conclusión:
+
+`select` de `default` es una herramienta de concurrencia sin bloqueo. Es
+apropiado cuando la reactividad y la gestión de carga son una prioridad, pero
+requiere disciplina para no convertir el ciclo de procesamiento en un sondeo
+activo ineficiente.
+
+</details>

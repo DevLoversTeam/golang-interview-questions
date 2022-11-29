@@ -2255,3 +2255,59 @@ requiere disciplina para no convertir el ciclo de procesamiento en un sondeo
 activo ineficiente.
 
 </details>
+
+
+<details>
+<summary>39. ¿Cómo funciona `select` al recibir datos de múltiples canales al mismo tiempo?</summary>
+
+#### Go
+
+Si hay varios `case` listos cuando se ejecuta `select`, Go elige uno de ellos de
+forma pseudoaleatoria. Esto se hace para evitar la rígida prioridad de la
+primera rama y reducir la "hambruna" sistemática de canales individuales.
+
+#### Qué sucede paso a paso:
+
+1. El tiempo de ejecución verifica todos los `case` en `select`.
+
+2. Define un conjunto de operaciones listas (envío/recepción que se pueden
+   realizar ahora).
+
+3. Si un `case` está listo, se ejecuta.
+
+4. Si hay varios listos, se elige uno de forma pseudoaleatoria.
+
+5. Si no hay ninguno listo:
+
+- ejecuta `default` (si corresponde),
+
+- de lo contrario, `select` se bloquea hasta que al menos un `case` esté listo.
+
+#### Consecuencias prácticas:
+
+1. **No hay garantía de procesamiento de pedidos** entre canales listos
+   simultáneamente.
+
+2. **No se puede codificar la prioridad empresarial** solo en el orden `case` en
+   `select`.
+
+3. **El comportamiento es competitivamente correcto, pero no determinista**, lo
+   cual es normal para la lógica basada en eventos.
+
+#### Cómo implementar la prioridad, si es necesario:
+
+1. Construya `select` bifásico (primero el canal crítico, luego el común).
+
+2. Utilice colas/programador de prioridades independientes.
+
+3. Aplicar una política explícita de prioridad/justa en la capa de aplicación,
+   en lugar de depender de la aleatorización del tiempo de ejecución.
+
+#### Conclusión:
+
+Si hay varios canales disponibles al mismo tiempo, `select` elige uno de forma
+aleatoria (pseudoaleatorio). Esta es una buena estrategia para la equidad
+general, pero la priorización requiere una lógica arquitectónica explícita
+además del `select` básico.
+
+</details>

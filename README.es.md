@@ -2311,3 +2311,76 @@ general, pero la priorización requiere una lógica arquitectónica explícita
 además del `select` básico.
 
 </details>
+
+
+<details>
+<summary>40. ¿Cómo cerrar de forma segura un canal en Go si varias gorutinas escriben en él?</summary>
+
+#### Go
+
+Regla básica de Go: **quién posee el lado de escritura** cierra un canal y solo
+después de que se garantiza que se completarán todas las `send` operaciones. Un
+guión con múltiples rutinas de escritura requiere coordinación de finalización.
+
+#### Enfoque seguro (canónico):
+
+1. Inicia varias subrutinas de escritura.
+
+2. Cada escritor lo indica una vez finalizado el trabajo (`WaitGroup.Done()`).
+
+3. Una rutina de control separada está esperando a `wg.Wait()`.
+
+4. Solo entonces llama a `close(ch)`.
+
+#### Por qué es seguro:
+
+1. Ninguna rutina escribe en el canal después de `close`.
+
+2. Evita el pánico `send on closed channel`.
+
+3. El cierre ocurre exactamente una vez por punto controlado.
+
+#### Lo que no se puede hacer:
+
+1. Permitir que cada escritor cierre de forma independiente el canal compartido.
+
+2. Cerrar canal "por si acaso" desde múltiples ubicaciones.
+
+3. Captar el pánico como un "mecanismo de sincronización" es un antipatrón.
+
+#### Prácticas adicionales:
+
+1. Para una parada temprana, utilice un `done/context` separado en lugar de
+   `close(dataCh)` en el lado del lector.
+
+2. Si necesita garantizar un cierre único en una topología compleja, utilice
+   `sync.Once`.
+
+#### Conclusión:
+
+En un escenario de múltiples escritores, el coordinador cierra el canal de
+manera segura después de confirmar explícitamente la finalización de todas las
+subrutinas de escritor. El principio es simple: **muchos remitentes, uno más
+cercano, envíos cerrados después de todos**.
+
+#### Ejemplo:
+
+```go
+ch := make(chan int)
+var wg sync.WaitGroup
+
+for i := 0; i < 5; i++ {
+	wg.Add(1)
+	go func(v int) {
+		defer wg.Done()
+		ch <- v
+	}(i)
+}
+
+go func() {
+	wg.Wait()
+	close(ch) // один координатор закриває канал
+}()
+```
+
+</details>

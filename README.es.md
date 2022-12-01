@@ -2384,3 +2384,71 @@ go func() {
 ```
 
 </details>
+
+
+<details>
+<summary>41. ¿Cómo implementar un semáforo a través de un canal almacenado en buffer?</summary>
+
+#### Go
+
+En Go, un semáforo se modela naturalmente mediante un canal almacenado en búfer
+de capacidad fija. El número de ranuras en el búfer es igual al número máximo
+permitido de operaciones simultáneas (paralelismo).
+
+#### Principio de funcionamiento:
+
+1. **Adquirir (ocupar un espacio):** antes de comenzar a trabajar, la rutina
+   ejecuta `sem <- token`. Si el buffer está lleno, se bloquea el envío.
+
+2. **Liberar (liberar la ranura):** una vez completada, la rutina ejecuta
+   `<-sem`. Esto libera espacio para la siguiente tarea.
+
+#### Forma típica:
+
+- `sem := make(chan struct{}, N)`
+
+- `N` — límite de tareas activas simultáneamente.
+
+- `struct{}` se elige como un token liviano sin carga útil.
+
+#### Por qué es eficaz:
+
+1. **Modelo de contrapresión simple:** Las tareas redundantes naturalmente
+   esperan.
+
+2. **Sincronización transparente:** El tiempo de ejecución de Go realiza
+   bloqueo/activación sin control manual de variables condicionales.
+
+3. **Se lee bien en el código:** la intención de "restringir la competencia" es
+   inmediatamente evidente.
+
+#### Precauciones prácticas:
+
+1. Siempre haga `release` sobre `defer` para evitar perder una ranura en caso de
+   error.
+
+2. Para cancelar la espera, use `select` con `context.Done()`.
+
+3. No confunda un semáforo (límite de paralelismo) con una cola de tareas (grupo
+   de trabajadores).
+
+#### Conclusión:
+
+Un canal almacenado en búfer en Go es una implementación canónica del semáforo
+de conteo: simple, confiable y bien integrada en el modelo de rutina. Ésta es
+una de las mejores formas de controlar el nivel de competencia en los servicios
+de producción.
+
+#### Ejemplo:
+
+```go
+sem := make(chan struct{}, 10) // максимум 10 одночасних задач
+
+run := func(job Job) {
+	sem <- struct{}{}         // зайняти слот
+	defer func() { <-sem }() // звільнити слот
+	job.Do()
+}
+```
+
+</details>

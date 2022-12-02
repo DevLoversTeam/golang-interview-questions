@@ -2452,3 +2452,58 @@ run := func(job Job) {
 ```
 
 </details>
+
+
+<details>
+<summary>42. ¿Cómo implementar los patrones `Fan-in` y `Fan-out`?</summary>
+
+#### Go
+
+`Fan-out` y `Fan-in` son patrones de concurrencia básicos en Go para el
+paralelismo administrado: el primero distribuye el trabajo entre múltiples
+ejecutores, el segundo recopila los resultados en un hilo compartido.
+
+#### `Fan-out` (ramificación de carga):
+
+1. Hay un canal con problemas entrantes.
+
+2. Inicia `N` rutina de trabajador.
+
+3. Cada trabajador lee desde un canal de entrada común y procesa su parte.
+
+#### `Fan-in` (resultados de fusión):
+
+1. Varios productores-canales o trabajadores-resultados.
+
+2. Las rutinas de fusión individuales envían datos a un canal de salida.
+
+3. Después de completar todas las ramas de fusión, el canal de salida se cierra.
+
+#### Esquema arquitectónico típico:
+
+1. `jobs` canal → `fan-out` sobre trabajadores.
+
+2. Cada trabajador escribe a `results`.
+
+3. `fan-in` agrega `results` (o varios canales `results`) en un canal para la
+   siguiente etapa de canalización.
+
+#### Reglas de importancia crítica:
+
+1. El cierre de canales debe ser centralizado y único.
+
+2. Utilice `WaitGroup` para coordinar el despido del trabajador.
+
+3. Para la terminación anticipada, utilice `context`/`done` para evitar fugas de
+   rutina.
+
+4. Controla el tamaño de los buffers y el nivel de paralelismo para evitar
+   sobrecargar la memoria o dependencias externas.
+
+#### Conclusión:
+
+`Fan-out` escala el procesamiento, `Fan-in` devuelve el control sobre el flujo
+de resultados. Juntos, forman la base de las soluciones de canalización más
+efectivas en los servicios Go.
+
+</details>

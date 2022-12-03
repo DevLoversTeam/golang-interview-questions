@@ -2507,3 +2507,59 @@ de resultados. Juntos, forman la base de las soluciones de canalización más
 efectivas en los servicios Go.
 
 </details>
+
+
+<details>
+<summary>43. ¿Por qué no debería utilizar canales para transferir grandes cantidades de datos?</summary>
+
+#### Go
+
+Los canales en Go son una gran herramienta para coordinar y transmitir
+eventos/mensajes pequeños, pero no son el mejor transporte para cargas útiles
+masivas. Para grandes cantidades de datos, a menudo generan gastos innecesarios.
+
+#### Por qué podría no ser efectivo:
+
+1. **Costo de copia:** pasar valores grandes a través del canal aumenta las
+   operaciones de memoria y el tráfico entre gorutinas.
+
+2. **Costos de contención y sincronización:** los canales tienen coordinación de
+   acceso interna; con una carga elevada puede convertirse en un cuello de
+   botella.
+
+3. **GC y presión de la memoria:** los buffers de canal grandes o numerosos
+   mensajes grandes aumentan la presión de la memoria y pueden aumentar los
+   costos de pausas/tiempo de ejecución.
+
+4. **Degradación de la localidad de caché:** los objetos grandes pasan por el
+   canal competitivo peor que las señales compactas + acceso al almacenamiento
+   compartido.
+
+#### Mejores alternativas:
+
+1. Transferencia a través de **enlaces/identificadores/índices** de canal, no de
+   big data.
+
+2. Mantenga la carga útil en un búfer/grupo compartido y utilice el canal como
+   señal de listo.
+
+3. Utilice un grupo de trabajadores con acceso controlado a una estructura de
+   datos compartida (`slice/map + mutex`) cuando corresponda.
+
+#### Cuando los canales siguen siendo apropiados:
+
+1. Para mensajes de control pequeños.
+
+2. Para eventos, comandos, estados y señales de finalización.
+
+3. Para una canalización donde el contexto de metadatos ligeros se mueve en la
+   canalización.
+
+#### Conclusión:
+
+Un canal en Go es principalmente un mecanismo de sincronización y coordinación.
+Para datos de gran tamaño, es más eficaz separarlos: transmitir "qué hacer" a
+través de un canal y las cargas útiles más masivas, a través de estructuras de
+memoria más adecuadas.
+
+</details>

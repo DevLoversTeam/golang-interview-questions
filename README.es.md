@@ -2563,3 +2563,73 @@ través de un canal y las cargas útiles más masivas, a través de estructuras 
 memoria más adecuadas.
 
 </details>
+
+
+<details>
+<summary>44. ¿Cómo devolver correctamente un error de una rutina al hilo principal?</summary>
+
+#### Go
+
+Una rutina no puede "devolver" un valor directamente a través de `return` a la
+persona que llama. Por tanto, el error de la tarea competitiva se transmite
+explícitamente: a través del canal de error o a través de `errgroup`, que
+encapsula este patrón.
+
+#### Enfoques canónicos:
+
+1. **`errgroup.Group` + `context` (recomendado):** mejor para ejecutar un grupo
+   de rutinas, recopilar el primer error y cancelar las tareas restantes.
+
+2. **Separado `errCh` + `WaitGroup`:** control explícito sobre el ciclo de vida;
+   Una vez finalizados todos los trabajadores, el canal se cierra y el hilo
+   principal lee errores.
+
+#### Reglas clave de corrección:
+
+1. Los errores se transmiten en un canal/agregador acordado.
+
+2. El cierre de `errCh` lo realiza el coordinador después de completar todas las
+   rutinas de escritura.
+
+3. Para el primer error crítico, se deben detener otras tareas a través de
+   `context` (para evitar trabajos inútiles y fugas de rutina).
+
+4. Los errores en las ramas competidoras no se pueden ignorar; esto crea
+   defectos "silenciosos".
+
+#### Estrategia de procesamiento típica:
+
+1. Iniciar trabajadores con acceso a `ctx`.
+
+2. En caso de error, envíe `error` al agregador.
+
+3. Cancelar contexto (si se requiere una política de falla rápida).
+
+4. Espere a que se completen todas las rutinas.
+
+5. Devuelve el resultado acordado (primer error o error agregado).
+
+#### Conclusión:
+
+El "retorno" de error correcto de goroutine es una disciplina del canal de
+comunicación explícito más la gestión del ciclo de vida a través de
+`WaitGroup`/`errgroup` y `context`. En producción, la opción óptima suele ser
+`errgroup`.
+
+#### Ejemplo (Ir 1.22+):
+
+```go
+g, ctx := errgroup.WithContext(context.Background())
+
+for _, task := range tasks {
+	g.Go(func() error {
+		return task.Run(ctx)
+	})
+}
+
+if err := g.Wait(); err != nil {
+	return err
+}
+```
+
+</details>

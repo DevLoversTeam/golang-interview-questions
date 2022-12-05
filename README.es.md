@@ -2633,3 +2633,52 @@ if err := g.Wait(); err != nil {
 ```
 
 </details>
+
+
+<details>
+<summary>45. ¿Puede `defer` en Go detectar un (`recover`) pánico que ocurrió en una rutina infantil?</summary>
+
+#### Go
+
+Respuesta corta: **no**. `recover` solo funciona en la misma rutina donde
+ocurrió el pánico, y solo en una función `defer` que se ejecuta en su pila de
+llamadas.
+
+#### La regla principal:
+
+1. El pánico no "vuela" entre gorutinas como una señal controlada para
+   `recover`.
+
+2. `defer` en la rutina principal no puede detectar el pánico del niño.
+
+3. Para detectar pánico en una rutina de trabajador, `defer` con `recover` deben
+   estar dentro de esta rutina de trabajador en particular.
+
+#### Consecuencias prácticas:
+
+1. Si el pánico en la rutina infantil no se detecta localmente, el proceso puede
+   fallar.
+
+2. Para servicios estables, cada rutina "arriesgada" está envuelta con un `defer
+   func(){ if r := recover(); r != nil { ... } }()` protector.
+
+3. Después de `recover` es necesario señalar claramente una falla en el circuito
+   principal (a través del canal `error`, `errgroup`, métricas, registro).
+
+#### Lo que se considera una buena práctica:
+
+1. Local `recover` en el punto de lanzamiento de trabajadores de larga duración.
+
+2. Política clara: el pánico se convierte en un error/alerta y no desaparece
+   silenciosamente.
+
+3. Usar `context` para la terminación coordinada de otras gorutinas después de
+   una falla crítica.
+
+#### Conclusión:
+
+`recover` en Go tiene un alcance local: una única rutina. Por lo tanto, la
+interceptación de pánico en el código competitivo debe diseñarse a nivel de cada
+rutina secundaria por separado.
+
+</details>

@@ -2682,3 +2682,87 @@ interceptación de pánico en el código competitivo debe diseñarse a nivel de 
 rutina secundaria por separado.
 
 </details>
+
+
+<details>
+<summary>46. Habla sobre patrones de concurrencia en Go.</summary>
+
+#### Go
+
+Los patrones de concurrencia en Go son patrones arquitectónicos repetitivos para
+coordinar gorutinas, canalizaciones y primitivas de sincronización. Su objetivo
+es proporcionar un paralelismo manejable sin caos, fugas ni bloqueos.
+
+#### Los patrones más utilizados:
+
+1. **Grupo de trabajadores**
+
+- un número fijo de rutinas de trabajo lee tareas de la cola;
+
+- limita el nivel de paralelismo y estabiliza la carga.
+
+2. **Distribución en abanico/Entrada en abanico**
+
+- `fan-out`: asignación de una cola de tareas a muchos ejecutores;
+
+- `fan-in`: Fusionar resultados de múltiples fuentes en un solo canal.
+
+3. **Tubería (transportador de etapas)**
+
+- los datos pasan por sucesivas etapas de procesamiento;
+
+- cada etapa puede tener su propia competencia y contrapresión.
+
+4. **Semáforo mediante canal almacenado en búfer**
+
+- limita el número de operaciones simultáneas;
+
+- útil para trabajar con bases de datos, descriptores de archivos y API
+  externas.
+
+5. **Cancelación de contexto**
+
+- cancelación centralizada de todo el grupo de gorutinas;
+
+- evita fugas en caso de tiempo de espera, error o apagado.
+
+6. **Errgroup (orquestación a prueba de fallos)**
+
+- recopila errores de un grupo de tareas;
+
+- se combina convenientemente con `context` para detener el resto del trabajo
+  antes de tiempo.
+
+7. **Propietario único / Bucle tipo actor**
+
+- una gorutina tiene un estado mutable;
+
+- otros interactúan a través de mensajes, lo que reduce la contención de
+  bloqueos.
+
+8. **Publicar/Suscribirse (transmitir)**
+
+- eventos se envían a múltiples consumidores;
+
+- requiere una supervisión cuidadosa de los buffers y del ciclo de vida del
+  suscriptor.
+
+#### Principios críticos para todos los patrones:
+
+1. Reglas explícitas de propiedad de recursos y cierre de canales.
+
+2. Restricciones del concurso (no rutinas "infinitas").
+
+3. Ruta de terminación requerida (`context`, `done`, `WaitGroup`).
+
+4. Observabilidad: métricas, registro, elaboración de perfiles.
+
+#### Conclusión:
+
+El poder del Go no está en "las rutinas mismas", sino en la disciplina de los
+patrones. Es la combinación correcta de grupo de trabajadores, canalización,
+distribución de entrada y salida, cancelación y coordinación de errores lo que
+brinda a los sistemas escalabilidad, previsibilidad y confiabilidad de la
+producción.
+
+</details>

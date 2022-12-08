@@ -2828,3 +2828,52 @@ escrituras, la duración de las secciones críticas y el nivel de contención.
 trabajo orientadas al lector, donde la ganancia se confirma mediante métricas.
 
 </details>
+
+
+<details>
+<summary>48. ¿Por qué no se pueden copiar los objetos `sync.Mutex`?</summary>
+
+#### Go
+
+`sync.Mutex` contiene el estado de bloqueo interno. Después del primer uso,
+copiar un objeto de este tipo crea una situación peligrosa: aparecen dos
+instancias diferentes del estado de bloqueo, que el programador puede percibir
+erróneamente como una sola.
+
+#### Por qué está esencialmente prohibido:
+
+1. **Mutex no es solo "datos", sino una primitiva de sincronización con
+   estado.**
+
+2. **La copia no comparte el mismo estado de bloqueo** con el original.
+
+3. Esto rompe las garantías de exclusión mutua y puede provocar carreras,
+   estancamientos o pánico en escenarios complejos.
+
+#### Formas típicas de copiar accidentalmente un mutex:
+
+1. Pasar una estructura con `sync.Mutex` por valor a una función.
+
+2. Devuelve la siguiente estructura por valor después de la inicialización/uso.
+
+3. Guardar/reenviar copias a través de canales o colecciones de valores.
+
+#### Práctica correcta:
+
+1. Las estructuras de `sync.Mutex` deben usarse mediante punteros (`*T`), no
+   mediante copia de valor.
+
+2. No exporte `Mutex` directamente en la API pública.
+
+3. Si el tipo tiene un candado, documente que no se copia después del primer
+   uso.
+
+4. Utilice `go vet` (copylocks) y linters para la detección temprana.
+
+#### Conclusión:
+
+`sync.Mutex` no se puede copiar porque socava el propio modelo de
+sincronización. Recuerde la regla: las primitivas de bloqueo tienen una
+identidad estable y deben vivir en una instancia por estado protegido.
+
+</details>

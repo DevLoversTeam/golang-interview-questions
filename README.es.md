@@ -2877,3 +2877,53 @@ sincronización. Recuerde la regla: las primitivas de bloqueo tienen una
 identidad estable y deben vivir en una instancia por estado protegido.
 
 </details>
+
+
+<details>
+<summary>49. ¿Por qué leer y escribir en un estado compartido sin sincronización es una carrera de datos, incluso si es "lógicamente seguro"?</summary>
+
+#### Go
+
+En términos del modelo de memoria Go, `data race` ocurre cuando dos o más
+gorutinas acceden simultáneamente a la misma variable, al menos una de las
+cuales es una operación de escritura, y no existe una relación `happens-before`
+establecida (es decir, sincronización) entre estos accesos.
+
+#### Por qué "lógicamente seguro" no guarda:
+
+1. **Lógica en la cabeza del desarrollador ≠ garantía del modelo de memoria.**
+   Sin sincronización, el orden de visibilidad de los registros entre
+   núcleos/hilos no está definido.
+
+2. **Las optimizaciones del compilador y la CPU pueden cambiar el orden
+   observado** de lecturas/escrituras dentro del modelo de memoria permitido.
+
+3. **Inestabilidad bajo carga:** el código puede "funcionar" en el inicio local,
+   pero interrumpirse en la producción o CI.
+
+#### ¿Cuáles son las consecuencias de la raza?
+
+1. Leyendo valores obsoletos o parcialmente actualizados.
+
+2. Errores irreproducibles (heisenbugs) que son difíciles de depurar.
+
+3. Violación de invariantes de estado empresarial sin pánico explícito.
+
+#### Lo que se considera sincronización correcta:
+
+1. `sync.Mutex` / `sync.RWMutex`
+
+2. Atomics (`sync/atomic`) para escenarios simples de bajo nivel
+
+3. Canales como mecanismo de propiedad/señalización
+
+4. `WaitGroup`, `Cond`, `Once`, `context` — en sus funciones de coordinación
+
+#### Conclusión:
+
+Sin sincronización, la lectura/escritura compartida en Go es una carrera por
+definición, independientemente de la "seguridad lógica" subjetiva. La única
+forma confiable es formar explícitamente la relación `happens-before` mediante
+las primitivas de concurrencia correctas.
+
+</details>

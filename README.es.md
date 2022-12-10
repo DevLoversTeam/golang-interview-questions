@@ -2927,3 +2927,58 @@ forma confiable es formar explícitamente la relación `happens-before` mediante
 las primitivas de concurrencia correctas.
 
 </details>
+
+
+<details>
+<summary>50. ¿Qué es la condición de carrera y cómo funciona el detector `-race`? ¿Qué puede y qué no puede detectar?</summary>
+
+#### Go
+
+`Race Condition` es una clase general de defectos de concurrencia donde el
+resultado de un programa depende de un orden impredecible de eventos entre
+subprocesos de ejecución. `Data race` es un caso especial de la condición de
+carrera, que se refiere a un acceso simultáneo peligroso a la misma memoria sin
+sincronización.
+
+#### Cómo funciona `-race`:
+
+1. Durante `go test -race` / `go run -race` se instrumenta el código.
+
+2. El tiempo de ejecución rastrea las lecturas/escrituras de memoria entre
+   gorutinas.
+
+3. Si se detectan accesos sin `happens-before` (y hay un registro), se informa
+   `data race` con seguimientos de pila.
+
+#### Lo que `-race` detecta bien:
+
+1. Carreras clásicas de lectura/escritura y escritura/escritura en variables
+   compartidas.
+
+2. Bloqueo/desbloqueo perdido en áreas competitivas.
+
+3. Parte de errores de coordinación en escenarios de prueba con competencia
+   real.
+
+#### Lo que `-race` no garantiza:
+
+1. **No detecta todas las condiciones de carrera como errores lógicos:** por
+   ejemplo, protocolo de interacción incorrecto sin carrera de datos directa.
+
+2. **No ve código no ejecutado:** si las pruebas no cubren un camino
+   competitivo, la carrera puede pasar desapercibida.
+
+3. **No está libre de errores:** Una ejecución "limpia" significa únicamente que
+   la herramienta no detectó ninguna infracción durante esa ejecución.
+
+4. **Tiene gastos generales:** desaceleración y mayor consumo de memoria en modo
+   instrumentación.
+
+#### Conclusión práctica:
+
+`-race` es una herramienta obligatoria para la higiene del código de la
+competencia, pero no un oráculo absoluto de corrección. Su poder se revela en
+combinación con pruebas de calidad, invariantes de diseño y disciplina de
+sincronización.
+
+</details>

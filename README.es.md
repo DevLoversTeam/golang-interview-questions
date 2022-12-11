@@ -2982,3 +2982,61 @@ combinación con pruebas de calidad, invariantes de diseño y disciplina de
 sincronización.
 
 </details>
+
+
+<details>
+<summary>51. ¿Cuáles son las ventajas de las operaciones atómicas en comparación con mutex para operaciones competitivas simples?</summary>
+
+#### Go
+
+Las operaciones `atomic` en Go son apropiadas para escenarios competitivos muy
+simples en los que es necesario realizar de forma segura una operación elemental
+en un solo valor (incrementar, leer una bandera, CAS). En tales casos, pueden
+ser más claros que `mutex`.
+
+#### Ventajas del enfoque atómico:
+
+1. **Menos gastos generales para operaciones simples:** no hay `Lock/Unlock`
+   explícito en torno a la operación corta.
+
+2. **Alta eficiencia en indicadores y contadores de rutas activas:** por
+   ejemplo, métricas, estados de parada/inicio, coordinación ligera.
+
+3. **Sin bloqueo en el sentido clásico:** los subprocesos no necesitan esperar a
+   que el propietario del bloqueo realice lectura/escritura atómica.
+
+4. **Garantías de orden de memoria clara a través de API `sync/atomic`:** Se
+   garantiza la visibilidad correcta entre gorutinas para una variable
+   específica.
+
+#### Cuando atómico es mejor que mutex:
+
+1. La operación se aplica a **una** variable o a un estado muy local.
+
+2. La lógica es simple y está bien formalizada (`Load`, `Store`, `Add`,
+   `CompareAndSwap`).
+
+3. Requiere una latencia mínima en la ruta de alta frecuencia.
+
+#### Cuando mutex es mejor:
+
+1. Se debe proteger una **invariante entre múltiples campos**.
+
+2. La operación incluye varios pasos con lógica de dominio.
+
+3. La legibilidad y la mantenibilidad son más importantes que la
+   microoptimización.
+
+#### Aviso importante:
+
+Atomic no es un reemplazo universal para `mutex`. El uso excesivo de átomos
+complica el código y aumenta el riesgo de errores sutiles en el modelo de
+memoria.
+
+#### Conclusión:
+
+La ventaja de las operaciones atómicas es la sincronización rápida y de bajo
+costo para casos simples. Para invariantes comerciales y de estado compartido
+complejos, `mutex` suele ser la herramienta más confiable.
+
+</details>

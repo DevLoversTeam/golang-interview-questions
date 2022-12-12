@@ -3040,3 +3040,71 @@ costo para casos simples. Para invariantes comerciales y de estado compartido
 complejos, `mutex` suele ser la herramienta más confiable.
 
 </details>
+
+
+<details>
+<summary>52. ¿Cómo funciona `sync.WaitGroup` y qué pasará con un contador negativo? ¿Por qué no se puede llamar a `wg.Done()` antes de `wg.Add()`?</summary>
+
+#### Go
+
+`sync.WaitGroup` es un contador de tareas concurrentes activas. Su propósito es
+permitir que una rutina (`Wait`) espere a que las demás completen su trabajo.
+
+#### Cómo funciona:
+
+1. `wg.Add(n)` aumenta el contador en `n` (agregamos el número de tareas).
+
+2. Cada tarea completada activa `wg.Done()` (equivalente a `Add(-1)`).
+
+3. `wg.Wait()` se bloquea hasta que el contador llega a cero.
+
+#### ¿Qué pasará con un contador negativo?
+
+1. Este es un error de coordinación lógica.
+
+2. El tiempo de ejecución provoca pánico (normalmente: `sync: negative WaitGroup
+   counter`).
+
+3. Esta situación significa que `Done()` fue llamado más veces que `Add()`.
+
+#### Por qué no puedes hacer `Done()` a `Add()`:
+
+1. Se está infringiendo el contrato del ciclo de vida de la tarea.
+
+2. `Wait()` puede finalizar prematuramente, porque en el momento de la espera,
+   el contador aún no refleja el número real de trabajos.
+
+3. En el peor de los casos, obtendremos un contador negativo y entraremos en
+   pánico.
+
+#### Disciplina correcta:
+
+1. Llame a `Add(1)` **antes** de que comience la rutina.
+
+2. Dentro de la rutina, establezca `defer wg.Done()` inmediatamente en la
+   entrada.
+
+3. Llame a `Wait()` solo después de registrar todas las tareas.
+
+#### Conclusión:
+
+`WaitGroup` solo es confiable bajo la estricta secuencia `Add -> go -> Done ->
+Wait`. Un contador negativo y `Done()` a `Add()` es una señal de un modelo de
+sincronización roto, lo que inevitablemente conduce a un comportamiento
+inestable o pánico.
+
+#### Ejemplo:
+
+```go
+var wg sync.WaitGroup
+wg.Add(1)
+
+go func() {
+	defer wg.Done()
+	work()
+}()
+
+wg.Wait()
+```
+
+</details>

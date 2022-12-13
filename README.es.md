@@ -3108,3 +3108,68 @@ wg.Wait()
 ```
 
 </details>
+
+
+<details>
+<summary>53. ¿Cuál es la diferencia entre `sync.WaitGroup` y `errgroup.Group`? ¿Cuándo utilizar cada uno?</summary>
+
+#### Go
+
+`sync.WaitGroup` y `errgroup.Group` coordinan la finalización de gorutinas, pero
+tienen diferentes niveles de abstracción: `WaitGroup` solo espera, mientras que
+`errgroup` además maneja errores y cancelaciones a través de `context`.
+
+#### `sync.WaitGroup`:
+
+1. Únicamente responsable de esperar a que se completen las tareas.
+
+2. No recopila errores listos para usar.
+
+3. No cancela otras gorutinas automáticamente.
+
+4. Requiere infraestructura manual:
+
+- canal de error;
+
+- coordinación `context`;
+
+- lógica a prueba de fallos.
+
+#### `errgroup.Group`:
+
+1. Le permite ejecutar gorutinas a través de `Go(func() error)`.
+
+2. Devuelve el primer error recibido en `Wait()`.
+
+3. Emparejado con `errgroup.WithContext` cancela automáticamente el contexto en
+   caso de error.
+
+4. Reduce el texto estándar para el patrón típico de "tareas paralelas + parada
+   en caso de error".
+
+#### Cuándo elegir `WaitGroup`:
+
+1. Simplemente espere a que se complete sin agregación de errores.
+
+2. La política de manejo de errores no es estándar y es completamente
+   personalizada.
+
+3. El control de bajo nivel es más importante que la conveniencia de la API.
+
+#### Cuándo elegir `errgroup`:
+
+1. Necesita un modelo claro de "fallo en una tarea → detener el resto".
+
+2. Necesidad de implementar de forma rápida y limpia una orquestación
+   competitiva.
+
+3. La legibilidad y el código breve y fácil de mantener son importantes.
+
+#### Conclusión:
+
+`WaitGroup` - Primitiva de sincronización "solo esperar". `errgroup` - nivel
+superior: "esperar + devolver un error + cancelar el resto mediante contexto".
+Para la mayoría de los escenarios de producción con errores y semántica de falla
+rápida, `errgroup` es más práctico.
+
+</details>

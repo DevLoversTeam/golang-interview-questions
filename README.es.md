@@ -3173,3 +3173,63 @@ Para la mayoría de los escenarios de producción con errores y semántica de fa
 rápida, `errgroup` es más práctico.
 
 </details>
+
+
+<details>
+<summary>54. Describa el propósito y la implementación de `sync.Once`: ¿cómo garantiza una inicialización única?</summary>
+
+#### Go
+
+`sync.Once` está destinado a la ejecución única garantizada de una función en
+condiciones de acceso simultáneo. Independientemente del número de gorutinas que
+llamen a `once.Do(f)` al mismo tiempo, el cuerpo de `f` debe ejecutarse solo una
+vez.
+
+#### ¿Para qué se utiliza?
+
+1. Inicialización diferida de recursos singleton.
+
+2. Configuración única/carga de caché.
+
+3. Ejecute de forma segura una inicialización intensa sin duplicar el trabajo.
+
+#### Cómo `sync.Once` garantiza la reproducibilidad:
+
+1. Comprueba un indicador interno de estado realizado/fallido.
+
+2. Si la inicialización aún no se ha realizado: bloquea a los competidores de
+   forma sincrónica.
+
+3. Exactamente una rutina ejecuta `f`.
+
+4. En caso de éxito marca el estado como "hecho" y además `Do` regresa sin
+   reiniciar `f`.
+
+#### Propiedades importantes:
+
+1. Se garantiza la correcta visibilidad de los datos inicializados para otras
+   gorutinas (seguridad de la memoria mediante sincronización interna).
+
+2. Otras gorutinas que aparecieron durante la ejecución de `f` esperarán hasta
+   que se completen.
+
+3. `Once` no está diseñado para "reiniciarse": es un ciclo de vida único.
+
+#### Matices y advertencias:
+
+1. Si `f` entra en pánico, el comportamiento necesita una cuidadosa
+   consideración de diseño: `Once` no es un mecanismo alternativo.
+
+2. No debe ocultar una lógica empresarial demasiado compleja en `Do`; es mejor
+   mantener la inicialización del recurso allí.
+
+3. Las tareas de reinicio/recarga requieren otros patrones (puntero atómico,
+   exclusión mutua, estado versionado, etc.).
+
+#### Conclusión:
+
+`sync.Once` es una primitiva disciplinada de inicialización única: segura para
+carreras, predecible y muy útil cuando volver a ejecutar la inicialización es
+redundante o peligroso.
+
+</details>

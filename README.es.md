@@ -3297,3 +3297,64 @@ donde el centro de la lógica es el estado mismo y sus invariantes, no el
 transporte de datos.
 
 </details>
+
+
+<details>
+<summary>56. ¿Cómo se organiza `sync.Map`, cuándo ofrece un mejor rendimiento en comparación con map + mutex y dónde se usa en la biblioteca estándar?</summary>
+
+#### Go
+
+`sync.Map` es un mapa competitivo especializado del paquete `sync`, optimizado
+principalmente para cargas de trabajo de lectura intensa y escenarios donde las
+claves se leen con frecuencia y rara vez se cambian.
+
+#### Cómo se organiza conceptualmente `sync.Map`:
+
+1. Tiene un modelo de acceso de dos capas:
+
+- **read-part** para lecturas rápidas, en su mayoría sin bloqueo;
+
+- **dirty-part** para actualizaciones y nuevas entradas en sincronización.
+
+2. La lectura desde una zona de lectura "activa" a menudo se realiza sin un
+   mutex común, lo que reduce la contención.
+
+3. Las escrituras/promociones entre capas tienen una lógica interna más
+   compleja, pero tienen como objetivo no penalizar las lecturas masivas.
+
+#### Cuando `sync.Map` puede ser más rápido que `map + mutex`:
+
+1. **Muchas lecturas, pocas escrituras** (carga de trabajo clásica de lectura
+   mayoritaria).
+
+2. **Claves mayoritariamente estables**, sin abandono agresivo.
+
+3. **Acceso de lectura altamente competitivo** de muchas rutinas.
+
+#### Cuando más es mejor `map + mutex`:
+
+1. Las entradas son muchas o dominan.
+
+2. Requiere invariantes complejos sobre múltiples claves.
+
+3. La seguridad de tipos es más importante (porque `sync.Map` funciona a través
+   de `any`).
+
+4. Necesita una lógica más simple y obvia para que el equipo la respalde.
+
+#### Cuando se usa en la biblioteca estándar:
+
+`sync.Map` se utiliza en cachés y tablas internas donde la naturaleza del acceso
+es cercana a la lectura intensa (en particular, en partes del tiempo de
+ejecución/paquetes estándar para almacenar en caché metadatos y estructuras
+auxiliares). La idea clave es la misma en todas partes: minimizar el bloqueo en
+lecturas masivas.
+
+#### Conclusión:
+
+`sync.Map` no es el "mejor mapa en general", sino una herramienta puntual para
+un perfil de carga específico. Si tiene un escenario de lectura mayoritaria con
+alta competencia, puede obtener una victoria; en otros casos, el simple `map +
+mutex` suele ser más transparente y eficiente.
+
+</details>

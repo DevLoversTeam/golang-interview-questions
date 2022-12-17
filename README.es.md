@@ -3358,3 +3358,61 @@ alta competencia, puede obtener una victoria; en otros casos, el simple `map +
 mutex` suele ser más transparente y eficiente.
 
 </details>
+
+
+<details>
+<summary>57. ¿Qué son las pruebas de concurrencia en Go y por qué se utilizan?</summary>
+
+#### Go
+
+Las pruebas de concurrencia en Go son pruebas que prueban el comportamiento del
+código en condiciones de ejecución paralela de rutinas, intercambio de estados y
+competencia de recursos. Su objetivo es detectar defectos que no aparecen en un
+escenario lineal.
+
+#### ¿Qué verifican exactamente estas pruebas?
+
+1. Corrección de la sincronización (`mutex`, `channel`, `atomic`, `WaitGroup`).
+
+2. Falta de carrera de datos en estado compartido.
+
+3. Resistencia a escenarios de bloqueo/bloqueo activo.
+
+4. Completación correcta de gorutinas (sin fugas).
+
+5. Observancia de invariantes bajo carga competitiva.
+
+#### ¿Por qué son necesarios?
+
+1. **Detección temprana de errores competitivos:** muchos de ellos solo aparecen
+   bajo presión de paralelismo.
+
+2. **Disminución del comportamiento inestable en producción:** las pruebas
+   capturan escenarios donde el orden de los eventos no es determinista.
+
+3. **Afirmación de garantías arquitectónicas:** como que el sistema no pierde
+   eventos y no viola la coherencia del estado.
+
+4. **Refactorización más segura:** los invariantes competitivos permanecen
+   protegidos por el conjunto de regresión.
+
+#### Herramientas y prácticas en Go:
+
+1. `go test -race` como nivel de verificación obligatorio.
+
+2. Secuencias de comandos paralelas mediante gorutinas, `t.Run`, `t.Parallel`.
+
+3. Tiempos de espera explícitos/`context` para evitar que las pruebas se
+   cuelguen.
+
+4. Ejecuciones de estrés y ejecuciones múltiples para aumentar la posibilidad de
+   reproducir errores no deterministas.
+
+#### Conclusión:
+
+Las pruebas de concurrencia no son un "lujo extra", sino un elemento de calidad
+necesario para los servicios Go. Verifican no solo la funcionalidad, sino
+también la exactitud de la interacción de gorutinas en condiciones reales de
+paralelismo.
+
+</details>

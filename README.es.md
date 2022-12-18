@@ -3416,3 +3416,83 @@ también la exactitud de la interacción de gorutinas en condiciones reales de
 paralelismo.
 
 </details>
+
+
+<details>
+<summary>58. ¿Por qué Go usa `context.Context` y cómo se pasa a través del árbol de llamadas a funciones?</summary>
+
+#### Go
+
+`context.Context` en Go es un mecanismo estándar para gestionar el ciclo de vida
+de la solicitud/operación: cancelaciones, plazos, tiempos de espera y metadatos
+de la solicitud. Permite que todas las ramas de ejecución vean una única señal
+de "parada".
+
+#### ¿Por qué necesitas `Context`?
+
+1. **Cancelación:** detener el trabajo que ya no es necesario (el cliente se ha
+   desconectado, ha ocurrido un error en una sucursal cercana, el servicio está
+   finalizando).
+
+2. **Fecha límite/tiempo de espera:** limita el tiempo de ejecución de las
+   operaciones (HTTP, DB, API externas) para no colgarse indefinidamente.
+
+3. **Valores con alcance de solicitud:** transferir datos de solicitud de
+   servicio (ID de seguimiento, token de autenticación, ID de inquilino) entre
+   capas.
+
+#### Cómo se pasa a través del árbol de llamadas:
+
+1. `ctx` se pasa como **primer parámetro** a una función que puede bloquear o
+   realizar E/S.
+
+2. Cada llamada secundaria recibe el mismo `ctx` o derivado:
+
+- `context.WithCancel`
+
+- `context.WithTimeout`
+
+- `context.WithDeadline`
+
+- `context.WithValue`
+
+3. Los contextos secundarios forman un árbol:
+
+- cancelar un contexto principal cancela todos los hijos;
+
+- los plazos se heredan (o se reducen).
+
+#### Reglas prácticas:
+
+1. No almacene `Context` en una estructura como un campo de larga duración.
+
+2. No pase el contexto `nil` (use `context.Background()` o `context.TODO()`).
+
+3. No utilice `WithValue` para parámetros comerciales que deben ser argumentos
+   de función explícitos.
+
+#### Conclusión:
+
+`context.Context` es la consulta "sistema nervioso" en Go. Distribuye el control
+de tiempos y cancelaciones en todo el árbol de llamadas, lo que hace que el
+código de la competencia sea manejable, económico y predecible en un entorno de
+producción.
+
+#### Ejemplo:
+
+```go
+func handler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	if err := service.Do(ctx); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+}
+
+func (s *Service) Do(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	return s.repo.Call(ctx)
+}
+```
+
+</details>

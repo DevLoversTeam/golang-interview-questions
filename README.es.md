@@ -3496,3 +3496,54 @@ func (s *Service) Do(ctx context.Context) error {
 ```
 
 </details>
+
+
+<details>
+<summary>59. ¿Es `context.Context` inmutable y qué significa en la práctica?</summary>
+
+#### Go
+
+Sí, `context.Context` es conceptualmente inmutable: después de la creación, el
+contexto existente no se "edita", sino que se construye un nuevo contexto
+derivado sobre el principal.
+
+#### ¿Qué significa inmutable en el caso de `Context`?
+
+1. Las llamadas `WithCancel`, `WithTimeout`, `WithDeadline`, `WithValue` no
+   cambian el antiguo `ctx`.
+
+2. Devuelven un contexto descendiente **nuevo**.
+
+3. El contexto principal permanece como estaba antes.
+
+#### Consecuencias prácticas:
+
+1. **Propagación segura entre gorutinas:** el mismo `ctx` se puede transmitir
+   sin el riesgo de "sobrescritura oculta" de parámetros.
+
+2. **Ciclo de vida transparente:** El árbol de contexto muestra claramente quién
+   heredó la cancelación/fecha límite de quién.
+
+3. **Comportamiento previsto de la API:** una función que recibió `ctx` no puede
+   "cambiarla" furtivamente para otras llamadas; sólo puede crear un
+   descendiente local.
+
+4. **Mejor capacidad de prueba y depuración:** es más fácil rastrear exactamente
+   dónde apareció el tiempo de espera/cancelación/valor, porque son nodos
+   derivados separados, no mutaciones de un solo objeto.
+
+#### Aclaración importante:
+
+La inmutabilidad no significa que no haya dinámica interna: la señal de
+cancelación y el estado de fecha límite pueden cambiar con el tiempo. Pero este
+es un cambio del **estado de ejecución** dentro del modelo de contexto, no una
+mutación "in situ" del contrato API del objeto pasado.
+
+#### Conclusión:
+
+`context.Context` en Go es un modelo de cadena funcional: no cambiamos el
+existente, sino que creamos un derivado. Esto proporciona una composición
+limpia, simultaneidad segura y una gestión del ciclo de vida de las consultas
+predecible.
+
+</details>

@@ -3547,3 +3547,65 @@ limpia, simultaneidad segura y una gestión del ciclo de vida de las consultas
 predecible.
 
 </details>
+
+
+<details>
+<summary>60. ¿Cómo ayuda el uso de `context.WithCancel` a evitar fugas de rutinas?</summary>
+
+#### Go
+
+`context.WithCancel` proporciona una señal de terminación administrada a todas
+las gorutinas que se ejecutan dentro del mismo árbol de contexto. Ésta es la
+clave para prevenir la fuga de gorutinas, una situación en la que las gorutinas
+auxiliares permanecen "vivas" después de que el trabajo ha perdido su
+relevancia.
+
+#### Cómo ocurre una fuga de rutina:
+
+1. La rutina está esperando un canal/red/temporizador sin una condición de
+   parada.
+
+2. La solicitud ya finalizó o se volvió innecesaria, pero el trabajador no lo
+   sabía.
+
+3. Estas gorutinas "huérfanas" acumulan y consumen recursos.
+
+#### Rol `WithCancel`:
+
+1. Creando contexto secundario: `ctx, cancel := context.WithCancel(parent)`.
+
+2. Todas las rutinas de trabajadores tienen `select` con la rama `case
+   <-ctx.Done():`.
+
+3. Cuando se llama a `cancel()`, todas las gorutinas dependientes reciben una
+   señal de parada.
+
+4. Las rutinas terminan de forma controlada, liberando recursos.
+
+#### Reglas prácticas de seguridad:
+
+1. Llame siempre a `cancel()` (a menudo a través de `defer cancel()`), incluso
+   si se completa con éxito.
+
+2. En cada operación de bloqueo/bucle de larga duración, marque `ctx.Done()`.
+
+3. Omita `ctx` todas las llamadas de E/S que admitan la cancelación.
+
+4. Combine con `WaitGroup`/`errgroup` para esperar a que se complete realmente.
+
+#### Lo que le da al sistema:
+
+1. Ausencia de trabajadores de fondo "colgados".
+
+2. Mejor utilización de CPU/memoria bajo carga.
+
+3. Apagado previsto y comportamiento más estable del servicio.
+
+#### Conclusión:
+
+`context.WithCancel` es el mecanismo antifugas básico en la concurrencia de Go:
+una única señal de parada explícita que finaliza todas las gorutinas
+relacionadas de manera consistente y salva al sistema de la sobrecarga de
+recursos.
+
+</details>

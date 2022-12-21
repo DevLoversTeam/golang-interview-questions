@@ -3609,3 +3609,76 @@ relacionadas de manera consistente y salva al sistema de la sobrecarga de
 recursos.
 
 </details>
+
+
+<details>
+<summary>61. ¿Por qué Go utiliza tipos de claves no estándar (por ejemplo, `struct{}`) para `context.WithValue` y cómo evita esto colisiones?</summary>
+
+#### Go
+
+En `context.WithValue`, la clave debe ser comparable, pero lo más importante es
+que debe ser **única dentro de su aplicación y espacio de dependencia**. Es por
+eso que se recomienda utilizar sus propios tipos de claves (no estándar) en
+lugar de la comúnmente utilizada `string`.
+
+#### Por qué las claves `string` son peligrosas:
+
+1. Diferentes paquetes pueden usar accidentalmente la misma cadena (`"userID"`,
+   `"request_id"`, etc.).
+
+2. El valor en el contexto será sobrescrito o "sombreado" por otro paquete.
+
+3. Obtenga errores de enrutamiento/autenticación/inicio de sesión silenciosos y
+   difíciles de reproducir.
+
+#### Cómo un tipo no estándar evita colisiones:
+
+1. Crea un tipo de clave privada en el paquete, por ejemplo: `type ctxKey
+   struct{}` o `type ctxKey int`.
+
+2. El código externo no puede utilizar accidentalmente el mismo tipo y valor de
+   clave.
+
+3. De esta manera, el espacio de nombres clave queda aislado en el nivel del
+   sistema típico.
+
+#### Por qué se toma con frecuencia `struct{}`:
+
+1. Tipo de marcador ligero sin carga útil.
+
+2. Enfatiza que la identidad de la clave es importante, no sus "datos".
+
+3. Se corresponde bien con el modismo "clave única local del paquete".
+
+#### Regla general:
+
+1. Declarar claves como variables de paquete no exportadas.
+
+2. No utilice cadenas "vacías" como claves para `WithValue`.
+
+3. Almacene en `Context` solo datos de servicio con alcance de solicitud, no
+   parámetros comerciales.
+
+#### Conclusión:
+
+Los tipos de claves no estándar en `context.WithValue` son un mecanismo de
+espacio de nombres con seguridad de tipos. Reducen de manera confiable el riesgo
+de colisiones entre paquetes y hacen que los valores contextuales sean
+predecibles en grandes bases de código.
+
+#### Ejemplo:
+
+```go
+type requestIDKey struct{}
+
+func withRequestID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, requestIDKey{}, id)
+}
+
+func requestID(ctx context.Context) (string, bool) {
+	v, ok := ctx.Value(requestIDKey{}).(string)
+	return v, ok
+}
+```
+
+</details>

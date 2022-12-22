@@ -3682,3 +3682,62 @@ func requestID(ctx context.Context) (string, bool) {
 ```
 
 </details>
+
+
+<details>
+<summary>62. ¿Cuál es la diferencia entre `context.Value` y pasar parámetros mediante argumentos de función?</summary>
+
+#### Go
+
+`context.Value` y los argumentos de funciones normales tienen propósitos
+diferentes. En un diseño de Go competente, no son intercambiables: los
+argumentos transmiten datos comerciales y `context.Value` es un metacontexto con
+alcance de solicitud de servicio.
+
+#### Pasar argumentos:
+
+1. **Contrato API explícito:** todos los datos requeridos están visibles en la
+   firma.
+
+2. **Seguridad de tipos y legibilidad:** el compilador ayuda a controlar la
+   corrección.
+
+3. **La mejor opción para la lógica de dominio:** los parámetros del dominio se
+   deben pasar directamente.
+
+#### `context.Value`:
+
+1. **Canal de datos de servicio implícito:** ID de seguimiento, ID de solicitud,
+   reclamaciones de autenticación, inquilino, metadatos de correlación.
+
+2. **Se propaga a través de capas sin inflar firmas:** útil para middleware,
+   registro y observabilidad.
+
+3. **Menos transparencia:** la dependencia del valor no es obvia a partir de la
+   firma de la función.
+
+#### Por qué no deberías reemplazar los argumentos `context.Value`:
+
+1. La claridad de la API está disminuyendo (aparecen entradas "ocultas").
+
+2. Aumenta el riesgo de errores de tiempo de ejecución debido a la aserción con
+   `any`.
+
+3. Las pruebas y la refactorización son complicadas.
+
+#### Regla general:
+
+1. En `Context` está solo lo que pertenece al ciclo de vida de la solicitud y es
+   necesario para las capas de infraestructura.
+
+2. En los parámetros de la función, todo lo que es la esencia de la operación
+   comercial.
+
+#### Conclusión:
+
+Los argumentos forman un contrato de dominio explícito; `context.Value`
+transporta los metadatos del servicio de la solicitud. Mezclar estos roles
+degrada la arquitectura, por lo que el código Go profesional mantiene clara la
+línea entre ellos.
+
+</details>

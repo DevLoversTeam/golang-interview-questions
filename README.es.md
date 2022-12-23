@@ -3741,3 +3741,57 @@ degrada la arquitectura, por lo que el código Go profesional mantiene clara la
 línea entre ellos.
 
 </details>
+
+
+<details>
+<summary>63. ¿Cómo funciona la asignación de pila frente a montón en Go?</summary>
+
+#### Go
+
+En Go, el compilador determina la ubicación de los datos en la pila o el montón
+mediante un análisis de escape. El desarrollador no elige esto manualmente
+directamente, pero puede escribir código para reducir las asignaciones de montón
+innecesarias.
+
+#### Asignación de pila:
+
+1. Los datos se encuentran dentro de una llamada de función (o una pila de
+   rutinas administrada).
+
+2. La asignación y liberación son muy económicas.
+
+3. No carga directamente el GC.
+
+#### Asignación de montón:
+
+1. Se requieren datos fuera del marco de pila actual.
+
+2. La memoria es administrada por el recolector de basura.
+
+3. Ofrece una mayor sobrecarga (asignación + posterior recolección de basura).
+
+#### Lo que decide adónde va el valor:
+
+1. **Análisis de escape del compilador:** si el valor "escapa" fuera de la
+   función (se devuelve el puntero, se almacena en una estructura de larga
+   duración, se captura el cierre, etc.), ingresa al Heap.
+
+2. **Contexto de uso:** incluso una variable local puede terminar en el montón
+   si su vida útil es mayor que el marco actual.
+
+#### Por qué esto es importante:
+
+1. Más asignaciones de montón = más trabajo para el GC.
+
+2. En la ruta activa, afecta la latencia y el rendimiento.
+
+3. La optimización de las asignaciones a menudo proporciona un aumento notable
+   en el rendimiento del servicio.
+
+#### Conclusión práctica:
+
+En Go, la clave no es "administrar la memoria manualmente", sino comprender el
+comportamiento de escape. El diseño de datos claro y la minimización de fugas
+innecesarias en Heap ayudan a escribir código de producción rápido y estable.
+
+</details>

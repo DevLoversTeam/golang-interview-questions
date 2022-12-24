@@ -3795,3 +3795,63 @@ comportamiento de escape. El diseño de datos claro y la minimización de fugas
 innecesarias en Heap ayudan a escribir código de producción rápido y estable.
 
 </details>
+
+
+<details>
+<summary>64. ¿Cómo minimizar las asignaciones de montón con `sync.Pool`?</summary>
+
+#### Go
+
+`sync.Pool` es un mecanismo de reutilización de objetos temporal que le permite
+reducir la frecuencia de asignaciones de montón en áreas de código activo. La
+idea es simple: no crear objetos de corta duración cada vez, sino sacarlos del
+grupo y devolverlos después de su uso.
+
+#### Esquema básico:
+
+1. Cree un grupo de `New` que inicialice el objeto según sea necesario.
+
+2. A la entrada de la operación: `obj := pool.Get()`.
+
+3. Antes de usarlo, lleve el objeto a un estado válido.
+
+4. Después de completar: borre los campos y `pool.Put(obj)`.
+
+#### Por qué esto reduce las asignaciones:
+
+1. Parte de las solicitudes recibe objetos ya asignados.
+
+2. Menos asignaciones de montón nuevas.
+
+3. Menos presión sobre el GC con alta frecuencia de operaciones cortas.
+
+#### Donde `sync.Pool` es particularmente relevante:
+
+1. Buffers (`[]byte`, `bytes.Buffer`) en controladores de serialización/red.
+
+2. Estructuras auxiliares temporales en rutas de
+   análisis/codificación/decodificación.
+
+3. Servicios HTTP/RPC muy cargados con operaciones cortas repetidas.
+
+#### Avisos importantes:
+
+1. `sync.Pool` es un caché, no un almacenamiento a largo plazo; Los elementos se
+   pueden limpiar con GC.
+
+2. El objeto anterior a `Put` debe llevarse a un estado limpio; de lo contrario,
+   es posible la fuga de datos entre solicitudes.
+
+3. Pool no es una panacea: en caminos fríos, la complejidad del código puede no
+   dar sus frutos.
+
+4. La optimización debe confirmarse mediante perfiles, no por intuición.
+
+#### Conclusión:
+
+`sync.Pool` es eficaz para reutilizar objetos de corta duración en rutas activas
+donde las asignaciones críticas y la pausa de GC son fundamentales. Su punto
+fuerte reside en reducir las turbulencias en la asignación, pero debe aplicarse
+de forma selectiva y perfilada.
+
+</details>

@@ -3855,3 +3855,78 @@ fuerte reside en reducir las turbulencias en la asignación, pero debe aplicarse
 de forma selectiva y perfilada.
 
 </details>
+
+
+<details>
+<summary>65. ¿Qué significan las variables de entorno `GOGC` y `GOMEMLIMIT` y cómo afectan al recolector de basura?</summary>
+
+#### Go
+
+`GOGC` y `GOMEMLIMIT` son parámetros clave para controlar el comportamiento de
+GC en Go. Le permiten equilibrar el consumo de memoria, la frecuencia de
+recolección de basura y el rendimiento del servicio.
+
+#### `GOGC`:
+
+1. Especifica la tasa de crecimiento del montón objetivo antes del siguiente
+   ciclo de GC (en porcentaje).
+
+2. El valor típico es `100` (permite que el montón se duplique aproximadamente
+   en relación con los datos "en vivo" después del GC anterior).
+
+3. Más `GOGC`:
+
+- menos ciclos de GC;
+
+- más consumo de memoria;
+
+- potencialmente reduce la sobrecarga de la CPU del GC.
+
+4. Menos de `GOGC`:
+
+- GC más frecuente;
+
+- montón más pequeño;
+
+- mayor gasto de montaje.
+
+#### `GOMEMLIMIT`:
+
+1. Establece un límite superior de memoria suave dentro del cual el tiempo de
+   ejecución intenta mantener el proceso.
+
+2. Cuando la memoria se acerca a este límite, el GC funciona de manera más
+   agresiva, incluso si `GOGC` lo permitiera una recopilación menos frecuente.
+
+3. Especialmente útil en contenedores/orquestadores con límites de memoria
+   estrictos.
+
+#### Cómo trabajan juntos:
+
+1. `GOGC` establece la "codicia" general del crecimiento del montón.
+
+2. `GOMEMLIMIT` actúa como un fusible que limita el crecimiento excesivo de la
+   memoria.
+
+3. En producción, es la combinación de ambos parámetros la que da el mejor
+   control de la latencia y los riesgos OOM.
+
+#### Enfoque práctico:
+
+1. Comience con los valores predeterminados.
+
+2. Medida `heap`, pausa de GC, CPU, latencia de cola bajo carga real.
+
+3. Ajuste los parámetros gradualmente, capturando el impacto en el SLA.
+
+4. Para contenedores, es necesario hacer coincidir `GOMEMLIMIT` con el límite de
+   memoria de la plataforma.
+
+#### Conclusión:
+
+`GOGC` controla la frecuencia del GC a través del objetivo de crecimiento del
+montón y `GOMEMLIMIT` limita la memoria desde arriba. Juntos, forman una
+herramienta práctica para ajustar el comportamiento en tiempo de ejecución de
+los servicios Go.
+
+</details>

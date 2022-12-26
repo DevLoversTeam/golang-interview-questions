@@ -3930,3 +3930,55 @@ herramienta práctica para ajustar el comportamiento en tiempo de ejecución de
 los servicios Go.
 
 </details>
+
+
+<details>
+<summary>66. ¿Qué es `runtime.SetFinalizer` y se utiliza en la biblioteca estándar?</summary>
+
+#### Go
+
+`runtime.SetFinalizer` es un mecanismo para vincular una función finalizadora a
+un objeto que el GC puede llamar antes de que el objeto se libere finalmente.
+Importante: El finalizador no proporciona garantías estrictas de tiempo de
+ejecución y no es un reemplazo confiable para `Close`/`Dispose` explícito.
+
+#### Qué hace `SetFinalizer`:
+
+1. Registra una devolución de llamada para un objeto de montón específico.
+
+2. Cuando un objeto se vuelve inalcanzable, el tiempo de ejecución **puede**
+   ejecutar un finalizador.
+
+3. El objeto se recopilará en uno de los siguientes ciclos de GC.
+
+#### Limitaciones clave:
+
+1. **No hay garantía de "cuándo" se ejecutará el finalizador.**
+
+2. **No hay garantía de que se ejecute antes de que se complete el proceso.**
+
+3. Los finalizadores complican el razonamiento del ciclo de vida y pueden crear
+   costos/retrasos ocultos.
+
+#### Regla general:
+
+1. Para recursos (archivos, sockets, identificadores, conexiones externas),
+   utilice siempre un cierre explícito (`defer obj.Close()`).
+
+2. El finalizador solo se permite como una "red de seguridad" contra errores de
+   uso, no como la forma principal de controlar el recurso.
+
+#### Ya sea que se use en la biblioteca estándar:
+
+Sí, se utiliza puntualmente en algunos lugares de bajo nivel como mecanismo
+auxiliar de seguridad/diagnóstico, pero no como modelo de gestión de recursos
+subyacente. La filosofía general de la biblioteca estándar es un ciclo de vida
+explícito y un cierre explícito.
+
+#### Conclusión:
+
+`runtime.SetFinalizer` es una herramienta especializada con garantías blandas.
+En producción-Go, se usa con cuidado y rara vez; La gestión explícita de
+recursos sigue siendo la base de un código confiable.
+
+</details>

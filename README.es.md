@@ -3982,3 +3982,68 @@ En producción-Go, se usa con cuidado y rara vez; La gestión explícita de
 recursos sigue siendo la base de un código confiable.
 
 </details>
+
+
+<details>
+<summary>67. ¿Cómo encontrar una pérdida de memoria con `pprof`?</summary>
+
+#### Go
+
+La búsqueda de pérdidas de memoria en Ir a través de `pprof` se basa en comparar
+perfiles de montón a lo largo del tiempo: si los objetos "vivos" crecen de
+manera constante sin regresar al nivel base, tenemos una señal de una fuga o
+retención de referencia incontrolada.
+
+#### Estrategia de diagnóstico básica:
+
+1. Habilitar la creación de perfiles (`net/http/pprof`) en el servicio.
+
+2. Eliminar varios perfiles de montón:
+
+- al inicio;
+
+- bajo carga de trabajo;
+
+- después de un período de "tranquilidad".
+
+3. Compare perfiles (`go tool pprof`, modo diff) para encontrar tipos/pilas que
+   siguen creciendo.
+
+#### Qué mirar en `pprof`:
+
+1. **`inuse_space` / `inuse_objects`** — eso realmente permanece en la memoria.
+
+2. **Asignadores principales** y sus pilas de llamadas.
+
+3. **El gráfico de llamadas (`web`)** es donde se guardan los objetos de larga
+   duración.
+
+4. Dinámica después de varios ciclos de GC: la fuga real no "explota".
+
+#### Fuentes típicas de fugas:
+
+1. Mapa/caché global sin política de desalojo.
+
+2. Búfers/colas/canales no borrados.
+
+3. Rutinas no terminantes que contienen referencias a estructuras grandes.
+
+4. Error al proyectar grupos o colecciones de métricas/etiquetas "para siempre".
+
+#### Técnicas prácticas:
+
+1. Ejecutar perfiles bajo una carga de trabajo representativa.
+
+2. Agregar instantáneas de comparación antes/después de la corrección.
+
+3. Observe el perfil de rutina en paralelo (`goroutine`): las pérdidas de rutina
+   a menudo se correlacionan con pérdidas de memoria.
+
+#### Conclusión:
+
+`pprof` le permite encontrar una pérdida de memoria no "a ojo", sino de manera
+demostrable: debido al crecimiento de `inuse` métricas y pilas de retención
+específicas. La clave del éxito es la comparación del perfil de tiempo en una
+carga estable y reproducible.
+
+</details>

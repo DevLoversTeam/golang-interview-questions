@@ -4047,3 +4047,70 @@ específicas. La clave del éxito es la comparación del perfil de tiempo en una
 carga estable y reproducible.
 
 </details>
+
+
+<details>
+<summary>68. ¿Cómo encontrar rutas activas y medir el rendimiento?</summary>
+
+#### Go
+
+`Hot paths` son secciones de código donde el programa dedica la mayor cantidad
+de tiempo o recursos. Para encontrarlos correctamente, no necesita intuición,
+sino perfiles bajo carga real o cercana a la real.
+
+#### Cómo encontrar rutas activas:
+
+1. **CPU Profiling (`pprof`):** muestra dónde se gasta más tiempo de CPU.
+
+2. **Heap/alloc-profiles:** ayuda a encontrar rutas de asignación "calientes"
+   que a menudo causan degradación indirecta a través de GC.
+
+3. **Trace (`go tool trace`):** proporciona una imagen del programador,
+   bloqueos, retrasos entre gorutinas y E/S.
+
+4. **Gráfico de llama/arriba/gráfico de llamada:** visualiza qué funciones
+   forman el costo principal.
+
+#### Cómo medir el rendimiento:
+
+1. Definir métricas comerciales de ancho de banda:
+
+- req/s, msj/s, trabajos/s, filas/s, etc.
+
+2. Realizar pruebas de carga controlada:
+
+- entrada fija;
+
+- perfil competitivo conocido;
+
+- entorno de inicio estable.
+
+3. Eliminar métricas simultáneamente:
+
+- rendimiento;
+
+- latencia (p50/p95/p99);
+
+- CPU, memoria, GC, contención de bloqueo.
+
+4. Compare los cambios "antes/después" en las mismas condiciones (y
+   preferiblemente con ejecuciones múltiples).
+
+#### Principios prácticos:
+
+1. Optimiza solo lo que confirma el generador de perfiles.
+
+2. No mejore el rendimiento a costa de un crecimiento incontrolado de la
+   latencia de cola.
+
+3. Después de la optimización, vuelva a crear el perfil para garantizar que el
+   cuello de botella desaparezca y no se desplace.
+
+#### Conclusión:
+
+Encontrar rutas activas y medir el rendimiento es un ciclo único: **elaboración
+de perfiles → hipótesis → cambio → repetición de la medición**. En Go, este
+enfoque está bien respaldado por las herramientas estándar y brinda buenos
+resultados de ingeniería.
+
+</details>

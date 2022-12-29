@@ -4114,3 +4114,75 @@ enfoque está bien respaldado por las herramientas estándar y brinda buenos
 resultados de ingeniería.
 
 </details>
+
+
+<details>
+<summary>69. ¿Cómo optimizar el manejo de cadenas con `strings.Builder`? ¿Por qué no puedes concatenar en un bucle?</summary>
+
+#### Go
+
+Las cadenas son inmutables en Go. Esto significa que cada operación de
+concatenación crea una nueva cadena. Por lo tanto, la repetición de `s += part`
+en un bucle a menudo genera una avalancha de asignaciones y copias.
+
+#### Por qué la concatenación en un bucle es ineficiente:
+
+1. Se crea una nueva fila en cada iteración.
+
+2. El contenido antiguo se copia una y otra vez.
+
+3. El costo total puede crecer cuadráticamente para grandes volúmenes.
+
+4. Aumento de la presión sobre el GC debido a objetos intermedios de corta
+   duración.
+
+#### Cómo ayuda `strings.Builder`:
+
+1. `Builder` acumula datos en un búfer interno.
+
+2. Las entradas  (`WriteString`, `WriteByte`, `WriteRune`) minimizan las copias
+   redundantes.
+
+3. La línea final se genera una vez hasta `String()`.
+
+4. Se puede llamar `Grow(n)` si es necesario para reservar previamente capacidad
+   y reducir la reasignación.
+
+#### Ventajas prácticas:
+
+1. Menos asignaciones.
+
+2. Mejor rendimiento en rutas activas de formato/generación de texto.
+
+3. Comportamiento de latencia más estable bajo carga.
+
+#### Cuando es especialmente necesario utilizar:
+
+1. Generación de grandes cargas útiles (líneas JSON/SQL/HTML/log).
+
+2. Construcción de cuerdas en bucles.
+
+3. Cualquier operación en la que se forme una cadena a partir de muchos
+   fragmentos.
+
+#### Conclusión:
+
+La concatenación en un bucle es costosa debido a las asignaciones repetidas y la
+copia de filas inmutables. `strings.Builder` es una herramienta idiomática y
+eficiente para construir cadenas en Go, especialmente en lugares sensibles al
+rendimiento.
+
+#### Ejemplo:
+
+```go
+var b strings.Builder
+b.Grow(1024)
+
+for _, part := range parts {
+	b.WriteString(part)
+}
+
+result := b.String()
+```
+
+</details>

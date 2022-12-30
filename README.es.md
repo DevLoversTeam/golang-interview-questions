@@ -4186,3 +4186,73 @@ result := b.String()
 ```
 
 </details>
+
+
+<details>
+<summary>70. ¿Cómo optimizar la serialización?</summary>
+
+#### Go
+
+La optimización de la serialización en Go consiste principalmente en trabajar
+con asignaciones, formato de datos, reutilización del búfer y reducción de la
+reflexión en rutas activas. Sólo un enfoque perfilado da el mejor resultado, no
+microoptimizaciones "ciegas".
+
+#### Estrategias prácticas de optimización:
+
+1. **Seleccionando un formato para la tarea:**
+
+- JSON es conveniente y versátil, pero más pesado que la CPU;
+
+- Protobuf/MessagePack suelen ser más rápidos y compactos para el tráfico entre
+  servicios.
+
+2. **Reducción de asignaciones:**
+
+- reutilizar `bytes.Buffer` / `[]byte` vía `sync.Pool`;
+
+- evite objetos intermedios innecesarios durante la
+  clasificación/desorganización.
+
+3. **Serialización de subprocesos:**
+
+- use `Encoder/Decoder` para transmisiones grandes para evitar mantener toda la
+  carga útil en la memoria a la vez.
+
+4. **Optimización de la estructura de datos:**
+
+- eliminar campos innecesarios;
+
+- use etiquetas correctas (`omitempty`, claves cortas si es necesario);
+
+- evite estructuras demasiado anidadas a menos que lo requiera la lógica
+  empresarial.
+
+5. **Evitación de reflexión redundante en ruta activa:**
+
+- en lugares críticos, considere la generación de código o la (des)serialización
+  manual optimizada.
+
+6. **Control de tamaño de carga útil:**
+
+- la compresión es apropiada solo después de las mediciones, porque agrega
+  costos de CPU;
+
+- a veces es mejor transmitir menos datos que comprimirlos "mejor".
+
+#### Cómo evaluar el efecto:
+
+1. Parámetros (`go test -bench`) antes/después.
+
+2. CPU/perfiles de asignación (`pprof`).
+
+3. Métricas de producción: rendimiento, latencia p95/p99, montón, GC.
+
+#### Conclusión:
+
+La serialización óptima es un equilibrio entre formato, asignaciones y
+complejidad del código. En Go, es una buena práctica crear perfiles, limpiar
+copias redundantes, reutilizar buffers y elegir un formato que cumpla con los
+requisitos de un sistema en particular.
+
+</details>

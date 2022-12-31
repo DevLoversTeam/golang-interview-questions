@@ -4256,3 +4256,58 @@ copias redundantes, reutilizar buffers y elegir un formato que cumpla con los
 requisitos de un sistema en particular.
 
 </details>
+
+
+<details>
+<summary>71. ¿Cómo optimizar el trabajo con archivos?</summary>
+
+#### Go
+
+Optimizar la E/S de archivos en Go consiste en elegir el patrón de
+lectura/escritura, el tamaño del búfer, el nivel de simultaneidad y la
+estrategia de disco correctos. El objetivo principal es reducir las llamadas al
+sistema, las copias redundantes y los interbloqueos.
+
+#### Prácticas clave:
+
+1. **E/S almacenadas en búfer (`bufio.Reader/Writer`):** reduce la cantidad de
+   `read/write` pequeños y aumenta el rendimiento.
+
+2. **Procesamiento por lotes en lugar de acceso byte a byte:** la
+   lectura/escritura en bloques es mucho más eficiente que las operaciones
+   pequeñas.
+
+3. **Subprocesamiento de archivos grandes:** no cargue el archivo completo en la
+   memoria si se puede procesar en partes.
+
+4. **Adecuado manejo del mango:** `defer file.Close()` inmediatamente después de
+   la apertura - higiene básica para evitar fugas de FD.
+
+5. **Control de concurrencia:** el paralelismo solo es útil dentro del ancho de
+   banda del disco/FS; Las operaciones de E/S paralelas excesivas pueden
+   degradar la latencia.
+
+6. **Minimiza las copias redundantes:** usa `io.Copy` y reutiliza los buffers
+   cuando corresponda.
+
+7. **Perfilado previo a la optimización:** mide si el cuello de botella está en
+   el disco, la CPU, la serialización o la sincronización.
+
+#### Consejos de ingeniería adicionales:
+
+1. Para registros/eventos, considere la política de vaciado (vaciados frecuentes
+   = menor rendimiento).
+
+2. Para canalizaciones grandes, separe la lectura, el procesamiento y la
+   escritura en etapas manejables.
+
+3. Para escenarios críticos, verifique el sistema de archivos y la configuración
+   del contenedor/host (cuota de E/S, tipo de volumen, almacenamiento de red).
+
+#### Conclusión:
+
+Trabajar eficientemente con archivos en Go es una disciplina de almacenamiento
+en búfer, transmisión, paralelismo controlado y mediciones. La optimización debe
+basarse en el perfil de carga real, no en suposiciones generales.
+
+</details>

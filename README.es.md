@@ -4311,3 +4311,79 @@ en búfer, transmisión, paralelismo controlado y mediciones. La optimización d
 basarse en el perfil de carga real, no en suposiciones generales.
 
 </details>
+
+
+<details>
+<summary>72. ¿Cómo funciona el procesamiento por lotes y cuándo es apropiado?</summary>
+
+#### Go
+
+`Batching` es la combinación de muchas operaciones pequeñas en paquetes más
+grandes (lotes) para reducir la sobrecarga de cada operación individual. En
+sistemas muy cargados, esta es una de las formas más efectivas de aumentar el
+rendimiento.
+
+#### Cómo funciona el procesamiento por lotes:
+
+1. Los eventos/registros se acumulan en el búfer.
+
+2. El lote se envía según uno de los desencadenantes:
+
+- alcanzó el tamaño `N`;
+
+- tiempo de espera `T`;
+
+- completo/vaciado recibido.
+
+3. La operación se realiza mediante una llamada "por lotes" (DB, red, disco,
+   cola).
+
+#### Por qué es eficaz:
+
+1. **Menos llamadas al sistema y viajes de ida y vuelta.**
+
+2. **Mejor carga del canal de E/S** (red, disco, base de datos).
+
+3. **Menos gastos generales de sincronización** para una gran cantidad de tareas
+   pequeñas.
+
+#### Cuando el procesamiento por lotes es apropiado:
+
+1. Operaciones masivas del mismo tipo (registro, telemetría,
+   inserción/actualización masiva).
+
+2. Escenarios en los que el rendimiento es más importante que la latencia
+   unitaria mínima posible.
+
+3. Integraciones donde el sistema externo funciona bien con solicitudes por
+   lotes.
+
+#### Cuando el procesamiento por lotes puede ser perjudicial:
+
+1. Requisitos estrictos para el retraso de una sola operación.
+
+2. Error en la configuración del tamaño del lote/tiempo de espera, lo que
+   aumenta la latencia de cola.
+
+3. Alto riesgo de perder un gran bloque de datos sin una lógica de
+   reintento/vaciado adecuada.
+
+#### Reglas prácticas:
+
+1. Establezca **tanto el tamaño como el tiempo** (`N` + `T`) al mismo tiempo.
+
+2. Tener una descarga explícita al apagar.
+
+3. Proporciona reintento/retraso para fallas parciales o completas de
+   solicitudes por lotes.
+
+4. Medir el rendimiento ↔ equilibrio de latencia en carga real.
+
+#### Conclusión:
+
+El procesamiento por lotes es un multiplicador del rendimiento arquitectónico
+para operaciones masivas. Su poder se revela cuando la reducción de los gastos
+generales por solicitud es más importante que la respuesta instantánea de cada
+evento individual.
+
+</details>

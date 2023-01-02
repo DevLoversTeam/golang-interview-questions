@@ -4387,3 +4387,58 @@ generales por solicitud es más importante que la respuesta instantánea de cada
 evento individual.
 
 </details>
+
+
+<details>
+<summary>73. ¿Cuándo es mejor la generación de código (`go generate`) que la reflexión?</summary>
+
+#### Go
+
+`Code generation` y `reflection` resuelven problemas de metaprogramación
+similares, pero tienen precios diferentes. En Go, la generación de código suele
+ganar cuando en la producción se necesita velocidad, seguridad de tipos y
+previsibilidad.
+
+#### Cuando `go generate` es mejor que la reflexión:
+
+1. **El rendimiento de la ruta activa es fundamental:** el código generado se
+   ejecuta sin reflexión en tiempo de ejecución, por lo que suele ser más rápido
+   y con asignaciones más pequeñas.
+
+2. **Se requiere seguridad de tipo fuerte:** los errores se detectan en tiempo
+   de compilación, no en tiempo de ejecución.
+
+3. **Requisitos de alta latencia/rendimiento:** serialización, mapeo, códecs
+   RPC, validación en solicitudes masivas.
+
+4. **Contrato de datos estable:** cuando los esquemas se conocen de antemano y
+   rara vez cambian.
+
+5. **Requiere depuración transparente:** las llamadas generadas se pueden
+   perfilar y analizar como código Go normal.
+
+#### Cuando se justifica la reflexión:
+
+1. El esquema es dinámico y se define solo en tiempo de ejecución.
+
+2. Requiere creación rápida de prototipos o flexibilidad de biblioteca
+   universal.
+
+3. Requisitos de rendimiento bajos, donde es más fácil aceptar la sobrecarga del
+   tiempo de ejecución.
+
+#### Compromisos `go generate`:
+
+1. Agrega un paso en la compilación/flujo de trabajo.
+
+2. Debe admitir plantillas/generadores.
+
+3. El código generado aumenta el tamaño del repositorio.
+
+#### Conclusión práctica:
+
+Si el sistema es sensible al rendimiento y el modelo predeterminado es estable,
+`go generate` suele ser mejor que la reflexión. La reflexión es apropiada cuando
+el valor principal es el dinamismo y no la máxima eficiencia en el desempeño.
+
+</details>

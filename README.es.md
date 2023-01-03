@@ -4442,3 +4442,67 @@ Si el sistema es sensible al rendimiento y el modelo predeterminado es estable,
 el valor principal es el dinamismo y no la máxima eficiencia en el desempeño.
 
 </details>
+
+
+<details>
+<summary>74. ¿Qué es el análisis de escape y cómo verificarlo con indicadores del compilador?</summary>
+
+#### Go
+
+`Escape Analysis` es un análisis del compilador Go que determina si un valor
+puede permanecer en la pila o debe asignarse en el montón porque "se escapa" del
+marco de la pila actual.
+
+#### ¿Por qué es importante?
+
+1. Las asignaciones de pilas son más económicas.
+
+2. Las asignaciones de montón aumentan la presión del GC.
+
+3. Comprender el comportamiento de escape ayuda a optimizar las rutas activas.
+
+#### Razones típicas para escapar:
+
+1. Devuelve el puntero al valor local.
+
+2. Preservar el valor en una estructura de larga duración.
+
+3. Captura de variable por cierre.
+
+4. Pasar un valor a contextos donde el compilador no puede garantizar un ciclo
+   de vida local.
+
+#### Cómo comprobar los indicadores del compilador:
+
+El método más utilizado:
+
+1. `go build -gcflags="-m" ./...`
+
+2. Para resultados más detallados: `go build -gcflags="-m -m" ./...`
+
+Los mensajes se buscan con frases como:
+
+- `moved to heap`
+
+- `escapes to heap`
+
+Este es un indicador directo de que no se ha dejado ningún valor en la pila.
+
+#### Proceso práctico:
+
+1. Ejecute el punto de referencia/perfil y busque el fragmento activo.
+
+2. Verifique la salida de escape del compilador para esta sección.
+
+3. Refactorizar localmente (sin degradar la legibilidad).
+
+4. Efecto de remedición (`bench`, `pprof`, allocs/op).
+
+#### Conclusión:
+
+Escape Analysis es un "radar" del compilador para el comportamiento de
+asignación. `-gcflags="-m"` le permite ver dónde se filtran los datos al montón
+y tomar decisiones informadas sobre la optimización de la memoria y el
+rendimiento.
+
+</details>

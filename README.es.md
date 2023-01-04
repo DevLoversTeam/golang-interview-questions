@@ -4506,3 +4506,57 @@ y tomar decisiones informadas sobre la optimización de la memoria y el
 rendimiento.
 
 </details>
+
+
+<details>
+<summary>75. ¿Por qué `panic` y `recover` no reemplazan el manejo normal de errores?</summary>
+
+#### Go
+
+En Go, `panic/recover` son para situaciones excepcionales de emergencia, no para
+el manejo normal de errores de lógica empresarial. La forma normal de manejar
+errores es devolver explícitamente `error` y controlar el flujo de ejecución.
+
+#### Por qué `panic/recover` no se reemplaza por `error handling`:
+
+1. **Violar la claridad del contrato:** con `error`, la firma de la función
+   muestra explícitamente lo que puede salir mal; con `panic` el error se vuelve
+   implícito.
+
+2. **Hace que el control de flujo sea más difícil:** el pánico desenrolla la
+   pila, lo que hace que el comportamiento sea menos predecible para la persona
+   que llama.
+
+3. **Prueba peor:** probar escenarios de pánico es más difícil y menos natural
+   que probar errores devueltos.
+
+4. **Deteriorar la confiabilidad de los servicios:** un pánico no detectado en
+   una rutina puede destruir un proceso o un bucle de procesamiento importante.
+
+5. **`recover` es de naturaleza local:** funciona solo en `defer` la misma
+   rutina, por lo que no es un mecanismo de error universal entre componentes.
+
+#### Cuando `panic` está justificado:
+
+1. Violación de invariantes internas, lo que significa un error de software.
+
+2. Estados contractualmente imposibles ("esto nunca debería suceder").
+
+3. Fallos críticos de inicialización cuando la continuación es incorrecta.
+
+#### Cuando se necesita `error`:
+
+1. Fallos esperados de sistemas externos (red, base de datos, E/S).
+
+2. Errores de validación y dominio.
+
+3. Cualquier situación en la que la persona que llama tiene la opción de
+   responder.
+
+#### Conclusión:
+
+En el código Go maduro, `error` es la herramienta principal para el manejo
+administrado de errores. `panic/recover` es un mecanismo de emergencia para
+casos excepcionales, no una alternativa cotidiana al manejo de errores estándar.
+
+</details>

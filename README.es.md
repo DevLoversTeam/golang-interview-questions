@@ -4629,3 +4629,80 @@ if errors.As(err, &ve) {
 ```
 
 </details>
+
+
+<details>
+<summary>77. ¿Cuándo debería utilizar un tipo de error personalizado en lugar de un error centinela y cuáles son las consecuencias prácticas de esta elección para la arquitectura?</summary>
+
+#### Go
+
+`Sentinel error` y `custom error type` son herramientas de modelado de errores
+diferentes. Sentinel es adecuado para señales binarias simples y de tipo
+personalizado, cuando el error conlleva un contexto estructurado y afecta el
+comportamiento de varias capas del sistema.
+
+#### Cuando el error centinela es suficiente:
+
+1. Solo se requiere el hecho de la categoría de error específica.
+
+2. No es necesario pasar campos adicionales.
+
+3. Verificar a través de `errors.Is` es suficiente.
+
+#### ¿Cuándo es un tipo de error personalizado?
+
+1. Requiere **detalles estructurados**:
+
+- código de error;
+
+- motivo del dominio;
+
+- identificador de recurso;
+
+- reintrenabilidad;
+
+- Mapeo HTTP/gRPC.
+
+2. Las diferentes capas deben tomar decisiones diferentes en función de estos
+   campos.
+
+3. Requiere una evolución estable del contrato de error sin comprobaciones
+   caóticas de cadenas.
+
+#### Consecuencias arquitectónicas de la elección:
+
+1. **Error centinela**
+
+- un comienzo más fácil;
+
+- código sin;
+
+- pero expresividad más débil y riesgo de "crecimiento" de reglas de
+  procesamiento implícitas.
+
+2. **Tipo de error personalizado**
+
+- contrato de dominio más claro;
+
+- mejor integración entre capas de transporte/servicio/dominio;
+
+- pruebas más elevadas de las políticas de procesamiento;
+
+- pero requiere disciplina de diseño y un enfoque de control de versiones.
+
+#### Práctica recomendada:
+
+1. Para señales globales simples: centinela.
+
+2. Para errores significativos del dominio: tipo personalizado + `errors.As`.
+
+3. Ajuste los errores inferiores a través de `%w` sin perder la causalidad.
+
+#### Conclusión:
+
+La elección entre tipo centinela y personalizado es una elección del nivel de
+expresividad de la arquitectura de error. Cuando un error afecta el enrutamiento
+de decisiones en el sistema, un tipo de error personalizado proporciona un
+contrato mucho más sólido y escalable.
+
+</details>

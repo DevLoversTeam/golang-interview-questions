@@ -4706,3 +4706,62 @@ de decisiones en el sistema, un tipo de error personalizado proporciona un
 contrato mucho más sólido y escalable.
 
 </details>
+
+
+<details>
+<summary>78. ¿Cómo se comporta `defer` dentro de un bucle y cuáles podrían ser las implicaciones para la memoria y el rendimiento?</summary>
+
+#### Go
+
+`defer` en Go no se ejecuta al final de la iteración del bucle, sino en el
+momento de salir de la función circundante. Por lo tanto, `defer` dentro del
+bucle se acumula y se activa solo después de completar toda la función.
+
+#### Cómo funciona:
+
+1. Cada iteración agrega una nueva llamada diferida a la pila de diferimiento.
+
+2. Estas llamadas no se ejecutan hasta el final de la función.
+
+3. Se ejecutan en orden inverso (LIFO) al salir.
+
+#### Posibles consecuencias:
+
+1. **Liberación retrasada de recursos:** los archivos, sockets, transacciones y
+   bloqueos pueden permanecer abiertos más tiempo del necesario.
+
+2. **Aumento del consumo de memoria:** muchas entradas diferidas en un bucle
+   largo aumentan la sobrecarga.
+
+3. **Degradación del rendimiento:** en bucles activos, los aplazamientos
+   excesivos añaden sobrecarga de tiempo de ejecución.
+
+4. **Riesgo de quedarse sin recursos:** por ejemplo, "demasiados archivos
+   abiertos" si `defer file.Close()` está en un ciclo de lectura largo.
+
+#### Cuando es seguro:
+
+1. Pequeño número de iteraciones.
+
+2. Ciclo de vida de función corto.
+
+3. Los recursos no son escasos.
+
+#### Mejores prácticas para bucles:
+
+1. Coloque el cuerpo de la iteración en una función separada y coloque `defer`
+   allí.
+
+2. O cerrar/liberar el recurso explícitamente al final de cada iteración.
+
+3. Para cerraduras, es especialmente importante controlar el tiempo de retención
+   de la sección crítica.
+
+#### Conclusión:
+
+`defer` en un bucle es una herramienta que requiere disciplina: simplifica el
+código, pero puede acumular recursos y gastos generales de forma sigilosa. Si
+hay muchas iteraciones, es mejor asegurarse de que se liberen recursos en cada
+paso.
+
+</details>

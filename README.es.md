@@ -4765,3 +4765,69 @@ hay muchas iteraciones, es mejor asegurarse de que se liberen recursos en cada
 paso.
 
 </details>
+
+
+<details>
+<summary>79. ¿Cómo funciona la función `init` y puedes confiar en el orden de su ejecución?</summary>
+
+#### Go
+
+`init` en Go es una función de paquete especial que se ejecuta automáticamente
+durante la inicialización del programa (antes de `main`). Se utiliza para la
+configuración inicial, que debería realizarse una vez antes de iniciar la lógica
+principal.
+
+#### Cómo funciona la inicialización:
+
+1. Las dependencias importadas se inicializan primero.
+
+2. Luego se inicializan las variables del paquete.
+
+3. Después de eso, se llaman las funciones `init` del paquete.
+
+4. Solo después de que se haya completado todo el árbol de inicialización se
+   ejecuta `main`.
+
+#### ¿Puedes confiar en el orden?
+
+1. **Entre paquetes**: sí, dentro de las dependencias, el orden está definido:
+   primero las dependencias, luego el paquete del consumidor.
+
+2. **Dentro de un paquete**:
+
+- el orden de inicialización de las variables está determinado por las
+  dependencias entre ellas;
+
+- para varios `init` archivos diferentes en el mismo paquete, confiar en un
+  orden de archivos de texto "aleatorio" es una mala idea de diseño.
+
+3. Conclusión: existen garantías básicas, pero desde el punto de vista
+   arquitectónico es mejor no construir una lógica empresarial crítica sobre
+   cadenas complejas implícitas `init`.
+
+#### Riesgos del uso excesivo `init`:
+
+1. Efectos secundarios implícitos.
+
+2. Depuración y pruebas más intensas.
+
+3. Control de pedidos más complejo en bases de código grandes.
+
+#### Recomendación práctica:
+
+1. Mantenga `init` mínimo y predecible.
+
+2. Utilice constructores explícitos/`Setup` funciones para inicializaciones
+   importantes.
+
+3. Las dependencias y el orden de lanzamiento deben fijarse explícitamente en la
+   capa de composición.
+
+#### Conclusión:
+
+`init` en Go se realiza automáticamente y tiene garantías formales de pedido a
+nivel del gráfico de importación. Sin embargo, para una arquitectura legible y
+comprobable, es mejor hacer explícitas las inicializaciones críticas en lugar de
+confiar en efectos `init` ocultos.
+
+</details>

@@ -4831,3 +4831,58 @@ comprobable, es mejor hacer explícitas las inicializaciones críticas en lugar 
 confiar en efectos `init` ocultos.
 
 </details>
+
+
+<details>
+<summary>80. ¿Por qué debería evitar las variables globales y las funciones `init` en las bibliotecas?</summary>
+
+#### Go
+
+En el código de la biblioteca, las variables globales y las funciones `init`
+"pesadas" a menudo crean un comportamiento implícito que dificulta la
+integración, prueba y predicción de la aplicación. Esto es especialmente crítico
+para los paquetes reutilizables.
+
+#### Por qué las variables globales son malas en las bibliotecas:
+
+1. **Estado mutable compartido oculto:** Un consumidor de la biblioteca puede no
+   saber que existe un estado global en algún lugar que afecta el
+   comportamiento.
+
+2. **Problemas de competitividad:** los globales se convierten fácilmente en una
+   fuente de raza/contención.
+
+3. **Pruebas complejas:** las pruebas comienzan a depender del orden de
+   ejecución y los efectos secundarios de casos anteriores.
+
+4. **Pobre capacidad de composición:** es difícil tener varias instancias de
+   biblioteca independientes con diferentes configuraciones.
+
+#### Por qué "pesado" `init` no es deseable:
+
+1. **Efectos secundarios de importación implícitos:** solo `import` y el código
+   ya está ejecutado.
+
+2. **Sin control explícito del tiempo de inicialización:** Es difícil controlar
+   el orden y las condiciones de inicio en una aplicación grande.
+
+3. **Observabilidad/depuración degradadas:** los errores de inicio y los efectos
+   secundarios son más difíciles de localizar.
+
+#### ¿Qué es mejor en su lugar?
+
+1. Constructores explícitos (`New(...)`) y estructuras de configuración.
+
+2. Diseño orientado a instancias sin estado mutable global.
+
+3. Explícito `Setup/Start/Close` ciclo de vida cuando sea necesario.
+
+4. Mínimo `init` solo para acciones sin efectos secundarios.
+
+#### Conclusión:
+
+La biblioteca debe ser predecible y dirigida por el usuario. Evitar el estado
+global y el `init` excesivo es una inversión en la capacidad de prueba,
+escalabilidad y pureza arquitectónica del código Go.
+
+</details>

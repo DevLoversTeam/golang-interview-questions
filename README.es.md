@@ -4886,3 +4886,59 @@ global y el `init` excesivo es una inversión en la capacidad de prueba,
 escalabilidad y pureza arquitectónica del código Go.
 
 </details>
+
+
+<details>
+<summary>81. ¿Qué sucede si serializas a JSON una estructura con campos que comienzan con una letra minúscula?</summary>
+
+#### Go
+
+En Go, los campos de estructura que comienzan con una letra minúscula no se
+pueden exportar (`unexported`). El paquete `encoding/json` no tiene acceso
+reflexivo a ellos como campos públicos, por lo que se ignoran durante la
+serialización.
+
+#### ¿Qué sucede con `json.Marshal`?:
+
+1. Solo los campos exportados (en mayúsculas) se incluirán en JSON.
+
+2. Los campos en minúsculas se ignorarán.
+
+3. Las etiquetas `json:"..."` en campos no exportados no "fuerzan" su
+   serialización.
+
+#### Consecuencias en la práctica:
+
+1. JSON inesperadamente "vacío" o incompleto.
+
+2. Pérdida de datos importantes en respuestas API.
+
+3. Errores difíciles de depurar si el desarrollador no tuvo en cuenta la regla
+   de exportación.
+
+#### ¿Qué pasa con la deserialización (`json.Unmarshal`):
+
+1. Del mismo modo, `encoding/json` no escribirá datos directamente en campos no
+   exportados.
+
+2. El control de procesos requiere `MarshalJSON` / `UnmarshalJSON`
+   personalizados, DTO separados u otros mecanismos de transformación
+   explícitos.
+
+#### Regla general:
+
+1. Para que los campos sean JSON, utilice nombres exportados.
+
+2. Mantenga los datos internos sensibles al dominio sin exportarlos
+   deliberadamente.
+
+3. Separar modelos internos y DTO de transporte cuando se requiere un control
+   detallado de los contratos públicos.
+
+#### Conclusión:
+
+En Go, la serialización JSON solo funciona con campos de estructura exportados.
+Los campos en minúsculas en el estándar `encoding/json` no se serializan,
+incluso si están etiquetados.
+
+</details>

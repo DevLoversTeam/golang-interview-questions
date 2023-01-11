@@ -4942,3 +4942,68 @@ Los campos en minúsculas en el estándar `encoding/json` no se serializan,
 incluso si están etiquetados.
 
 </details>
+
+
+<details>
+<summary>82. ¿Cuáles son algunas formas de obtener datos de JSON en Go?</summary>
+
+#### Go
+
+No existe una única forma "correcta" de trabajar con JSON en Go: el enfoque se
+elige en función de la estabilidad del esquema, los requisitos de rendimiento y
+el nivel de seguridad de tipos.
+
+#### Métodos principales:
+
+1. **Decodificación a estructura (`struct`)**
+
+- la opción más típica y confiable para un esquema conocido;
+
+- proporciona seguridad de tipo, contratos claros y mejor mantenibilidad.
+
+2. **Decodificación en `map[string]any`**
+
+- es conveniente para cargas útiles parcialmente dinámicas;
+
+- flexible, pero menos seguro: requiere afirmaciones y comprobaciones de tipo.
+
+3. **Lectura continua a través de `json.Decoder`**
+
+- es adecuado para JSON o secuencias grandes (cuerpo HTTP, archivos);
+
+- le permite trabajar sin cargar todo el documento en la memoria.
+
+4. **`json.RawMessage` para análisis diferido/parcial**
+
+- útil cuando parte del esquema depende del campo "discriminador";
+
+- da control sobre los pasos de decodificación.
+
+5. **Personalizado `UnmarshalJSON` / `MarshalJSON`**
+
+- para formatos no estándar, validación o semántica comercial especial.
+
+6. **Terceras bibliotecas/codegen**
+
+- es apropiado para requisitos de compatibilidad específicos o de alto
+  rendimiento.
+
+#### Elección práctica:
+
+1. Contrato API estable → `struct`.
+
+2. JSON dinámico o parcialmente desconocido → `map` + `RawMessage`.
+
+3. Grandes volúmenes de datos → `Decoder` (streaming).
+
+4. Rendimiento crítico/JSON patológico → creación de perfiles +
+   codegen/alternativas.
+
+#### Conclusión:
+
+La forma óptima de "obtener" datos JSON en Go depende de la naturaleza del
+esquema. En la mayoría de los casos de producción, las estructuras tipificadas
+son la opción básica y los mecanismos dinámicos (`map`, `RawMessage`, unmarshal
+personalizado), para escenarios más complejos.
+
+</details>

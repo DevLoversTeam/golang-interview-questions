@@ -5007,3 +5007,71 @@ son la opción básica y los mecanismos dinámicos (`map`, `RawMessage`, unmarsh
 personalizado), para escenarios más complejos.
 
 </details>
+
+
+<details>
+<summary>83. ¿Cuál es la diferencia entre `json.Marshal` y `json.Encoder`?</summary>
+
+#### Go
+
+`json.Marshal` y `json.Encoder` realizan una tarea de serialización similar,
+pero tienen una memoria y un modelo de E/S diferentes. La elección depende de si
+desea un `[]byte` listo para usar o transmitir directamente a `io.Writer`.
+
+#### `json.Marshal`:
+
+1. Devuelve JSON serializado como `[]byte`.
+
+2. Conveniente cuando necesita:
+
+- obtiene una matriz de bytes para su posterior procesamiento;
+
+- log/sign/compress payload antes de enviar;
+
+- trabajar con JSON en memoria.
+
+3. Menos: para objetos grandes, puede requerir más memoria, porque el resultado
+   primero se forma completamente en el búfer.
+
+#### `json.Encoder`:
+
+1. Escribe JSON inmediatamente en `io.Writer` (`http.ResponseWriter`, archivo,
+   socket).
+
+2. Adecuado para secuencias de comandos en streaming y respuestas grandes.
+
+3. A menudo es más conveniente en controladores HTTP, porque reduce los buffers
+   intermedios.
+
+4. `Encode` agrega un carácter de nueva línea al final (es importante tener esto
+   en cuenta).
+
+#### Regla práctica de elección:
+
+1. Requiere JSON como valor en el código → `json.Marshal`.
+
+2. Debe escribir en la secuencia/respuesta → `json.NewEncoder(w).Encode(...)`
+   inmediatamente.
+
+#### Conclusión:
+
+`Marshal` — "formar JSON en la memoria", `Encoder` — "escribir JSON en la
+secuencia". Funcionalmente están cerca, pero desde el punto de vista de recursos
+y arquitectura de E/S, la diferencia es fundamental.
+
+#### Ejemplo:
+
+```go
+// Marshal: отримуємо JSON у []byte
+payload, err := json.Marshal(resp)
+if err != nil { return err }
+_ = payload
+
+// Encoder: пишемо JSON одразу у HTTP-відповідь
+w.Header().Set("Content-Type", "application/json")
+if err := json.NewEncoder(w).Encode(resp); err != nil {
+	return err
+}
+```
+
+</details>

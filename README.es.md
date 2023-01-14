@@ -5125,3 +5125,61 @@ datos JSON. Es especialmente valioso en protocolos polimórficos y multiformato,
 donde el tipo de carga útil interna se determina sólo en tiempo de ejecución.
 
 </details>
+
+
+<details>
+<summary>85. ¿Cómo implementar un marcador de referencia personalizado para JSON?</summary>
+
+#### Go
+
+Un serializador personalizado en Go se implementa mediante el método
+`MarshalJSON() ([]byte, error)` en su tipo. Esto permite un control total sobre
+cómo se serializa un objeto en JSON: formato de campo, validación, valores
+calculados, enmascaramiento, etc.
+
+#### Enfoque básico:
+
+1. Agregar método: `func (t MyType) MarshalJSON() ([]byte, error)`.
+
+2. Crea internamente una representación intermedia (a menudo un alias/estructura
+   DTO).
+
+3. Llame a `json.Marshal` para esta vista.
+
+4. Bytes de retorno o error.
+
+#### ¿Por qué lo hacen?
+
+1. **Formato de salida no estándar:** por ejemplo, conversión de hora,
+   enumeración, decimal, campos de máscara.
+
+2. **Compatibilidad de contrato externo:** cuando una API requiere un esquema
+   específico o una convención de nomenclatura.
+
+3. **Ocultación de datos administrada:** no genera campos confidenciales ni
+   genera una versión redactada.
+
+4. **Campos calculados/derivados:** incluyen valores en JSON que no están
+   presentes como campos de estructura "sin procesar".
+
+#### Una técnica típica sin recursividad:
+
+Para evitar una llamada infinita a `MarshalJSON`, utilice el tipo de alias
+(`type alias MyType`) y reúna el alias o un DTO independiente.
+
+#### Consejos importantes:
+
+1. Mantenga la lógica de clasificación determinista y simple.
+
+2. Escribir pruebas sobre casos extremos y compatibilidad con versiones
+   anteriores del contrato JSON.
+
+3. Si se requiere simetría, implemente también `UnmarshalJSON`.
+
+#### Conclusión:
+
+Custom `MarshalJSON` es una herramienta para ajustar la exposición pública. En
+producción, se utiliza cuando las etiquetas estándar no son suficientes para la
+semántica del contrato, la seguridad o el dominio.
+
+</details>

@@ -5183,3 +5183,66 @@ producción, se utiliza cuando las etiquetas estándar no son suficientes para l
 semántica del contrato, la seguridad o el dominio.
 
 </details>
+
+
+<details>
+<summary>86. ¿Cómo analizar JSON de tipos múltiples si los datos de entrada o cualquiera de los campos pueden ser una matriz `[...]` o un objeto `{...}`?</summary>
+
+#### Go
+
+Cuando un campo JSON tiene una forma "flotante" (a veces una matriz, a veces un
+objeto), el enfoque más confiable en Go es la decodificación diferida mediante
+`json.RawMessage` o `UnmarshalJSON` personalizado con reconocimiento de tipo
+real.
+
+#### Estrategia canónica:
+
+1. Decodifica el campo problemático en `json.RawMessage`.
+
+2. Mire el primer byte significativo:
+
+- `[` → esta es una matriz;
+
+- `{` → este es un objeto.
+
+3. Dependiendo del formulario, confirme `json.Unmarshal` con el tipo de destino
+   apropiado.
+
+4. Normalice el resultado en un modelo único interno (para que el código no
+   dependa del esquema "fluido" externo).
+
+#### Alternativa: Personalizado `UnmarshalJSON`:
+
+1. Implemente un método en su propio tipo.
+
+2. Dentro del método, intente analizar en `[]T` y, si no encaja, en `T` (o
+   viceversa).
+
+3. Guardar en representación unificada, por ejemplo, siempre como `[]T`.
+
+#### Por qué esto es importante:
+
+1. Las API externas suelen ser inconsistentes entre versiones/puntos finales.
+
+2. Direct `Unmarshal` en una estructura rígida produce errores como `cannot
+   unmarshal object into Go value of type []...`.
+
+3. La normalización de entradas simplifica drásticamente el resto de la lógica
+   empresarial.
+
+#### Consejos prácticos:
+
+1. Documente claramente las formas aceptables de entrada JSON.
+
+2. Registrar cargas útiles anómalas para diagnosticar fallas de contrato.
+
+3. Cubra con pruebas ambos formularios (`{}` y `[]`) + casos extremos (nulo,
+   valores vacíos, tipo incorrecto).
+
+#### Conclusión:
+
+Para JSON de varios tipos, el patrón "RawMessage → detección de forma → target
+Unmarshal → normalización" funciona mejor en Go. Esto proporciona un
+procesamiento estable incluso con un contrato externo inestable.
+
+</details>

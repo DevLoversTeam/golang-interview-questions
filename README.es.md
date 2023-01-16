@@ -5246,3 +5246,64 @@ Unmarshal → normalización" funciona mejor en Go. Esto proporciona un
 procesamiento estable incluso con un contrato externo inestable.
 
 </details>
+
+
+<details>
+<summary>87. ¿Cómo probar la serialización (XML/JSON) en Go cuando el orden de las claves en el mapa no es determinista?</summary>
+
+#### Go
+
+Cuando el orden de las claves en `map` no es determinista, las pruebas no se
+pueden crear a partir de una comparación literal de cadenas de serialización
+"sin procesar". El enfoque correcto es comparar el contenido, no el orden
+aleatorio de presentación.
+
+#### Estrategias sólidas para JSON:
+
+1. **Comparación de estructura de ida y vuelta:**
+
+- serializar;
+
+- deserializar nuevamente al tipo/modelo normalizado;
+
+- comparar datos como una estructura.
+
+2. **Canonicalización antes de comparación:**
+
+- parse JSON en el modelo intermedio;
+
+- clasificar claves/colecciones;
+
+- comparar vista canónica.
+
+3. **Aserciones semánticas en lugar de igualdad de cadenas:**
+
+- verifique campos e invariantes específicos.
+
+#### Para XML:
+
+1. Principio similar: comparar árbol de elementos/atributos, no cadena sin
+   formato.
+
+2. Normalizar espacios, formato, orden de atributos (si el contrato lo permite).
+
+3. Compruebe la equivalencia semántica de las estructuras analizadas.
+
+#### Cuando necesitas una lima dorada:
+
+1. Formulario **salida determinista**:
+
+- clasificar claves antes de la serialización;
+
+- o serializar no `map` sino una estructura/lista ordenada de pares.
+
+2. La prueba dorada debería fallar solo en cambios semánticos del contrato, no
+   en el orden aleatorio de las claves.
+
+#### Conclusión práctica:
+
+Las pruebas de serialización para `map` no comparan "texto uno a uno", sino
+equivalencia de datos. El determinismo debe introducirse explícitamente
+(clasificación) o aplicar comprobaciones a nivel semántico.
+
+</details>

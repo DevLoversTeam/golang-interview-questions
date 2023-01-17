@@ -5307,3 +5307,70 @@ equivalencia de datos. El determinismo debe introducirse explícitamente
 (clasificación) o aplicar comprobaciones a nivel semántico.
 
 </details>
+
+
+<details>
+<summary>88. ¿Cuáles son las ventajas y desventajas de Protobuf en comparación con JSON? ¿En qué se diferencia la serialización en Protobuf?</summary>
+
+#### Go
+
+Protobuf y JSON son dos clases diferentes de formatos: JSON se centra en la
+legibilidad y versatilidad humana, mientras que Protobuf se centra en la
+compacidad, la velocidad y la contractibilidad de la interacción con la máquina.
+
+#### Ventajas de Protobuf sobre JSON:
+
+1. **Tamaño de carga útil más compacto:** la codificación binaria suele ser
+   significativamente más pequeña que el JSON textual.
+
+2. **Mayor rendimiento de serialización/deserialización:** menos gastos
+   generales de análisis y mejor rendimiento en el tráfico entre servicios.
+
+3. **Contrato estricto de primer esquema (`.proto`):** Control claro de
+   evolución de campo, codegen y modelo típico.
+
+4. **Mejor compatibilidad con versiones anteriores y posteriores por campo y
+   regla de etiquetas.**
+
+#### Desventajas de Protobuf:
+
+1. **Menos legible a simple vista:** el formato binario no es conveniente para
+   la depuración manual sin herramientas.
+
+2. **Infraestructura adicional:** `.proto`, generación de código, versionado de
+   esquema.
+
+3. **El umbral de entrada es superior a JSON.**
+
+#### Ventajas de JSON:
+
+1. Fácil integración y inicio rápido.
+
+2. Legibilidad humana y conveniencia del análisis manual.
+
+3. Amplia compatibilidad en el ecosistema web.
+
+#### En qué se diferencia la serialización en Protobuf:
+
+1. Los datos no están codificados por nombres de campos, sino por etiquetas
+   numéricas (`field numbers`).
+
+2. El formato es binario, con distintos tipos a nivel de cable.
+
+3. Las estructuras se generan a partir de `.proto` (generación de código), no
+   reflejadas como en una secuencia JSON típica.
+
+4. La evolución del contrato requiere disciplina:
+
+- no reutilice etiquetas antiguas;
+
+- cambie cuidadosamente los tipos/campos opcionales/repetidos.
+
+#### Conclusión:
+
+JSON es mejor para API abiertas y centradas en el ser humano y para una
+integración rápida. Protobuf es para sistemas interservicios de alto rendimiento
+con un contrato esquemático claro, donde el tamaño de la carga útil, la latencia
+y la estabilidad de la evolución son fundamentales.
+
+</details>

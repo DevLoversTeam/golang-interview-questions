@@ -5374,3 +5374,54 @@ con un contrato esquemático claro, donde el tamaño de la carga útil, la laten
 y la estabilidad de la evolución son fundamentales.
 
 </details>
+
+
+<details>
+<summary>89. ¿Por qué debería reutilizarse `http.Client` en lugar de crear uno nuevo para cada solicitud?</summary>
+
+#### Go
+
+En Go, `http.Client` y su transporte (`http.Transport`) administran la
+agrupación de conexiones TCP, el mantenimiento de conexión, las sesiones TLS y
+otras optimizaciones de red. Si crea un nuevo cliente para cada solicitud, estos
+beneficios se pierden.
+
+#### Por qué la reutilización es importante:
+
+1. **Agrupación de conexiones:** la reutilización de conexiones ya abiertas
+   reduce la latencia.
+
+2. **Menos sobrecarga de protocolo de enlace:** menos configuraciones de TCP/TLS
+   por solicitud.
+
+3. **Mejor rendimiento:** rendimiento más estable en escenarios de alta carga.
+
+4. **Control de recursos:** La creación masiva de nuevos clientes/transportes
+   puede aumentar la cantidad de enchufes y recursos del sistema de escape.
+
+#### ¿Qué sucede con "cliente por solicitud":
+
+1. Peor eliminación de keep-alive.
+
+2. Más conexiones de corta duración.
+
+3. Latencias más altas y presión adicional en la red/CPU.
+
+#### Práctica recomendada:
+
+1. Tiene un `http.Client` de larga duración (a menudo uno por servicio o clase
+   de póliza).
+
+2. Configure los tiempos de espera y los parámetros `Transport` explícitamente
+   bajo la carga de trabajo.
+
+3. Para diferentes SLA/Rutas: clientes de reutilización separados, pero no
+   "cliente nuevo por llamada".
+
+#### Conclusión:
+
+`http.Client` debe reutilizarse en Go porque proporciona eficiencia de red,
+menor latencia y mejor estabilidad bajo carga. Crear un nuevo cliente para cada
+solicitud es una antipráctica típica de los sistemas de producción.
+
+</details>

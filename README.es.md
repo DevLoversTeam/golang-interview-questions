@@ -5425,3 +5425,61 @@ menor latencia y mejor estabilidad bajo carga. Crear un nuevo cliente para cada
 solicitud es una antipráctica típica de los sistemas de producción.
 
 </details>
+
+
+<details>
+<summary>90. ¿Por qué debes cerrar `resp.Body` después de una solicitud HTTP?</summary>
+
+#### Go
+
+`resp.Body` en Go es un recurso de transmisión asociado con una conexión de red.
+Si no se cierra, el cliente no podrá devolver correctamente la conexión al grupo
+ni liberar recursos del sistema, lo que conduce a la degradación del servicio.
+
+#### Por qué esto es fundamental:
+
+1. **Fuga de recursos:** los cuerpos abiertos sostienen manijas y enchufes.
+
+2. **Deterioro de la reutilización de conexiones:** keep-alive funciona peor,
+   aumenta el número de nuevas conexiones.
+
+3. **Aumento de latencia y errores bajo carga:** posible agotamiento del grupo
+   de conexiones y de los límites del sistema.
+
+4. **Comportamiento inestable del cliente:** "bloqueos", tiempos de espera,
+   fallas inesperadas en llamadas de alta frecuencia.
+
+#### Patrón correcto:
+
+1. Después de verificar el error de `Do`, haga inmediatamente: `defer
+   resp.Body.Close()`.
+
+2. Si necesita conexiones de reutilización máxima:
+
+- leer el cuerpo hasta el final (o limitar correctamente la lectura),
+
+- y luego cerrar.
+
+#### Conclusión práctica:
+
+El cierre `resp.Body` no es una formalidad, sino un requisito previo para el
+correcto funcionamiento del cliente HTTP en Go. Esto afecta directamente al
+rendimiento, la estabilidad y la eficiencia de los recursos del servicio.
+
+#### Ejemplo:
+
+```go
+resp, err := client.Do(req)
+if err != nil {
+	return err
+}
+defer resp.Body.Close()
+
+body, err := io.ReadAll(resp.Body)
+if err != nil {
+	return err
+}
+_ = body
+```
+
+</details>

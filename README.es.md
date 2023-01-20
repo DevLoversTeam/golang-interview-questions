@@ -5483,3 +5483,54 @@ _ = body
 ```
 
 </details>
+
+
+<details>
+<summary>91. ¿En qué se diferencia `http.DefaultServeMux` del `ServeMux` personalizado? </summary>
+
+#### Go
+
+`http.DefaultServeMux` es el enrutador global "predeterminado". Un `ServeMux`
+personalizado es una instancia de enrutador separada creada explícitamente que
+usted administra localmente dentro de un servidor específico.
+
+#### `http.DefaultServeMux`:
+
+1. **Estado global del paquete `net/http`:** el registro a través de
+   `http.Handle` / `http.HandleFunc` escribe exactamente allí.
+
+2. **Inicio rápido:** bueno para ejemplos simples y pequeñas utilidades.
+
+3. **Riesgos en proyectos más grandes:** registros implícitos de diferentes
+   paquetes, control más complejo de dependencias y pruebas.
+
+#### Personalizado `ServeMux`:
+
+1. **Composición explícita:** `mux := http.NewServeMux()` y pasándola a
+   `http.Server{Handler: mux}`.
+
+2. **Aislamiento de ruta:** cada servidor/prueba/instancia puede tener su propia
+   tabla de controlador.
+
+3. **Mejor capacidad de prueba y mantenimiento:** menos efectos secundarios
+   globales, más fácil de realizar pruebas de integración independientes.
+
+4. **Arquitectura más segura para monolitos y microservicios:** el enrutamiento
+   pasa a formar parte del código de arranque explícito.
+
+#### Elección práctica:
+
+1. Para el código de producción, el `ServeMux` personalizado casi siempre es
+   mejor.
+
+2. `DefaultServeMux` es principalmente apropiado para escenarios o tutoriales
+   muy simples.
+
+#### Conclusión:
+
+La diferencia entre ellos está en el nivel de transparencia y control.
+`DefaultServeMux` conveniente pero global; El `ServeMux` personalizado
+proporciona un enrutamiento aislado, controlado y arquitectónicamente más
+limpio.
+
+</details>

@@ -5534,3 +5534,75 @@ proporciona un enrutamiento aislado, controlado y arquitectónicamente más
 limpio.
 
 </details>
+
+
+<details>
+<summary>92. ¿Cómo implementar correctamente el cierre ordenado del servidor HTTP y el trabajador en segundo plano en Go?</summary>
+
+#### Go
+
+`Graceful shutdown` en Go es una terminación controlada del servicio sin perder
+solicitudes y sin gorutinas "huérfanas". La idea es simple: dejar de recibir una
+nueva carga, dejar que finalice el trabajo activo, detener correctamente el
+fondo y cerrar los recursos en una secuencia predecible.
+
+#### Secuencia canónica:
+
+1. Señales de finalización de intercepción (`SIGTERM`, `SIGINT`).
+
+2. Crear `context` con tiempo de espera para la fase de apagado.
+
+3. Llame a `server.Shutdown(ctx)`:
+
+- ya no se aceptan nuevas conexiones;
+
+- A las solicitudes activas se les da tiempo para completarse.
+
+4. Cancelar contexto/señalar a los trabajadores en segundo plano para que se
+   detengan.
+
+5. Esperar a que finalicen los trabajadores (`WaitGroup`/`errgroup`).
+
+6. Cerrar recursos externos (DB, colas, productores, archivos).
+
+#### Cómo detener un trabajador en segundo plano:
+
+1. Worker se ejecuta en un bucle con `select` donde hay una rama `case
+   <-ctx.Done(): return`.
+
+2. Al apagar, el proceso principal llama a la función de cancelación.
+
+3. El trabajador completa el paso protegido actual, realiza una
+   descarga/limpieza y sale.
+
+#### Prácticas críticas:
+
+1. **Se requieren tiempos de espera:** la gracia no debe convertirse en una
+   espera eterna.
+
+2. **Apagado idempotente:** las señales repetidas no rompen la lógica de
+   apagado.
+
+3. **Observabilidad:** registrar etapas de detención y métricas de duración.
+
+4. **Orden clara:** primero detener la ingesta, luego drenar en vuelo y luego
+   limpiar.
+
+#### Errores típicos:
+
+1. Detenga el proceso "duro" sin `Shutdown`.
+
+2. No pasar `ctx` a trabajadores/llamadas externas.
+
+3. No espere a que finalicen las gorutinas.
+
+4. Olvídese de vaciar buffers/colas antes de salir.
+
+#### Conclusión:
+
+Un cierre correcto y correcto en Go se organiza mediante una señal, `context`,
+`server.Shutdown` y esperando explícitamente todas las tareas en segundo plano.
+Este enfoque garantiza la integridad de las solicitudes, resultados predecibles
+y confiabilidad de la operación.
+
+</details>

@@ -5606,3 +5606,47 @@ Este enfoque garantiza la integridad de las solicitudes, resultados predecibles
 y confiabilidad de la operación.
 
 </details>
+
+
+<details>
+<summary>93. ¿Por qué comparar `time.Time` con `.Equal()` y no con `==`?</summary>
+
+#### Go
+
+En Go, `time.Time` debe compararse con `t1.Equal(t2)` porque `==` verifica la
+estructura bit a bit del valor, incluidos los aspectos internos de soporte
+(incluida la ubicación y, bajo ciertas condiciones, la parte monótona del
+tiempo), no solo el punto en el tiempo en la línea de tiempo.
+
+#### Por qué `==` puede dar un resultado falso:
+
+1. Dos `time.Time` pueden representar la misma instancia pero tener diferentes
+   representaciones de ubicación.
+
+2. Los datos internos del servicio pueden variar, aunque el momento del
+   calendario es el mismo.
+
+3. Entonces `t1 == t2` puede ser `false` incluso cuando el punto de tiempo es
+   equivalente.
+
+#### Qué hace `.Equal()`:
+
+1. Compara exactamente el instante temporal (semántica del momento) y no la
+   representación interna de la estructura.
+
+2. Este es un "¿es la misma hora" válido? verificación de lógica de negocios.
+
+#### Cuando `==` sigue siendo apropiado:
+
+1. Para comprobar si hay un valor nulo: `t == (time.Time{})`.
+
+2. Para casos en los que realmente necesita comparar la identidad estructural
+   completa, no solo un instante.
+
+#### Conclusión práctica:
+
+En la lógica de temporización aplicada, utilice `.Equal()`. El operador `==`
+para `time.Time` es fácilmente propenso a errores porque compara más de lo que
+normalmente se pretende cuando se verifica la equivalencia de momentos.
+
+</details>

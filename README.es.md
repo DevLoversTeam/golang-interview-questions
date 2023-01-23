@@ -5650,3 +5650,94 @@ para `time.Time` es fácilmente propenso a errores porque compara más de lo que
 normalmente se pretende cuando se verifica la equivalencia de momentos.
 
 </details>
+
+
+<details>
+<summary>94. ¿Cómo funcionan los índices? ¿Cómo elegir índices para tablas?</summary>
+
+#### Go
+
+Un índice en un DBMS es una estructura de datos auxiliar (generalmente similar a
+un árbol B), que acelera la búsqueda de filas en ciertos campos sin un escaneo
+completo de la tabla. De hecho, un índice almacena una representación ordenada
+de claves y referencias a filas.
+
+#### Cómo funcionan los índices:
+
+1. Una consulta con `WHERE/JOIN/ORDER BY` puede usar un índice para encontrar
+   rápidamente un rango relevante de claves.
+
+2. En lugar de `Seq Scan` (lectura de la tabla completa), el optimizador elige
+   `Index Scan/Bitmap Scan` si es beneficioso.
+
+3. Los índices también pueden admitir la unicidad (`UNIQUE`).
+
+#### Precio índice:
+
+1. Cada índice ocupa espacio en disco.
+
+2. `INSERT/UPDATE/DELETE` se vuelven más caros porque es necesario actualizar
+   los índices.
+
+3. Los índices redundantes ralentizan las escrituras y dificultan el
+   mantenimiento.
+
+#### Cómo elegir los índices correctamente:
+
+1. **Rechace solicitudes reales**, no "por si acaso".
+
+2. Campos de índice que suelen estar en:
+
+- `WHERE`
+
+- `JOIN ON`
+
+- `ORDER BY`
+
+- `GROUP BY` (si es necesario)
+
+3. Para índices compuestos, tenga en cuenta el orden de las columnas (regla del
+   prefijo más a la izquierda):
+
+- las condiciones más selectivas/frecuentes están al principio.
+
+4. Observe `EXPLAIN (ANALYZE, BUFFERS)` y confirme que el índice se utiliza
+   realmente y es rentable.
+
+5. Revise periódicamente los índices ineficaces o no utilizados.
+
+#### Enfoque práctico:
+
+1. Defina las solicitudes más lentas.
+
+2. Agregar índices mínimos requeridos.
+
+3. Consultar plan antes/después.
+
+4. Medir el impacto en el equilibrio de lectura/escritura bajo carga real.
+
+#### Conclusión:
+
+Un índice es una herramienta para acelerar la lectura a costa de escribir más
+cara. La selección correcta de índices siempre se basa en consultas: solo para
+patrones de acceso específicos y solo después de la validación del plan y el
+rendimiento.
+
+#### Ejemplo:
+
+```sql
+-- Перевіряємо план до індексу
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM orders
+WHERE tenant_id = 42
+  AND created_at >= now() - interval '7 days'
+ORDER BY created_at DESC
+LIMIT 100;
+
+-- Додаємо індекс під реальний патерн запиту
+CREATE INDEX CONCURRENTLY idx_orders_tenant_created_at
+  ON orders (tenant_id, created_at DESC);
+```
+
+</details>

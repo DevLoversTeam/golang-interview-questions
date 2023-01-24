@@ -5741,3 +5741,75 @@ CREATE INDEX CONCURRENTLY idx_orders_tenant_created_at
 ```
 
 </details>
+
+
+<details>
+<summary>95. ¿Qué es una Vista Materializada y en qué se diferencia de una Vista normal?</summary>
+
+#### Go
+
+`View` y `Materialized View` representan una consulta almacenada, pero difieren
+fundamentalmente en la forma en que se almacena el resultado y el costo de
+lectura.
+
+#### Normal `View`:
+
+1. Esta es una "tabla virtual" lógica basada en una consulta SQL.
+
+2. Los datos no se almacenan físicamente por separado.
+
+3. Cada solicitud a la vista en realidad vuelve a ejecutar el SQL subyacente.
+
+#### `Materialized View`:
+
+1. Este es un resultado de consulta almacenado físicamente.
+
+2. La lectura suele ser mucho más rápida porque no es necesario volver a
+   calcular combinaciones/agregaciones complejas cada vez.
+
+3. Los datos pueden estar desactualizados antes del `REFRESH`.
+
+#### Diferencia clave:
+
+1. `View` = datos siempre actualizados, pero mayor coste de cálculo.
+
+2. `Materialized View` = lectura rápida, pero compromete la actualización de los
+   datos.
+
+#### Cuándo elegir `Materialized View`:
+
+1. Agregaciones y consultas analíticas intensas.
+
+2. Leer informes con frecuencia con actualizaciones menos frecuentes.
+
+3. Escenarios en los que el retraso de relevancia controlada es aceptable.
+
+#### Cuando el `View` habitual es suficiente:
+
+1. Se requieren los datos en tiempo real más actualizados.
+
+2. La solicitud no es demasiado costosa.
+
+3. `View` se utiliza como una abstracción de acceso lógico, no como un caché.
+
+#### Conclusión práctica:
+
+`Materialized View` es esencialmente un caché de resultados de SQL administrado
+con una actualización explícita; simple `View` es una proyección lógica pura sin
+almacenamiento de datos. La elección entre ellos es un equilibrio entre frescura
+y velocidad.
+
+#### Ejemplo:
+
+```sql
+CREATE MATERIALIZED VIEW mv_daily_sales AS
+SELECT date_trunc('day', created_at) AS day,
+       sum(amount) AS total
+FROM payments
+GROUP BY 1;
+
+-- Оновлення знімка даних
+REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
+```
+
+</details>

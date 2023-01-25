@@ -5813,3 +5813,84 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
 ```
 
 </details>
+
+
+<details>
+<summary>96. ¿Qué es el ÁCIDO? Comente cómo se implementa ACID en PostgreSQL.</summary>
+
+#### Go
+
+`ACID` son cuatro propiedades básicas de los sistemas transaccionales que
+garantizan la exactitud de los datos incluso en caso de fallas, competencia y
+alta carga: Atomicidad, Consistencia, Aislamiento y Durabilidad.
+
+#### Descifrado ACID:
+
+1. **Atomicidad:** una transacción se ejecuta completamente o no se ejecuta en
+   absoluto.
+
+2. **Consistencia:** después de la confirmación, los datos siguen siendo válidos
+   según las reglas y restricciones definidas.
+
+3. **Aislamiento:** las transacciones paralelas no deberían afectarse
+   indebidamente entre sí.
+
+4. **Durabilidad:** Los cambios confirmados persisten incluso después de una
+   falla del proceso/sistema.
+
+#### Cómo PostgreSQL implementa ACID:
+
+1. **Atomicidad:**
+
+- registro de transacciones de cambios + mecanismos de reversión;
+
+- en caso de error, todos los cambios en la transacción se revertirán en su
+  totalidad.
+
+2. **Consistencia:**
+
+- restricciones (`PRIMARY KEY`, `UNIQUE`, `CHECK`, `FOREIGN KEY`) y
+  desencadenantes;
+
+- la confirmación solo es posible si no se violan las invariantes.
+
+3. **Aislamiento:**
+
+- MVCC (Control de concurrencia de versiones múltiples): los lectores ven
+  versiones consistentes de líneas sin bloqueo grave de lecturas;
+
+- soporte de niveles de aislamiento (`Read Committed`, `Repeatable Read`,
+  `Serializable`) con diferente equilibrio de rendimiento y rigor.
+
+4. **Durabilidad:**
+
+- WAL (Registro de escritura anticipada): antes de la confirmación, los cambios
+  se registran primero en el registro;
+
+- después de una falla, la recuperación se lleva a cabo según WAL, que preserva
+  el estado comprometido.
+
+#### Conclusión práctica:
+
+En PostgreSQL, ACID no se proporciona mediante "un botón", sino mediante una
+combinación de MVCC, WAL, administrador de transacciones, bloqueos y mecanismos
+de restricción. Esto es lo que convierte a PostgreSQL en un DBMS confiable para
+sistemas transaccionales críticos.
+
+#### Ejemplo:
+
+```sql
+BEGIN;
+
+UPDATE accounts
+SET balance = balance - 100
+WHERE id = 1;
+
+UPDATE accounts
+SET balance = balance + 100
+WHERE id = 2;
+
+COMMIT; -- або ROLLBACK при помилці
+```
+
+</details>

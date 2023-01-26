@@ -5894,3 +5894,59 @@ COMMIT; -- або ROLLBACK при помилці
 ```
 
 </details>
+
+
+<details>
+<summary>97. ¿Cuál es la diferencia entre BASE y ÁCIDO?</summary>
+
+#### Go
+
+`ACID` y `BASE` son dos filosofías diferentes de coherencia y confiabilidad en
+sistemas distribuidos/transaccionales. Reflejan diferentes prioridades
+arquitectónicas: rigor y coherencia instantánea frente a disponibilidad y
+escalabilidad.
+
+#### ÁCIDO:
+
+1. **Atomicidad, Consistencia, Aislamiento, Durabilidad**.
+
+2. Enfocados en estrictas garantías transaccionales.
+
+3. Beneficio: exactitud predecible de los datos después de cada confirmación.
+
+4. Normalmente se utiliza en escenarios financieros, contables y críticos
+   consistentes.
+
+#### BASE:
+
+1. **Básicamente disponible, estado suave, consistencia eventual**.
+
+2. Enfocados en alta disponibilidad y escalamiento horizontal.
+
+3. Permite inconsistencia temporal entre nodos.
+
+4. La coherencia se logra "con el tiempo", no necesariamente al instante.
+
+#### Diferencia clave:
+
+1. **ACID**: "mejor esperar pero mantener estrictas garantías".
+
+2. **BASE**: "es mejor responder rápidamente y estar disponible, incluso si la
+   coherencia no es instantánea".
+
+#### Implicaciones prácticas para la arquitectura:
+
+1. ACID simplifica el razonamiento sobre invariantes, pero puede costar más en
+   términos de latencia/escalado en un entorno distribuido.
+
+2. BASE proporciona estabilidad y disponibilidad a gran escala, pero requiere
+   mecanismos de compensación, idempotencia y un diseño de dominio bien pensado.
+
+#### Conclusión:
+
+ACID y BASE no son compromisos "buenos/malos", sino diferentes. La elección
+depende de qué es más crítico para el sistema: la rigurosidad inmediata de las
+invariantes o la disponibilidad y escalabilidad al precio de una eventual
+consistencia.
+
+</details>

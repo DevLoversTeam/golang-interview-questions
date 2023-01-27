@@ -5950,3 +5950,67 @@ invariantes o la disponibilidad y escalabilidad al precio de una eventual
 consistencia.
 
 </details>
+
+
+<details>
+<summary>98. Nombre los niveles de aislamiento de transacciones.</summary>
+
+#### Go
+
+Los niveles de aislamiento determinan qué tan "visibles" son los cambios de las
+transacciones paralelas entre sí. Cuanto mayor sea el nivel de aislamiento,
+menos anomalías, pero normalmente con un mayor coste en rendimiento y
+competitividad.
+
+#### Niveles de aislamiento clásicos (SQL):
+
+1. **Leer no confirmado**
+
+- nivel más bajo;
+
+- permite leer cambios no corregidos (lectura sucia).
+
+2. **Lectura confirmada**
+
+- solo se leen los datos confirmados;
+
+- la lectura sucia está prohibida;
+
+- son posibles lecturas no repetibles y lecturas fantasma.
+
+3. **Lectura repetible**
+
+- leer las mismas líneas repetidamente dentro de una transacción da el mismo
+  resultado;
+
+- reduce algunas de las anomalías, pero dependiendo del DBMS, pueden permanecer
+  escenarios fantasmas.
+
+4. **Serializable**
+
+- el nivel más estricto;
+
+- garantiza un resultado equivalente a la ejecución secuencial de transacciones;
+
+- máxima protección contra anomalías, pero más cara que la competencia.
+
+#### Conclusión práctica:
+
+La elección del nivel de aislamiento es un equilibrio entre corrección y
+rendimiento. En producción, se determina a partir de invariantes de dominio:
+donde `Read Committed` es suficiente y donde `Repeatable Read` o `Serializable`
+son necesarios.
+
+#### Ejemplo:
+
+```sql
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+SELECT balance FROM accounts WHERE id = 1;
+-- ... інші операції в межах тієї ж транзакції
+
+COMMIT;
+```
+
+</details>

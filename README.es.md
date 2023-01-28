@@ -6014,3 +6014,67 @@ COMMIT;
 ```
 
 </details>
+
+
+<details>
+<summary>99. ¿Para qué sirven las bases de datos de gráficos?</summary>
+
+#### Go
+
+Se necesitan bases de datos gráficas donde el valor principal no son los
+registros individuales, sino las conexiones entre ellos y la rápida derivación
+de las relaciones de varios pasos.
+
+#### Qué modelo de base de datos gráfica:
+
+1. **Nodos** son entidades.
+
+2. **Bordes**: relaciones entre entidades.
+
+3. **Propiedades** de nodos y bordes son atributos del modelo de dominio.
+
+#### Para qué tareas son especialmente útiles:
+
+1. **Gráficos sociales:** amigos, suscripciones, recomendaciones.
+
+2. **Detección de fraude:** cadenas de transacciones no triviales y conexiones
+   sospechosas.
+
+3. **Gráfico de conocimiento/búsqueda semántica:** representación conectada del
+   conocimiento.
+
+4. **Topología de red/TI:** dependencias de servicios, rutas, impacto de
+   incidentes.
+
+5. **Modelos de roles/permisos:** políticas de acceso complejas con herencia de
+   roles.
+
+#### Por qué una base de datos relacional no siempre es suficiente:
+
+1. En escenarios de unión de varios pasos, las consultas pueden volverse pesadas
+   y engorrosas.
+
+2. El motor de gráficos está optimizado específicamente para solicitudes de ruta
+   transversal.
+
+3. El modelo "la relación como entidad de primera clase" hace que los casos de
+   relaciones complejas sean más naturales.
+
+#### Cuando una base de datos de gráficos es opcional:
+
+1. Si las conexiones son simples y rara vez se consultan en profundidad.
+
+2. Si dominan los escenarios CRUD/OLTP clásicos sin recorrido complejo.
+
+3. Si el equipo y la infraestructura ya están trabajando eficazmente con la pila
+   relacional.
+
+#### Conclusión:
+
+Las bases de datos gráficas son necesarias cuando el valor comercial radica en
+la estructura de las conexiones y la navegación de varios pasos a través de
+ellas. Es una herramienta especializada para dominios centrados en las
+relaciones donde un enfoque orientado a la unión se vuelve ineficaz o demasiado
+complejo.
+
+</details>

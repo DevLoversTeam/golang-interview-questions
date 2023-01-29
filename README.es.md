@@ -6078,3 +6078,56 @@ relaciones donde un enfoque orientado a la unión se vuelve ineficaz o demasiado
 complejo.
 
 </details>
+
+
+<details>
+<summary>100. Si los datos tienen un límite de tiempo, ¿qué bases de datos debo usar?</summary>
+
+#### Go
+
+Si los datos tienen una naturaleza temporal específica (métricas, registros,
+eventos, telemetría), es recomendable elegir un DBMS según el perfil de carga:
+frecuencia de registro, tipo de solicitudes, período de almacenamiento,
+requisitos de agregación y latencia.
+
+#### Opciones típicas:
+
+1. **Base de datos de series temporales (TSDB)**
+
+- ejemplos: Prometheus (para métricas), VictoriaMetrics, InfluxDB, TimescaleDB;
+
+- puntos fuertes: alta velocidad de ingesta, solicitudes de ventanas de tiempo,
+  políticas de reducción de resolución/retención.
+
+2. **PostgreSQL + enfoque orientado al tiempo**
+
+- cuando necesita transaccionalidad, el ecosistema SQL y consultas de unión
+  complejas con datos de tiempo;
+
+- a menudo se combina con la partición del tiempo.
+
+3. **Almacenamiento OLAP en columnas**
+
+- para análisis de grandes volúmenes de eventos históricos (ClickHouse, etc.);
+
+- fuerte en agregados y escaneando grandes rangos de tiempo.
+
+#### Criterios de selección:
+
+1. **Telemetría de escritura intensa** → TSDB.
+
+2. **Transacciones operativas + tiempo** → PostgreSQL (con particiones/índices).
+
+3. **Análisis histórico a gran escala** → enfoque columnar/OLAP.
+
+4. **Modelo de retención y costos**: datos activos en la capa rápida, datos
+   fríos en el almacenamiento más económico.
+
+#### Conclusión práctica:
+
+No existe una base de datos "universal" para datos con plazos determinados: lo
+óptimo es una combinación de herramientas para una carga de trabajo específica.
+En la mayoría de los sistemas, funciona una estrategia con una capa TSDB/OLTP
+activa y una capa analítica separada para un historial largo.
+
+</details>

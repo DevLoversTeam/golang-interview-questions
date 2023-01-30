@@ -6131,3 +6131,72 @@ En la mayoría de los sistemas, funciona una estrategia con una capa TSDB/OLTP
 activa y una capa analítica separada para un historial largo.
 
 </details>
+
+
+<details>
+<summary>101. ¿Cómo funciona la replicación maestro-esclavo?</summary>
+
+#### Go
+
+La replicación maestro-esclavo (primaria-réplica) es un modelo en el que un nodo
+acepta escrituras y uno o más nodos de réplica replican esos cambios para
+escalar lectura, redundancia y mayor tolerancia a fallas.
+
+#### Principio básico:
+
+1. **Maestro (primario)** maneja `INSERT/UPDATE/DELETE`.
+
+2. Los cambios se registran en el registro de transacciones (WAL/binlog según el
+   DBMS).
+
+3. **Slave (réplica)** lee el registro y aplica los cambios a su copia de los
+   datos.
+
+4. Las lecturas a menudo se distribuyen a las réplicas, las escrituras se dejan
+   en la principal.
+
+#### Modos de replicación:
+
+1. **Asíncrono**
+
+- primary no espera la confirmación de la réplica antes de realizar la
+  confirmación;
+
+- menor latencia de grabación;
+
+- posible retraso en la replicación e inconsistencia temporal.
+
+2. **Síncrono/cuasi-sincrónico**
+
+- primary espera parcial o totalmente la confirmación de las réplicas;
+
+- mayor consistencia;
+
+- latencia de escritura potencialmente mayor.
+
+#### Qué hace:
+
+1. Escalado de carga de lectura.
+
+2. Copias de seguridad de datos para conmutación por error.
+
+3. Separación de registros OLTP y escenarios de lectura intensa.
+
+#### Riesgos típicos:
+
+1. **Retraso en la replicación** (el lector puede ver datos "antiguos").
+
+2. Complejidad de la conmutación por error/conmutación por recuperación y las
+   funciones de los nodos.
+
+3. Riesgo de cerebro dividido en escenarios de conmutación organizados
+   incorrectamente.
+
+#### Conclusión práctica:
+
+La replicación maestro-esclavo es un equilibrio entre disponibilidad,
+escalabilidad y coherencia. Es eficaz para escalar lectura, pero requiere la
+disciplina de monitoreo de retrasos, conmutación por error cuidadosa y una
+política clara de enrutamiento de solicitudes.
+
+</details>

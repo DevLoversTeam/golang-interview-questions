@@ -6200,3 +6200,88 @@ disciplina de monitoreo de retrasos, conmutación por error cuidadosa y una
 política clara de enrutamiento de solicitudes.
 
 </details>
+
+
+<details>
+<summary>102. ¿Qué es la fragmentación y cuáles son sus tipos?</summary>
+
+#### Go
+
+La fragmentación es la división horizontal de datos en varios nodos
+independientes (fragmentos) para escalar el sistema más allá de un único
+servidor en términos de volumen de datos, carga y ancho de banda.
+
+#### ¿Por qué se utiliza la fragmentación?
+
+1. Nodo único sin restricciones (CPU/RAM/disco/E/S).
+
+2. Aumente el rendimiento de escritura/lectura mediante la operación paralela de
+   fragmentos.
+
+3. Localice conjuntos de datos candentes y reduzca la competencia por los
+   recursos.
+
+#### Los principales tipos de fragmentación:
+
+1. **Fragmentación basada en rango**
+
+- los datos están divididos por rangos de claves (por ejemplo, por fecha o
+  intervalo de ID);
+
+- simple para escenarios de series temporales;
+
+- riesgo de rangos "calientes".
+
+2. **Fragmentación basada en hash**
+
+- shard está determinado por el hash de la clave;
+
+- distribuye la carga de manera más uniforme;
+
+- es más difícil realizar consultas de rango.
+
+3. **Fragmentación basada en directorio/búsqueda**
+
+- una clave de mapas de servicio/tabla separada → fragmento;
+
+- enrutamiento y migraciones flexibles;
+
+- complejidad adicional y dependencia de la capa de búsqueda.
+
+4. **Geo/fragmentación basada en inquilinos**
+
+- los datos se comparten por región o cliente (inquilino);
+
+- bueno para aislamiento, cumplimiento y arquitecturas multiinquilino;
+
+- posible desequilibrio entre fragmentos.
+
+#### Desafíos arquitectónicos de la fragmentación:
+
+1. Reequilibrio de datos durante el crecimiento.
+
+2. Solicitudes, uniones y transacciones entre fragmentos.
+
+3. Complicaciones de copia de seguridad/restauración y conmutación por error.
+
+4. Mayor complejidad de la observabilidad y el soporte operativo.
+
+#### Conclusión:
+
+La fragmentación es una herramienta de escalamiento que proporciona importantes
+mejoras de rendimiento, pero a costa de la complejidad arquitectónica. La
+elección del tipo de fragmentación debe basarse en el patrón de acceso a los
+datos, el modelo de dominio y el plan de evolución del sistema.
+
+#### Ejemplo:
+
+```go
+func shardForUser(userID int64, shards int) int {
+	if shards <= 0 {
+		return 0
+	}
+	return int(userID % int64(shards)) // hash/range-логіку змінюють під домен
+}
+```
+
+</details>

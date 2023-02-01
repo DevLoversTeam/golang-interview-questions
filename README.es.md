@@ -6285,3 +6285,82 @@ func shardForUser(userID int64, shards int) int {
 ```
 
 </details>
+
+
+<details>
+<summary>103. Cuéntanos tu experiencia con la optimización de bases de datos. ¿Qué herramientas usaste?</summary>
+
+#### Go
+
+Para una entrevista, esta pregunta generalmente espera una **historia de caso
+estructurada**: contexto → problema → acciones → herramientas → métricas de
+antes/después. A continuación se muestra un ejemplo de respuesta sólida que
+puede adaptar a su propia experiencia del mundo real.
+
+#### Ejemplo:
+
+1. **Contexto**
+
+- en un servicio con una alta carga de lectura/escritura, se observó una
+  degradación de la latencia p95/p99 durante las horas pico.
+
+2. **Síntomas**
+
+- solicitudes lentas;
+
+- Crecimiento de CPU en el nodo de base de datos;
+
+- aumentando las colas de espera y solicitud de bloqueo.
+
+3. **¿Qué hiciste**?
+
+- recopiló las solicitudes más lentas;
+
+- han analizado los planes de ejecución;
+
+- índices agregados/reconstruidos al `WHERE/JOIN/ORDER BY` real;
+
+- eliminó N+1 y transfirió algunas operaciones pesadas al lote;
+
+- almacenamiento en caché agregado para casos de lectura activa;
+
+- optimizó el esquema (tipos de campos, partición por tiempo, archivo de datos
+  antiguos).
+
+4. **Herramientas**
+
+- `EXPLAIN (ANALYZE, BUFFERS)` / `EXPLAIN ANALYZE`;
+
+- solicitar estadísticas (`pg_stat_statements` o similar);
+
+- perfil de aplicación (`pprof`) para separar el cuello de botella de la base de
+  datos de la capa de aplicación;
+
+- métricas y paneles (Prometheus/Grafana);
+
+- pruebas de carga antes/después de los cambios.
+
+5. **Resultado (ejemplo de formulación)**
+
+- p95 se redujo condicionalmente entre un 40% y un 60%;
+
+- el rendimiento aumentó sin nodos de base de datos adicionales;
+
+- períodos pico estabilizados y reducción de la contención de bloqueos.
+
+#### Cómo responder de manera más convincente:
+
+1. Hable el lenguaje de las medidas, no frases generales.
+
+2. Explique la compensación: qué se aceleró y a qué costo.
+
+3. Enfatice un proceso reproducible: "primero medido, luego modificado y luego
+   probado".
+
+#### Conclusión:
+
+Una respuesta sólida para la optimización de la base de datos es un caso de
+ingeniería de prueba de concepto con métricas y herramientas. Es esta estructura
+la que demuestra madurez y competencia práctica.
+
+</details>

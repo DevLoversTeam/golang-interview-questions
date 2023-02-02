@@ -6364,3 +6364,72 @@ ingeniería de prueba de concepto con métricas y herramientas. Es esta estructu
 la que demuestra madurez y competencia práctica.
 
 </details>
+
+
+<details>
+<summary>104. ¿En qué se diferencia `pgx` de `lib/pq` en términos de rendimiento y funcionalidad?</summary>
+
+#### Go
+
+`lib/pq` y `pgx` funcionan con PostgreSQL, pero pertenecen a diferentes
+generaciones del ecosistema Go. En escenarios de producción modernos, `pgx`
+generalmente se considera una opción más práctica.
+
+#### Diferencia principal:
+
+1. **`lib/pq`**
+
+- controlador clásico para `database/sql`;
+
+- estable, pero funcionalmente conservador;
+
+- menos optimizaciones modernas y características específicas de PostgreSQL.
+
+2. **`pgx`**
+
+- controlador/herramientas modernas para PostgreSQL;
+
+- puede funcionar como API nativa y a través de la capa compatible con
+  `database/sql`;
+
+- conjunto de funciones más rico y, a menudo, mejor rendimiento bajo carga real.
+
+#### Productividad:
+
+1. `pgx` a menudo muestra un mejor rendimiento y una menor latencia,
+   especialmente en escenarios de alta carga.
+
+2. Razones: manejo más eficiente del protocolo PostgreSQL, mejores capacidades
+   de procesamiento por lotes/copia, manejo más flexible de tipos.
+
+3. La conclusión final siempre se compara con su carga de trabajo.
+
+#### Funcionalidad:
+
+1. `pgx` proporciona un acceso más amplio a los detalles específicos de
+   PostgreSQL:
+
+- sistema típico extendido;
+
+- batch/Copia-primitivas;
+
+- control más preciso del comportamiento de conexión y consulta.
+
+2. `lib/pq` sigue siendo en su mayor parte un controlador "apenas suficiente"
+   para tareas básicas debido a `database/sql`.
+
+#### Cuándo elegir:
+
+1. **`pgx`**: para proyectos nuevos, alta carga de trabajo, necesidad de
+   funciones modernas de PostgreSQL y mejor control.
+
+2. **`lib/pq`**: principalmente código heredado, donde la migración aún no está
+   justificada.
+
+#### Conclusión:
+
+`pgx` normalmente gana tanto en funcionalidad como en potencial de rendimiento.
+`lib/pq` es históricamente importante, pero para la mayoría de los sistemas
+Go/PostgreSQL nuevos, `pgx` es la opción preferida.
+
+</details>

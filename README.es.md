@@ -6619,3 +6619,62 @@ diagnóstico. Una buena prueba generalmente combina ambos: `require` para
 "condiciones de detención", `assert` para un mayor control del contenido.
 
 </details>
+
+
+<details>
+<summary>108. ¿Cómo le permite `t.Run` ejecutar subpruebas y filtrarlas?</summary>
+
+#### Go
+
+`t.Run` le permite estructurar una única prueba en un conjunto de subpruebas con
+nombre. Cada subcaso se ejecuta como una unidad lógica independiente, lo que
+simplifica las pruebas de tablas, los diagnósticos y el inicio selectivo.
+
+#### Cómo funciona `t.Run`:
+
+1. En la prueba principal, se llama a `t.Run(name, func(t *testing.T) { ... })`.
+
+2. Cada llamada crea una subprueba separada con su propia `t`.
+
+3. Las subpruebas pueden tener diferentes entradas, afirmaciones y
+   configuraciones.
+
+#### Por qué es conveniente:
+
+1. **Mejor legibilidad de las pruebas basadas en tablas.**
+
+2. **Diagnóstico preciso:** puede ver exactamente qué caso cayó.
+
+3. **Jerarquía de prueba:** se puede anidar `t.Run` para agrupar escenarios.
+
+4. **Control de concurrencia:** los subcasos individuales se pueden ejecutar a
+   través de `t.Parallel()`.
+
+#### Cómo funciona el filtrado:
+
+1. `go test -run <pattern>` ejecuta pruebas cuyos nombres coinciden con el
+   patrón.
+
+2. La ruta del nombre se tiene en cuenta para las subpruebas (por ejemplo,
+   `TestXxx/case_name`).
+
+3. Esto le permite ejecutar puntualmente un solo caso de problema sin un
+   conjunto completo.
+
+#### Un ejemplo práctico de pensamiento:
+
+1. `TestParser` contiene docenas de casos hasta `t.Run`.
+
+2. Solo se ejecuta uno durante la depuración: `go test -run
+   'TestParser/invalid_header'`.
+
+3. Obtenga un ciclo de retroalimentación más rápido y un ciclo de corrección más
+   limpio.
+
+#### Conclusión:
+
+`t.Run` convierte pruebas monolíticas en un sistema administrado de subpruebas
+con activación y filtrado granulares. Esta es una de las herramientas clave del
+diseño de pruebas admitidas en Go.
+
+</details>

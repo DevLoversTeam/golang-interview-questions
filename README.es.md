@@ -6678,3 +6678,84 @@ con activación y filtrado granulares. Esta es una de las herramientas clave del
 diseño de pruebas admitidas en Go.
 
 </details>
+
+
+<details>
+<summary>109. ¿Cómo probar los controladores HTTP?</summary>
+
+#### Go
+
+Los controladores HTTP en Go se prueban de forma aislada, sin un socket de red
+real, utilizando `httptest`. El objetivo es probar el contrato de la capa HTTP:
+estado, encabezados, cuerpo de respuesta, manejo de errores y escenarios
+extremos.
+
+#### Enfoque canónico:
+
+1. Crear solicitud a través de `httptest.NewRequest(...)`.
+
+2. Crear una grabadora a través de `httptest.NewRecorder()`.
+
+3. Manejador de llamadas: `handler.ServeHTTP(rec, req)`.
+
+4. Compruebe:
+
+- `rec.Code` (código de estado);
+
+- encabezados;
+
+- cuerpo (JSON/esquema/mensaje).
+
+#### Qué debe cubrirse:
+
+1. **Camino feliz** (solicitud correcta, respuesta esperada).
+
+2. **Errores de validación** (carga útil incompleta/incorrecta, parámetros de
+   consulta).
+
+3. **Métodos HTTP** (GET/POST/PUT/DELETE + 405 si el método no está permitido).
+
+4. **Errores de dependencia** (el servicio/repositorio devuelve un error).
+
+5. **Scripts contextuales** (tiempo de espera/cancelación si la lógica lo
+   admite).
+
+#### Consejos arquitectónicos:
+
+1. Exportar lógica empresarial desde el controlador a la capa de servicio.
+
+2. En pruebas de controlador, dependencias de servicios simuladas/falsas.
+
+3. Pruebe el contrato HTTP en sí, no la implementación interna.
+
+#### Controles mínimos prácticos:
+
+1. Correcto `Content-Type`.
+
+2. La estructura de la respuesta JSON.
+
+3. Correspondencia de códigos de estado a errores de dominio.
+
+4. No se filtra información confidencial en el cuerpo del error.
+
+#### Conclusión:
+
+La prueba del controlador HTTP en Go es una prueba del comportamiento del punto
+final como un cuadro negro: solicitud entrante → borrar salida HTTP. `httptest`
+proporciona una herramienta rápida, determinista y razonablemente precisa para
+dichas pruebas de contratos.
+
+#### Ejemplo:
+
+```go
+req := httptest.NewRequest(http.MethodGet, "/health", nil)
+rec := httptest.NewRecorder()
+
+handler.ServeHTTP(rec, req)
+
+if rec.Code != http.StatusOK {
+	t.Fatalf("status=%d", rec.Code)
+}
+```
+
+</details>

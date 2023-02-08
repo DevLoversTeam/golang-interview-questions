@@ -6759,3 +6759,66 @@ if rec.Code != http.StatusOK {
 ```
 
 </details>
+
+
+<details>
+<summary>110. ¿Cómo comprobar si hay errores?</summary>
+
+#### Go
+
+Las pruebas de errores en Go deben verificar no solo el hecho de que existe un
+error, sino también su semántica: tipo, categoría, cadena contenedora y
+respuesta esperada del sistema.
+
+#### Qué comprobar exactamente:
+
+1. **Presencia/ausencia de un error** en un escenario específico.
+
+2. **Categoría de error** debido a `errors.Is` (errores centinela).
+
+3. **Tipo de error** a través de `errors.As` (tipo de error personalizado con
+   campos).
+
+4. **Contexto contenedor** (si la causa raíz se perdió con `%w`).
+
+5. **Efecto de comportamiento**: código de estado correcto, reintento/no
+   reintento, reversión, etc.
+
+#### Prácticas recomendadas:
+
+1. Evite comprobaciones frágiles de texto completo `err.Error()`.
+
+2. Para contratos estables, utilice `errors.Is/As`, no `==` para errores
+   ajustados.
+
+3. En las pruebas basadas en tablas, especifique explícitamente la clase de
+   error esperada y sus consecuencias.
+
+#### Qué probar en escenarios negativos:
+
+1. Errores de validación de entrada.
+
+2. Errores de dependencias externas (DB, HTTP, colas).
+
+3. Tiempos de espera/Abortos vía `context`.
+
+4. Estados fronterizos (valores vacíos, formatos incorrectos, límites
+   excedidos).
+
+#### Acento arquitectónico:
+
+1. El error debe ser parte del contrato API de la función.
+
+2. Las pruebas deben demostrar que el manejo de errores es determinista y
+   predecible.
+
+3. Si el sistema asigna errores de dominio a la capa de transporte, pruebe esta
+   asignación por separado.
+
+#### Conclusión:
+
+Las pruebas de errores cualitativas en Go consisten en comprobar la semántica,
+no la cadena del mensaje. Este tipo de verificación hace que el código sea
+resistente a la refactorización y confiable en producción.
+
+</details>

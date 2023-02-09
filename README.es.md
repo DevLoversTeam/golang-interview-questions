@@ -6822,3 +6822,65 @@ no la cadena del mensaje. Este tipo de verificación hace que el código sea
 resistente a la refactorización y confiable en producción.
 
 </details>
+
+
+<details>
+<summary>111. ¿Cómo eliminar dependencias externas sin utilizar marcos de terceros?</summary>
+
+#### Go
+
+En Go, las dependencias externas se burlan de manera más limpia a través de
+interfaces e implementaciones propias de prueba doble (stub/fake/spy), sin la
+necesidad de pesados marcos de burla. Es un enfoque idiomático que se adapta
+bien y sigue siendo transparente.
+
+#### Esquema básico:
+
+1. Resalte la interfaz de dependencia mínima en la capa de consumidor.
+
+2. La implementación de producción funciona con DB/HTTP/cola real.
+
+3. En la prueba, sustituya su propia estructura que implemente la misma
+   interfaz.
+
+#### Prueba de tipos dobles sin bibliotecas de terceros:
+
+1. **Stub**: devuelve datos predefinidos.
+
+2. **Falso**: una implementación "funcional" simplificada (por ejemplo, un
+   repositorio en memoria).
+
+3. **Spy**: captura llamadas (argumentos, número, orden).
+
+4. **Simulacro manual**: guión guiado con respuestas/errores personalizables.
+
+#### Ventajas de este enfoque:
+
+1. Seguridad de tipos completa del compilador.
+
+2. Magia de tiempo de ejecución cero.
+
+3. Mejor legibilidad de las pruebas y evolución del código predecible.
+
+4. No hay dependencias externas en la pila de prueba.
+
+#### Recomendaciones prácticas:
+
+1. Hacer que las interfaces sean pequeñas (por comportamiento, no "en todos los
+   métodos").
+
+2. Mot en el límite del módulo, no dentro de la lógica del dominio.
+
+3. Para escenarios competitivos, proteja el doble de prueba estatal (`mutex`,
+   atómicos).
+
+4. No duplique excesivamente la lógica de producción en falsificaciones; de lo
+   contrario, las pruebas se volverán frágiles.
+
+#### Conclusión:
+
+Burlarse sin marcos en Go se trata principalmente de un buen diseño de
+dependencia: interfaz pequeña + prueba manual doble. Este enfoque es simple,
+confiable y arquitectónicamente sólido para respaldar proyectos a largo plazo.
+
+</details>

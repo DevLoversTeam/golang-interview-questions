@@ -6884,3 +6884,72 @@ dependencia: interfaz pequeña + prueba manual doble. Este enfoque es simple,
 confiable y arquitectónicamente sólido para respaldar proyectos a largo plazo.
 
 </details>
+
+
+<details>
+<summary>112. ¿Cómo utilizar `TestMain` para configurar un entorno de prueba?</summary>
+
+#### Go
+
+`TestMain(m *testing.M)` es el punto de entrada para todo el conjunto de
+pruebas. Permite la inicialización global antes de las pruebas y la limpieza
+garantizada después de ellas.
+
+#### Cuando `TestMain` es apropiado:
+
+1. Debe generar el entorno de prueba compartido una vez:
+
+- base de datos/contenedor de prueba;
+
+- directorios temporales;
+
+- configuraciones/secretos globales;
+
+- dependencias del servicio en segundo plano.
+
+2. Requiere un desmontaje centralizado después de que se completen todas las
+   pruebas del paquete.
+
+#### Ciclo de vida básico:
+
+1. La instalación está en curso (inicialización de recursos).
+
+2. Pruebas realizadas hasta `code := m.Run()`.
+
+3. La limpieza está en curso.
+
+4. El proceso finaliza a través de `os.Exit(code)`.
+
+#### Reglas importantes:
+
+1. `m.Run()` debe llamarse exactamente una vez.
+
+2. El código devuelto debe pasarse a `os.Exit`; de lo contrario, se perderá el
+   estado de las pruebas.
+
+3. La limpieza debe realizarse incluso en caso de errores de configuración (en
+   la medida de lo posible).
+
+4. No hagas lógica adicional en `TestMain` que no esté relacionada con el medio
+   ambiente.
+
+#### Consejos prácticos:
+
+1. No confíe únicamente en `TestMain` para aislar las pruebas dentro de un
+   paquete: a menudo aún es necesaria la configuración/desmontaje local en
+   pruebas específicas.
+
+2. Si es posible, prefiera mecanismos más ligeros (`t.Cleanup`) a nivel de
+   prueba; `TestMain` uso para contexto de lote real.
+
+3. En pruebas paralelas, supervise cuidadosamente el estado compartido
+   inicializado en `TestMain`.
+
+#### Conclusión:
+
+`TestMain`: herramienta de orquestación por lotes del entorno de prueba: una
+configuración, una ejecución de todas las pruebas, una limpieza. Es apropiado
+cuando necesita controlar el ciclo de vida de los recursos compartidos para todo
+el paquete.
+
+</details>

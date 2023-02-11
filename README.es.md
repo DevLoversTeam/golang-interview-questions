@@ -6953,3 +6953,72 @@ cuando necesita controlar el ciclo de vida de los recursos compartidos para todo
 el paquete.
 
 </details>
+
+
+<details>
+<summary>113. ¿Cómo utilizar archivos dorados?</summary>
+
+#### Go
+
+`Golden files` son archivos de referencia con el resultado esperado con los que
+la prueba compara el resultado real. El enfoque es particularmente útil para
+formateadores, generadores de código, serialización y cualquier salida de
+texto/estructura.
+
+#### Flujo de trabajo básico:
+
+1. Generar el resultado con la función probada.
+
+2. Lea el archivo `.golden` correspondiente.
+
+3. Compare la salida real con la estándar.
+
+4. Si hay una diferencia, la prueba falla con la diferencia.
+
+#### Estructura típica:
+
+1. Entrada de prueba (`testdata/input/...`).
+
+2. Estándares (`testdata/golden/...`).
+
+3. Pruebas basadas en tablas, donde cada caso tiene su propio archivo dorado.
+
+#### Práctica muy útil: modo de actualización:
+
+1. Agregue una bandera como `-update`.
+
+2. Si está habilitado, la prueba sobrescribe los archivos dorados con el nuevo
+   resultado.
+
+3. Esto acelera el soporte para puntos de referencia con cambios de
+   comportamiento legítimos.
+
+#### A qué prestar atención:
+
+1. **Salida de determinismo:** antes de la comparación, normalice el orden de
+   los datos, las marcas de tiempo y los valores aleatorios.
+
+2. **Diferencia cualitativa:** en la falla de prueba debe quedar claro qué
+   cambió exactamente.
+
+3. **No abuses:** los archivos dorados para "cajas negras" grandes sin
+   comprobaciones semánticas pueden dificultar el diagnóstico.
+
+#### Cuándo las limas doradas son las más apropiadas:
+
+1. Representación/generación de texto.
+
+2. Transformación JSON/XML/config.
+
+3. Salida CLI.
+
+4. Compiladores, analizadores, generadores de código.
+
+#### Conclusión:
+
+Golden files es una herramienta práctica para pruebas de resultados de
+contratos. Al proporcionar determinismo y un proceso de actualización
+conveniente, brindan una protección rápida y clara contra regresiones no
+deseadas en el formato de resultados.
+
+</details>

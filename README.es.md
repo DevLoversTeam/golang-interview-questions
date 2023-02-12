@@ -7022,3 +7022,60 @@ conveniente, brindan una protección rápida y clara contra regresiones no
 deseadas en el formato de resultados.
 
 </details>
+
+
+<details>
+<summary>114. ¿Cómo probar correctamente el código Go que utiliza `time.Now()` para que las pruebas sean deterministas?</summary>
+
+#### Go
+
+`time.Now()` hace que las pruebas no sean deterministas porque devuelve la hora
+actual real. Para que las pruebas sean estables, el tiempo debe inyectarse, no
+leerse directamente dentro de la lógica empresarial.
+
+#### Enfoque canónico:
+
+1. Exportar fuente de tiempo a la dependencia:
+
+- función `now func() time.Time`;
+
+- interfaz `Clock` con el método `Now()`.
+
+2. En producción, transferir el reloj real (`time.Now`).
+
+3. Transmitir una hora fija (reloj falso) en la prueba.
+
+#### Por qué funciona:
+
+1. El resultado no depende del momento en que se inicia la prueba.
+
+2. Se acabaron los escenarios poco habituales de "a veces falla, a veces no".
+
+3. Verifique fácilmente los casos extremos: fechas límite, TTL, fechas de
+   transición, zonas horarias.
+
+#### Prácticas adicionales:
+
+1. No compare valores de tiempo con una precisión "dura" de milisegundos a menos
+   que lo requiera el dominio.
+
+2. Para pruebas con temporizadores/retrasos, utilice un reloj controlado o
+   suficientes buffers de tiempo.
+
+3. Reparar `Location/UTC` explícitamente para evitar dependencias del entorno.
+
+#### Qué no hacer:
+
+1. Dejar `time.Now()` en la profundidad de la lógica del dominio sin posibilidad
+   de sustitución.
+
+2. Rescatar `time.Sleep`s en pruebas ralentiza y no garantiza la estabilidad.
+
+#### Conclusión:
+
+Las pruebas de tiempo deterministas en Go se basan en la inversión de
+dependencia: el tiempo es un insumo, no un efecto secundario global. La
+inyección de fuente de reloj hace que las pruebas sean rápidas, reproducibles y
+arquitectónicamente limpias.
+
+</details>

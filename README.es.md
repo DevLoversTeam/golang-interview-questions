@@ -7079,3 +7079,62 @@ inyección de fuente de reloj hace que las pruebas sean rápidas, reproducibles 
 arquitectónicamente limpias.
 
 </details>
+
+
+<details>
+<summary>115. ¿Cómo acelera `t.Parallel()` el conjunto de pruebas y dónde puede interrumpirlos?</summary>
+
+#### Go
+
+`t.Parallel()` permite que las pruebas (o subpruebas) se ejecuten
+simultáneamente, lo que normalmente reduce el tiempo de ejecución general en
+entornos de múltiples núcleos. Pero la concurrencia sin aislamiento convierte
+fácilmente las pruebas estables en pruebas inestables.
+
+#### Cómo acelera las ejecuciones:
+
+1. Las pruebas independientes se ejecutan simultáneamente.
+
+2. Mejor uso de CPU y esperas de E/S.
+
+3. Un gran conjunto de pruebas pequeñas se ejecuta mucho más rápido en CI.
+
+#### Donde `t.Parallel()` puede romper las pruebas:
+
+1. **Estado mutable compartido:** variables globales, cachés en memoria
+   compartidas, configuraciones estáticas sin sincronización.
+
+2. **Recursos compartidos externos:** un esquema/tabla de base de datos, un
+   puerto, un archivo, un directorio de datos temporal.
+
+3. **Dependencia de la orden de ejecución:** si una prueba espera implícitamente
+   que ya se haya ejecutado otra.
+
+4. **Efectos secundarios del entorno:** cambios en las variables de entorno,
+   zona horaria y directorio de trabajo sin aislamiento.
+
+5. **Errores en subpruebas basadas en tablas:** captura de variables en bucle
+   sin copia local en el cierre.
+
+#### Cómo utilizar de forma segura:
+
+1. Paralelo solo pruebas completamente aisladas.
+
+2. Evite el estado mutable global o protéjalo con sincronización.
+
+3. Utilice recursos temporales únicos (`t.TempDir`, accesorios individuales).
+
+4. Para pruebas de base de datos: aislamiento transaccional o un espacio de
+   nombres/esquema separado por prueba.
+
+5. Ejecute el conjunto con `-race` para la detección temprana de problemas de
+   competencia.
+
+#### Conclusión:
+
+`t.Parallel()` es un poderoso acelerador de pruebas, pero solo bajo un estricto
+aislamiento de casos. Si las pruebas tienen estado compartido o dependencias
+ocultas, la concurrencia expondrá estos defectos y hará que la ejecución sea
+inestable.
+
+</details>

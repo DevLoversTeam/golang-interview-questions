@@ -7138,3 +7138,56 @@ ocultas, la concurrencia expondrá estos defectos y hará que la ejecución sea
 inestable.
 
 </details>
+
+
+<details>
+<summary>116. ¿Cómo medir la cobertura del código?</summary>
+
+#### Go
+
+En Go, la cobertura del código se mide mediante herramientas integradas `go
+test` a través de instrumentación de ejecución de pruebas. Esto proporciona
+métricas que muestran qué fracción de líneas/bloques de código se ejecutaron
+durante la ejecución de la prueba.
+
+#### Comandos básicos:
+
+1. Cobertura total por paquete: `go test -cover ./...`
+
+2. Colección de perfiles de cobertura: `go test -coverprofile=coverage.out
+   ./...`
+
+3. Ver estadísticas resumidas: `go tool cover -func=coverage.out`
+
+4. Informe HTML resaltado: `go tool cover -html=coverage.out`
+
+#### Lo que es importante entender:
+
+1. La cobertura muestra el hecho de que se realizan comprobaciones invariantes,
+   no completas.
+
+2. Un porcentaje alto no garantiza la ausencia de errores.
+
+3. El porcentaje bajo es una señal de áreas de prueba ciegas.
+
+#### Consejos prácticos:
+
+1. Analice la cobertura junto con la criticidad del código, sin perseguir el
+   "100%".
+
+2. Cubra los escenarios negativos y extremos por separado.
+
+3. Utilizar la cobertura como un indicador de brecha, no como un fin en sí
+   mismo.
+
+4. En CI, guarde el perfil y realice un seguimiento de la dinámica de cobertura
+   entre RP.
+
+#### Conclusión:
+
+La cobertura de código en Go se mide mediante las herramientas estándar (`go
+test` + `go tool cover`) y es una métrica útil de la calidad de la revisión de
+pruebas. Proporciona el mayor valor en combinación con comprobaciones semánticas
+y un diseño de prueba significativo.
+
+</details>

@@ -7191,3 +7191,73 @@ pruebas. Proporciona el mayor valor en combinación con comprobaciones semántic
 y un diseño de prueba significativo.
 
 </details>
+
+
+<details>
+<summary>117. ¿Qué es el benchmarking y cómo ejecutarlo? ¿Cómo implementa `testing.B` el punto de referencia y qué restablece `b.ResetTimer`?</summary>
+
+#### Go
+
+`Benchmarking` en Go es una medición del rendimiento del código (tiempo,
+asignaciones, rendimiento) en condiciones controladas para comparar
+implementaciones y validar el efecto de las optimizaciones.
+
+#### Cómo ejecutar el punto de referencia:
+
+1. Las funciones tienen la forma: `func BenchmarkXxx(b *testing.B)`.
+
+2. Lanzamiento base: `go test -bench=.`
+
+3. Solo punto de referencia específico: `go test -bench=BenchmarkParse`
+
+4. Medida de asignación: `go test -bench=. -benchmem`
+
+#### Cómo funciona `testing.B`:
+
+1. El propio corredor elige `b.N` (número de iteraciones) para obtener una
+   dimensión estable.
+
+2. Su código en la función de referencia se ejecuta en un bucle `for i := 0; i <
+   b.N; i++`.
+
+3. Como resultado, la prueba clasifica el rendimiento en `ns/op`, y con
+   `-benchmem` también `B/op`, `allocs/op`.
+
+#### Qué hace `b.ResetTimer`:
+
+1. Restablecer el temporizador de medición acumulada.
+
+2. No cuenta el código de preparación ejecutado antes de llamar a `ResetTimer`
+   por última vez.
+
+3. Se utiliza después de la fase de configuración para medir sólo la parte de
+   trabajo "limpia".
+
+#### Métodos útiles relacionados:
+
+1. `b.StopTimer()` / `b.StartTimer()`: deshabilita/habilita temporalmente el
+   cronometraje.
+
+2. `b.ReportAllocs()` — estadísticas de asignación de fuerza.
+
+#### Conclusión práctica:
+
+Benchmark en Go no es una ejecución única, sino una herramienta de comparación
+en las mismas condiciones. `testing.B` escala automáticamente las iteraciones y
+`b.ResetTimer` separa la capacitación de la medición del desempeño real.
+
+#### Ejemplo:
+
+```go
+func BenchmarkParse(b *testing.B) {
+	input := []byte(`{"x":1}`)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		var v map[string]int
+		_ = json.Unmarshal(input, &v)
+	}
+}
+```
+
+</details>

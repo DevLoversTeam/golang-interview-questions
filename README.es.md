@@ -7261,3 +7261,69 @@ func BenchmarkParse(b *testing.B) {
 ```
 
 </details>
+
+
+<details>
+<summary>118. ¿Cómo ejecutar benchmarks con control de tiempo y número de iteraciones?</summary>
+
+#### Go
+
+En Go, los puntos de referencia se pueden ejecutar con control de la duración de
+la medición y un número fijo de iteraciones a través de los parámetros `go
+test`. Esto es importante para la reproducibilidad y la comparación correcta de
+los resultados.
+
+#### Banderas principales:
+
+1. **`-benchtime`**
+
+- establece la duración de la ejecución de la prueba comparativa (por ejemplo,
+  `-benchtime=5s`);
+
+- El propio runner elige `b.N` para ejecutarse en esta ventana de tiempo.
+
+2. **`-benchtime=Nx`**
+
+- corrige el número exacto de iteraciones (por ejemplo, `-benchtime=100000x`);
+
+- útil para comparaciones A/B reproducibles en el mismo `N`.
+
+3. **`-count`**
+
+- número de reposiciones (por ejemplo, `-count=10`);
+
+- ayuda a evaluar la estabilidad y dispersión de los resultados.
+
+4. **`-bench`**
+
+- selección de funciones de referencia específicas por patrón.
+
+5. **`-benchmem`**
+
+- genera adicionalmente asignaciones (`B/op`, `allocs/op`).
+
+#### Ejemplos prácticos de escenarios:
+
+1. Ejecución estable más larga: `go test -bench=. -benchtime=5s -benchmem`
+
+2. Fijo `N`: `go test -bench=BenchmarkFoo -benchtime=200000x -benchmem`
+
+3. Múltiples repeticiones de estadísticas: `go test -bench=BenchmarkFoo
+   -benchtime=2s -count=10`
+
+#### ¿Por qué es necesario?
+
+1. Reduce el ruido de tiradas cortas.
+
+2. Comparar optimizaciones en las mismas condiciones.
+
+3. Recibir datos estadísticamente significativos para el análisis `benchstat`.
+
+#### Conclusión:
+
+El control del tiempo y las iteraciones en los puntos de referencia de Go es un
+requisito previo para un análisis de rendimiento de alta calidad. `-benchtime` y
+`-count` proporcionan estabilidad de medición, y el modo `Nx` proporciona un
+control estricto sobre el número de ejecuciones.
+
+</details>

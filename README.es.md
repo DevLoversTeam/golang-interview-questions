@@ -7327,3 +7327,65 @@ requisito previo para un análisis de rendimiento de alta calidad. `-benchtime` 
 control estricto sobre el número de ejecuciones.
 
 </details>
+
+
+<details>
+<summary>119. ¿Cómo compara la herramienta `benchstat` dos conjuntos de resultados de referencia y cómo determina la importancia de los cambios?</summary>
+
+#### Go
+
+`benchstat` compara dos (o más) conjuntos de resultados de referencia y muestra
+si los cambios en las métricas (`ns/op`, `B/op`, `allocs/op`) son
+estadísticamente significativos y no son ruido de ejecución aleatorio.
+
+#### Cómo funciona la comparación:
+
+1. Recopila múltiples ejecuciones "antes" y "después" (generalmente a través de
+   `-count`).
+
+2. `benchstat` agrupa los resultados con los mismos nombres de puntos de
+   referencia.
+
+3. Calcula valores centrales (normalmente estimaciones robustas/similares a la
+   mediana) y la diferencia porcentual.
+
+4. Realiza una prueba estadística y genera `p-value`.
+
+#### Cómo se determina la importancia:
+
+1. Si `p-value` está por debajo de un nivel de umbral (normalmente 0,05), el
+   cambio se considera estadísticamente significativo.
+
+2. Si `p-value` está por encima del umbral, la diferencia puede ser ruido
+   ambiental.
+
+3. Por eso es importante observar **tanto el delta como el valor p** al mismo
+   tiempo.
+
+#### Qué se necesita para un análisis correcto:
+
+1. Mismas condiciones de lanzamiento (máquina, carga, configuración).
+
+2. Número suficiente de repeticiones (`-count`); de lo contrario, las
+   conclusiones son frágiles.
+
+3. Sin ruidos extraños (procesos en segundo plano, estrangulamiento térmico,
+   entorno de CI inestable).
+
+#### Regla general:
+
+1. No confíes en los desechables `go test -bench`.
+
+2. Recopilar series de resultados de antes/después.
+
+3. Analice a través de `benchstat` y luego verifique si el cambio es importante
+   para las métricas comerciales (latencia/rendimiento/SLA) y no solo "bonito"
+   en una tabla.
+
+#### Conclusión:
+
+`benchstat` convierte números de referencia sin procesar en una comparación
+estadísticamente sólida. Ayuda a distinguir un efecto de rendimiento real de una
+dispersión aleatoria y a tomar decisiones de ingeniería basadas en datos.
+
+</details>

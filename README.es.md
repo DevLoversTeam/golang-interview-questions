@@ -7389,3 +7389,60 @@ estadísticamente sólida. Ayuda a distinguir un efecto de rendimiento real de u
 dispersión aleatoria y a tomar decisiones de ingeniería basadas en datos.
 
 </details>
+
+
+<details>
+<summary>120. ¿Qué son las pruebas difusas?</summary>
+
+#### Go
+
+`Fuzz testing` es un método de prueba automatizado en el que el sistema recibe
+una gran cantidad de datos de entrada semialeatorios o mutados para detectar
+fallas, pánicos, manejo incorrecto de casos extremos e infracciones invariantes.
+
+#### Cómo funciona en Go:
+
+1. Establezca la función fuzz (`func FuzzXxx(f *testing.F)`).
+
+2. Agregar entradas semilla (ejemplos iniciales).
+
+3. El fuzzer muta estas entradas y genera nuevas combinaciones.
+
+4. Si encuentra un bloqueo o una infracción de verificación, mantenga el caso
+   reproducible "mínimo".
+
+#### Lo que las pruebas difusas encuentran mejor:
+
+1. Casos extremos inesperados de analizadores/decodificadores.
+
+2. Entra en pánico ante datos de entrada incorrectos o "rotos".
+
+3. Defectos lógicos en el procesamiento de líneas, bytes, formatos, protocolos.
+
+#### Por qué es valioso:
+
+1. Cubre el espacio de entrada mucho más que las cajas unitarias manuales.
+
+2. Bueno para detectar fallas de seguridad en código similar a un analizador.
+
+3. Agrega resistencia API a cargas útiles "tóxicas" del mundo exterior.
+
+#### Recomendaciones prácticas:
+
+1. Formule invariantes explícitas (que deben ser verdaderas para cualquier
+   entrada).
+
+2. Comience con superficies críticas: análisis, deserialización, normalización.
+
+3. Después de encontrar un caso, agréguelo como prueba de regresión.
+
+4. Combine fuzzing con `-race` y pruebas unitarias/de integración regulares.
+
+#### Conclusión:
+
+La prueba Fuzz en Go es una forma sistemática de "romper" el código con datos de
+entrada para encontrar defectos que son casi imposibles de predecir manualmente.
+Es una de las herramientas más poderosas para aumentar la confiabilidad y
+seguridad del procesamiento de datos.
+
+</details>

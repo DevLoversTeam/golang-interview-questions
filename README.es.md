@@ -7446,3 +7446,79 @@ Es una de las herramientas más poderosas para aumentar la confiabilidad y
 seguridad del procesamiento de datos.
 
 </details>
+
+
+<details>
+<summary>121. ¿Cuáles son las formas de ejecutar pruebas desde la base de datos en CI (Testcontainers, docker-compose, servicios de GitHub Actions)? ¿Cuáles son las ventajas de cada enfoque?</summary>
+
+#### Go
+
+Para las pruebas de integración con DB en CI, se utilizan con mayor frecuencia
+tres enfoques: `Testcontainers`, `docker-compose` y `GitHub Actions services`.
+La elección depende del nivel de aislamiento que desee, la complejidad de la
+pila y la velocidad de la canalización.
+
+#### 1) Contenedores de prueba
+
+**Esencia:** los contenedores se generan mediante programación a partir de
+pruebas y se encuentran activos durante la ejecución de la prueba.
+
+**Ventajas:**
+
+1. Proximidad máxima al código de prueba (más adelante se describe junto a las
+   pruebas).
+
+2. Alto aislamiento de casos y entorno predecible.
+
+3. Gestión flexible del ciclo de vida de la base de datos, versiones, scripts de
+   inicio.
+
+4. Conveniente para la reproducción local de scripts de CI.
+
+#### 2) composición acoplable
+
+**Esencia:** los servicios (DB + dependencias) se describen en
+`docker-compose.yml`, se plantean antes de las pruebas como una sola
+composición.
+
+**Ventajas:**
+
+1. Una descripción simple y visual de un entorno multiservicio.
+
+2. Es fácil agregar cachés, brokers, varias bases de datos al mismo tiempo.
+
+3. Mismo modelo para desarrollo local y CI.
+
+4. Buena opción para kits de integración/e2e.
+
+#### 3) Servicios de acciones de GitHub
+
+**Esencia:** el contenedor de base de datos se declara directamente en el
+trabajo del flujo de trabajo como un contenedor de servicios.
+
+**Ventajas:**
+
+1. El script nativo de CI más simple para necesidades básicas.
+
+2. Código mínimo en pruebas y orquestación separada.
+
+3. Inicio rápido para uno o dos servicios (Postgres, Redis, etc.).
+
+#### Comparación práctica:
+
+1. **Flexibilidad y aislamiento**: Testcontainers > docker-compose > servicios.
+
+2. **Fácil de iniciar**: servicios > docker-compose > Testcontainers.
+
+3. **Stands compuestos multiservicio**: docker-compose / Testcontainers.
+
+4. **CI lacónico para base de datos simple**: servicios de GitHub Actions.
+
+#### Conclusión:
+
+No existe un enfoque universalmente "mejor". Para un CI simple, los servicios
+son suficientes; docker-compose es apropiado para un entorno de integración
+complejo; Para las pruebas más manejables y reproducibles a nivel de código, el
+enfoque más sólido son los Testcontainers.
+
+</details>

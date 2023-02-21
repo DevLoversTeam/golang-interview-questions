@@ -7577,3 +7577,71 @@ la confiabilidad del código al complementar el compilador y las pruebas,
 especialmente en bases de código Go de equipos grandes.
 
 </details>
+
+
+<details>
+<summary>123. ¿Cómo crear un perfil de una aplicación Go (`pprof`)?</summary>
+
+#### Go
+
+`pprof` es una herramienta de creación de perfiles de Go estándar que muestra
+dónde van la CPU, la memoria, las asignaciones, los bloqueos y los tiempos de
+espera. Esta es una forma básica de encontrar cuellos de botella reales antes de
+las optimizaciones.
+
+#### Qué se puede perfilar:
+
+1. **Perfil de CPU**: donde se gasta el tiempo de CPU.
+
+2. **Heap / allocs**: quién asigna la memoria y qué permanece "vivo".
+
+3. **Perfil de gorutina**: estado y número de gorutinas.
+
+4. **Bloqueo/perfil mutex**: contención, bloqueo, retrasos en la sincronización.
+
+#### Cómo conectarse al servicio:
+
+1. Importar `net/http/pprof` (normalmente mediante importación de efectos
+   secundarios).
+
+2. Abrir punto final de depuración (a menudo un puerto separado o una ruta
+   protegida).
+
+3. Eliminar perfil bajo carga real/representativa.
+
+#### Flujo de trabajo de análisis típico:
+
+1. Recopilar perfil de CPU/montón.
+
+2. Abrir a través de `go tool pprof` (arriba/lista/web).
+
+3. Buscar rutas activas/nodos de asignación.
+
+4. Realizar un cambio de punto.
+
+5. Repita la creación de perfiles y compare antes/después.
+
+#### Equipos prácticos (idea general):
+
+1. Recopilación de perfil desde el punto final.
+
+2. Análisis local: `go tool pprof <profile>`
+
+3. Visualización gráfica/similar a una llama a través del modo web.
+
+#### Principios importantes:
+
+1. No optimice "por sentimiento", solo según los datos del perfil.
+
+2. Perfil en condiciones cercanas a la producción.
+
+3. Compruebe si la optimización no ha degradado otras métricas (latencia de
+   cola, memoria).
+
+#### Conclusión:
+
+`pprof` es la herramienta principal para la optimización de prueba de concepto
+de aplicaciones Go: muestra una imagen real de los costos y le permite tomar
+decisiones de ingeniería basadas en mediciones, no en la intuición.
+
+</details>

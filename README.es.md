@@ -7706,3 +7706,75 @@ través de `GOOS/GOARCH`, lo que hace que el lenguaje sea muy conveniente para
 versiones multiplataforma.
 
 </details>
+
+
+<details>
+<summary>125. ¿Cómo contener una aplicación Go en Docker?</summary>
+
+#### Go
+
+La creación de contenedores de una aplicación Go consiste en crear un binario y
+empaquetarlo en una imagen de Docker para un lanzamiento predecible en cualquier
+entorno (local, CI, Kubernetes, nube).
+
+#### Enfoque canónico:
+
+1. Utilice Dockerfile de varias etapas:
+
+- stage build: Ir a compilación binaria;
+
+- stage runtime: Imagen mínima para ejecutar.
+
+2. En la etapa de construcción:
+
+- copiar `go.mod/go.sum`, cargar dependencias;
+
+- copiar código;
+
+- compila el binario (`go build`).
+
+3. En la etapa de ejecución:
+
+- ponga solo los archivos binarios finales y los archivos de ejecución
+  necesarios;
+
+- set `ENTRYPOINT/CMD`.
+
+#### Por qué es correcto:
+
+1. Tamaño de imagen final más pequeño.
+
+2. Mejor seguridad (menos paquetes redundantes en tiempo de ejecución).
+
+3. Compilaciones reproducibles en CI/CD.
+
+4. Implementación más rápida y arranque en frío.
+
+#### Recomendaciones prácticas:
+
+1. Agregue `.dockerignore` para evitar introducir archivos adicionales en el
+   contexto de compilación.
+
+2. Ejecute el proceso como usuario no root en la imagen de tiempo de ejecución.
+
+3. Establezca explícitamente `EXPOSE`, comprobación de estado (si es necesario)
+   y variables de entorno.
+
+4. Utilice una imagen/etiqueta base fijada para mayor previsibilidad.
+
+#### Ciclo de vida típico:
+
+1. `docker build` → recibió una imagen.
+
+2. `docker run` → comprobado localmente.
+
+3. Enviar al registro → implementar en el entorno de destino.
+
+#### Conclusión:
+
+La creación de contenedores de una aplicación Go en Docker funciona mejor
+mediante un enfoque de varias etapas: compilar por separado, ejecutar por
+separado. Esto proporciona una imagen de producción compacta, segura y
+operativamente cómoda.
+
+</details>

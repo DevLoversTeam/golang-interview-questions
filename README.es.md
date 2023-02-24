@@ -7778,3 +7778,73 @@ separado. Esto proporciona una imagen de producción compacta, segura y
 operativamente cómoda.
 
 </details>
+
+
+<details>
+<summary>126. ¿Cómo reducir el tamaño de una imagen de Docker para una aplicación Go (compilación de varias etapas)?</summary>
+
+#### Go
+
+La forma más efectiva de reducir la imagen de una aplicación Go es la
+compilación en varias etapas: compilar en una imagen de compilación "pesada" y
+ejecutarla en la imagen de tiempo de ejecución más mínima con solo el binario
+final.
+
+#### Pasos clave de optimización:
+
+1. **Dockerfile de varias etapas**
+
+- etapa 1: `golang` para montaje;
+
+- etapa 2: tiempo de ejecución reducido (`distroless`/`scratch`/base mínima).
+
+2. **Solo es necesario copiar en tiempo de ejecución**
+
+- binario;
+
+- si es necesario, certificados CA/datos de zona horaria/configuración.
+
+3. **Binario estático (cuando corresponda)**
+
+- reduce las dependencias del tiempo de ejecución;
+
+- es bueno para looks minimalistas.
+
+4. **Optimizar el propio binario**
+
+- indicadores de enlace (`-ldflags="-s -w"`) para reducir la información del
+  servicio.
+
+5. **Alfabetizado `.dockerignore`**
+
+- eliminar pruebas, `.git`, artefactos, cachés locales del contexto de
+  compilación.
+
+6. **Almacenamiento en caché de dependencia en la etapa de compilación**
+
+- copie `go.mod/go.sum` por separado antes de copiar el código completo.
+
+#### Prácticas adicionales:
+
+1. Imágenes de base de espuma por resumen/etiqueta para reproducibilidad.
+
+2. Trabajar con un usuario no root.
+
+3. Verifique periódicamente el tamaño de la imagen y las vulnerabilidades en CI.
+
+#### Qué evitar:
+
+1. El tiempo de ejecución en una imagen `golang` completa no es necesario.
+
+2. Copiando el código fuente a la capa final.
+
+3. Herramientas de depuración redundantes en la imagen de producción.
+
+#### Conclusión:
+
+Una imagen Go compacta es el resultado de una segregación adecuada de las capas
+de construcción/tiempo de ejecución. Múltiples etapas + tiempo de ejecución
+mínimo + contexto de compilación limpio brindan el mejor equilibrio entre
+tamaño, seguridad y velocidad de implementación.
+
+</details>

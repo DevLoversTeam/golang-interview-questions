@@ -7848,3 +7848,76 @@ mínimo + contexto de compilación limpio brindan el mejor equilibrio entre
 tamaño, seguridad y velocidad de implementación.
 
 </details>
+
+
+<details>
+<summary>127. ¿Qué herramientas se utilizan habitualmente para recopilar métricas y registros? ¿Cómo funciona Prometheus?</summary>
+
+#### Go
+
+Los sistemas modernos suelen combinar varias clases de herramientas: métricas,
+registros, seguimiento, visualización y alertas. Esto ofrece una visión completa
+del comportamiento del servicio y agiliza el diagnóstico de incidencias.
+
+#### Pila de herramientas típica:
+
+1. **Métricas**
+
+- Prometheus, VictoriaMetrics, Graphite (menos común en sistemas más nuevos).
+
+2. **Visualización**
+
+- Grafana (paneles de control, SLO, correlación de métricas).
+
+3. **Registros**
+
+- Loki, Elasticsearch/OpenSearch + Kibana, Fluent Bit/Fluentd, Vector.
+
+4. **Rastreo**
+
+- OpenTelemetry + Jaeger/Tempo/Zipkin.
+
+5. **Alerta**
+
+- Alertmanager (a menudo asociado con Prometheus).
+
+#### Cómo funciona Prometeo:
+
+1. **Modelo de recopilación de extracción:** Prometheus "extrae" periódicamente
+   los puntos finales HTTP de los servicios (normalmente `/metrics`) y toma los
+   valores actuales de las métricas.
+
+2. **Almacenamiento de series temporales:** cada métrica con un conjunto de
+   etiquetas se almacena como una serie temporal.
+
+3. **Consultas PromQL:** agregación, funciones de tasa, análisis de percentiles,
+   correlaciones.
+
+4. **Motor de reglas:**
+
+- reglas de registro para cálculos preliminares;
+
+- reglas de alerta para generar alertas.
+
+5. **Integración con Alertmanager:** deduplicación, enrutamiento, agrupación y
+   notificaciones (Slack, correo electrónico, PagerDuty).
+
+#### Por qué Prometheus es popular:
+
+1. Modelo operativo simple (pull + archivos de configuración).
+
+2. Potente PromQL.
+
+3. Un gran ecosistema de exportadores.
+
+4. Buena integración con Kubernetes y el entorno nativo de la nube.
+
+#### Conclusión:
+
+Para métricas y registros, la producción generalmente utiliza una pila
+combinada: Prometheus + Grafana para métricas, una plataforma de registro
+separada para registros y seguimiento para diagnósticos entre servicios.
+Prometheus en esta pila actúa como un núcleo de alerta y monitoreo de series
+temporales.
+
+</details>

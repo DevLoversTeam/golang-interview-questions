@@ -7921,3 +7921,67 @@ Prometheus en esta pila actúa como un núcleo de alerta y monitoreo de series
 temporales.
 
 </details>
+
+
+<details>
+<summary>128. ¿Cuál es la diferencia entre microservicios y un monolito? ¿Cuáles son las ventajas y desventajas?</summary>
+
+#### Go
+
+Los monolitos y los microservicios no son "moda", sino diferentes estrategias de
+descomposición del sistema. La elección entre ellos está determinada por el
+tamaño del equipo, la complejidad del dominio, los requisitos de autonomía de
+lanzamiento y la madurez operativa.
+
+#### Monolito:
+
+**Esencia:** una aplicación, una base de código (o tiempo de ejecución
+estrechamente acoplado), normalmente un punto de implementación.
+
+**Ventajas:**
+
+1. Fácil inicio y menor complejidad operativa.
+
+2. Depuración local más sencilla e integridad transaccional en proceso.
+
+3. Desarrollo más rápido para equipos pequeños/productos en etapa inicial.
+
+**Desventajas:**
+
+1. Es más difícil escalar módulos "activos" individuales de forma independiente.
+
+2. A medida que el código crece, también crece la conectividad y el riesgo de
+   lanzamientos lentos.
+
+3. Una implementación grande dificulta los cambios independientes frecuentes.
+
+#### Microservicios:
+
+**Esencia:** el sistema está dividido en servicios autónomos con sus propios
+límites de responsabilidad, contratos API y ciclo de vida independiente.
+
+**Ventajas:**
+
+1. Lanzamientos independientes de equipos y servicios.
+
+2. Escalado de puntos de componentes individuales.
+
+3. Flexibilidad tecnológica a nivel de servicio (con gobernanza).
+
+**Desventajas:**
+
+1. Alta complejidad operativa (red, descubrimiento, observabilidad, seguridad).
+
+2. Coherencia distribuida y transacciones complejas entre servicios.
+
+3. Más costoso de depurar debido a la interacción de la red y al mayor número de
+   piezas móviles.
+
+#### Conclusión práctica:
+
+Un monolito suele ser el mejor comienzo y puede resultar bastante eficaz durante
+mucho tiempo. Los microservicios se justifican cuando la escala del dominio y la
+organización realmente necesita la autonomía de los equipos, el escalamiento
+independiente y una clara descomposición del servicio.
+
+</details>

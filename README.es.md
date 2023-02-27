@@ -7985,3 +7985,92 @@ organización realmente necesita la autonomía de los equipos, el escalamiento
 independiente y una clara descomposición del servicio.
 
 </details>
+
+
+<details>
+<summary>129. ¿Cómo implementar la autenticación en una arquitectura de microservicio?</summary>
+
+#### Go
+
+En los microservicios, la autenticación generalmente se basa en un proveedor de
+identidad (IdP) centralizado y un modelo orientado a tokens (generalmente
+OAuth2/OIDC + JWT). Esto le permite escalar el acceso sin duplicar la lógica de
+inicio de sesión en cada servicio.
+
+#### Diagrama canónico:
+
+1. El cliente inicia sesión en el IdP (o servicio de autenticación).
+
+2. Recibe un token de acceso (y, si es necesario, un token de actualización).
+
+3. Pasa el token de acceso en solicitudes a API Gateway/servicios.
+
+4. Los servicios validan el token (firma, período de validez, emisor, audiencia,
+   alcances).
+
+#### Dónde comprobar:
+
+1. **En API Gateway**
+
+- validación inicial de token y bloqueo de tráfico no autorizado.
+
+2. **En cada servicio (defensa en profundidad)**
+
+- nueva verificación de reclamos críticos/derechos de acceso;
+
+- no confíe únicamente en el perímetro.
+
+#### Qué debería estar en el token:
+
+1. ID de usuario/sujeto (`sub`).
+
+2. Roles/alcances/derechos (mínimo requerido).
+
+3. `iss`, `aud`, `exp`, `iat` para una validación de contexto segura.
+
+#### Prácticas de seguridad clave:
+
+1. TTL corto para token de acceso.
+
+2. Rotación regular de claves de firma (JWKS).
+
+3. TLS en todas partes (tráfico norte-sur y este-oeste).
+
+4. Principio de privilegio mínimo para ámbitos/roles.
+
+5. Separación clara entre autenticación (quién es usted) y autorización (qué
+   puede hacer).
+
+#### Para servicio a servicio:
+
+1. Utilice credenciales de máquina independientes (credenciales de cliente,
+   mTLS, identidad de servicio).
+
+2. No descargue tokens de usuario innecesariamente en lo más profundo del
+   sistema.
+
+#### Conclusión:
+
+La autenticación confiable en microservicios es un IdP centralizado, tokens con
+validación correcta en todos los límites críticos y disciplina de seguridad
+(TTL, rotación de claves, privilegios mínimos, TLS, defensa en profundidad).
+
+#### Ejemplo:
+
+```go
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tok := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+		claims, err := verifyJWT(tok)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), userClaimsKey{}, claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+```
+
+</details>

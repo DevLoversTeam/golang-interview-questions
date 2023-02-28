@@ -8074,3 +8074,93 @@ func AuthMiddleware(next http.Handler) http.Handler {
 ```
 
 </details>
+
+
+<details>
+<summary>130. ¿Cómo diseñar e implementar un API Gateway en una arquitectura de microservicio y qué tareas debería resolver?</summary>
+
+#### Go
+
+API Gateway es el único punto de entrada externo al sistema de microservicios.
+Su tarea es estandarizar el perímetro: seguridad, enrutamiento, políticas de
+tráfico, observabilidad y parcialmente orquestación de solicitudes.
+
+#### ¿Qué tareas debería resolver Gateway?
+
+1. **Enrutamiento** a los servicios requeridos (ruta/host/reglas de método).
+
+2. **Autenticación y Autorización Básica** en el perímetro.
+
+3. **Limitación/regulación de velocidad** y protección contra sobrecarga.
+
+4. **Terminación TLS**, CORS, encabezados de seguridad básicos.
+
+5. **Transformaciones de solicitud/respuesta** (si es necesario) y control de
+   versiones de API.
+
+6. **Observabilidad**: registros centralizados, métricas, contexto de
+   seguimiento.
+
+7. **Políticas de resiliencia**: tiempo de espera, reintento (precaución),
+   disyuntor.
+
+#### Principios clave de diseño:
+
+1. **Thin Gateway:** no le transfiera lógica empresarial pesada.
+
+2. **Propiedad explícita de los contratos:** quién es responsable de los puntos
+   finales y las políticas.
+
+3. **Seguridad por defecto:** denegación por defecto, privilegio mínimo.
+
+4. **Control de idempotencia y reintentos:** para evitar efectos secundarios
+   duplicados.
+
+5. **Plan de degradación:** los retrocesos/errores deben ser predecibles para el
+   cliente.
+
+#### Modelo de implementación:
+
+1. Elija una tecnología (ingreso/producto de puerta de enlace API o servicio de
+   borde propio).
+
+2. Defina la política como código (límites de velocidad, reglas de
+   autenticación, tablas de enrutamiento).
+
+3. Configurar la integración con descubrimiento de servicios y certificados.
+
+4. Implementar seguimiento de un extremo a otro (ID de correlación).
+
+5. Agregar SLO/alertas a nivel de puerta de enlace (latencia, tasa de error,
+   saturación).
+
+#### Errores típicos:
+
+1. Pasarela "gruesa" como un nuevo monolito.
+
+2. Falta de un modelo de error consistente.
+
+3. Excesivas transformaciones en el perímetro, dificultando la depuración.
+
+4. Punto único de falla sin configuración de HA.
+
+#### Conclusión:
+
+Una puerta de enlace API sólida no es un "lugar para todo", sino una capa
+perimetral disciplinada: seguridad, políticas de tráfico, observabilidad y
+enrutamiento administrado. Al mismo tiempo, la lógica empresarial debería
+permanecer en los servicios de dominio.
+
+#### Ejemplo:
+
+```yaml
+routes:
+  - path: /api/orders/*
+    upstream: orders-service
+    auth: required
+    rateLimit:
+      requestsPerMinute: 600
+    timeoutMs: 2000
+```
+
+</details>

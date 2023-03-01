@@ -8164,3 +8164,81 @@ routes:
 ```
 
 </details>
+
+
+<details>
+<summary>131. ¿Cómo funciona el descubrimiento de servicios en una arquitectura de microservicios y cómo se encuentran los servicios entre sí sin IP/hosts estáticos?</summary>
+
+#### Go
+
+`Service discovery` es un mecanismo para buscar dinámicamente instancias de
+servicio disponibles en condiciones en las que las IP/pods cambian
+constantemente (escalado automático, actualización continua, reinicios).
+
+#### Principio básico:
+
+1. La instancia de servicio está registrada en el registro de descubrimiento (o
+   el orquestador la publica automáticamente).
+
+2. El cliente o el proxy intermedio solicita los puntos finales de servicio
+   actuales.
+
+3. La solicitud se enruta a la instancia activa de acuerdo con las reglas de
+   equilibrio.
+
+#### Cómo se "encuentran" los servicios entre sí:
+
+1. **Descubrimiento basado en DNS**
+
+- El servicio  hace referencia a un nombre estable (`service-name.namespace`) y
+  DNS devuelve las IP actuales.
+
+2. **Descubrimiento basado en registros**
+
+- un registro de servicios independiente (o API de plataforma) proporciona una
+  lista de instancias en buen estado.
+
+3. **Malla de servicio/sidecar**
+
+- Se accede a la aplicación  localmente y el sidecar maneja el descubrimiento,
+  el reintento, el equilibrio de carga y TLS.
+
+#### Descubrimiento del lado del cliente versus del lado del servidor:
+
+1. **Lado del cliente**
+
+- el propio cliente recibe la lista de instancias y elige el objetivo.
+
+2. **Lado del servidor**
+
+- el cliente accede al punto final estable (LB/proxy) y la selección de
+  instancia la realiza la capa de infraestructura.
+
+#### Elementos críticos de confiabilidad:
+
+1. Controles de estado y exclusión rápida de instancias "muertas".
+
+2. TTL/almacenamiento en caché con control de antigüedad de registros.
+
+3. Observabilidad de la capa de descubrimiento (latencia, tasa de fallas,
+   abandono).
+
+#### Conclusión:
+
+El descubrimiento de servicios elimina la necesidad de IP/hosts estáticos al
+proporcionar direccionamiento de servicios dinámico a través de registro, DNS o
+malla. Esta es una condición fundamental para la escalabilidad y elasticidad de
+un sistema de microservicios.
+
+#### Ejemplo:
+
+```go
+// У Kubernetes сервіс звертається за DNS-іменем, а не за статичним IP.
+resp, err := http.Get("http://orders-service.default.svc.cluster.local/health")
+if err != nil {
+	return err
+}
+defer resp.Body.Close()
+```
+
+</details>

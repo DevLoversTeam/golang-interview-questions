@@ -8242,3 +8242,75 @@ defer resp.Body.Close()
 ```
 
 </details>
+
+
+<details>
+<summary>132. ¿Cómo evitar un acoplamiento estrecho en la arquitectura de microservicios para que el sistema siga siendo escalable y se pueda cambiar fácilmente?</summary>
+
+#### Go
+
+`Tight coupling` en microservicios ocurre cuando cambiar un servicio obliga a
+otros a cambiar. Se necesitan contratos claros, límites de dominio autónomos y
+control de dependencia para que el sistema siga siendo escalable y
+evolucionable.
+
+#### Principales prácticas de desacoplamiento:
+
+1. **Contextos delimitados y propiedad clara del servicio**
+
+- cada servicio es responsable de su dominio y sus datos;
+
+- evitar una base "común" como canal de integración.
+
+2. **Interacción orientada a contratos**
+
+- API/esquemas versionados;
+
+- compatibilidad con versiones anteriores como política obligatoria.
+
+3. **Integración de eventos cuando sea posible**
+
+- publish/subscribe reduce la dependencia sincrónica de solicitud-respuesta.
+
+4. **Capa anticorrupción**
+
+- se adapta entre dominios para que los modelos de otras personas no se
+  "filtren" en su servicio.
+
+5. **Interfaces estables, implementación inestable**
+
+- los cambios internos en el servicio no deberían molestar a los consumidores.
+
+6. **Idempotencia y retrorresistencia**
+
+- para scripts asíncronos es la clave para un enlace más flexible.
+
+#### Salvaguardias organizativas y técnicas:
+
+1. Pruebas de contrato impulsadas por el consumidor.
+
+2. Gobierno API (reglas de evolución de contratos).
+
+3. Observabilidad clara entre servicios (identificación de seguimiento, métricas
+   de dependencia).
+
+4. Restricciones en distribución y profundidad de cadenas síncronas.
+
+#### Qué evitar:
+
+1. Tablas/esquemas compartidos entre equipos.
+
+2. API Gateway "inteligente" que encapsula la lógica empresarial de muchos
+   servicios.
+
+3. Contratos no definidos y dependencias implícitas a través de campos de carga
+   útil internos.
+
+#### Conclusión:
+
+Evitar un acoplamiento estrecho es una disciplina de límites, contratos y
+evolución. Los servicios deben ser autónomos en datos y lanzamientos, integrarse
+mediante contratos estables y resistir los cambios de vecinos sin fallas en
+cascada.
+
+</details>

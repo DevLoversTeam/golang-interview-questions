@@ -8314,3 +8314,63 @@ mediante contratos estables y resistir los cambios de vecinos sin fallas en
 cascada.
 
 </details>
+
+
+<details>
+<summary>133. ¿Cómo organizar la compatibilidad con versiones anteriores?</summary>
+
+#### Go
+
+`Backward compatibility` significa que la nueva versión del servicio/API no
+interrumpe a los clientes existentes. En los sistemas distribuidos, esto es
+fundamental, porque los consumidores no se actualizan simultáneamente.
+
+#### Principios básicos de compatibilidad:
+
+1. **Nunca rompas un contrato existente de forma abrupta.**
+
+2. **Cambios adicionales sobre cambios importantes:** agregue nuevos
+   campos/puntos finales sin eliminar los antiguos.
+
+3. **Semántica estable de campos existentes:** no cambie el valor/tipo de un
+   campo con el mismo nombre.
+
+4. **Política de control de versiones explícita:** URL/encabezado de
+   versión/versión de esquema.
+
+#### Técnicas prácticas:
+
+1. Los campos adicionales deben ser opcionales con valores predeterminados
+   seguros.
+
+2. Utilice el período de desuso para eliminar la funcionalidad anterior.
+
+3. Mantener contratos antiguos y nuevos paralelos durante la migración.
+
+4. Utilice indicadores de funciones para una implementación controlada.
+
+#### Para eventos y esquemas:
+
+1. Los esquemas deben evolucionar de forma aditiva.
+
+2. Los consumidores deben ignorar los campos desconocidos.
+
+3. Prohibir la reutilización de identificadores de campo "antiguos" (relevantes
+   para protocolos basados ​​en esquemas).
+
+#### Control de calidad de compatibilidad:
+
+1. Pruebas de contrato impulsadas por el consumidor.
+
+2. Comprobaciones de compatibilidad de esquemas en CI.
+
+3. Versiones de Canary y monitoreo de errores del cliente.
+
+#### Conclusión:
+
+La organización de compatibilidad con versiones anteriores es una combinación de
+reglas técnicas y disciplina de lanzamiento: evolución aditiva de contratos,
+desaprobación administrada, comprobaciones automáticas de compatibilidad e
+implementación por fases.
+
+</details>

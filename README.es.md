@@ -8374,3 +8374,84 @@ desaprobación administrada, comprobaciones automáticas de compatibilidad e
 implementación por fases.
 
 </details>
+
+
+<details>
+<summary>134. ¿Cómo implementan las aplicaciones Go actualizaciones de configuración "sobre la marcha" sin reiniciar el servicio?</summary>
+
+#### Go
+
+Las actualizaciones de configuración de recarga en caliente en Go generalmente
+se crean como un proceso controlado: detecta un cambio de fuente, valida una
+nueva carga de configuración, cambia atómicamente la instantánea activa y la
+propaga de forma segura a los componentes en funcionamiento.
+
+#### Esquema arquitectónico típico:
+
+1. **Fuente de configuración**
+
+- archivo (vigilante), proveedor de entorno, servicio de configuración, almacén
+  KV.
+
+2. **Cargador + validador**
+
+- lee la nueva versión;
+
+- comprueba el esquema, los límites de valores y las invariantes entre
+  parámetros.
+
+3. **Publicación atómica**
+
+- la nueva instantánea de configuración se publica a través de `atomic.Value` u
+  otro mecanismo seguro para subprocesos.
+
+4. **Consumidores de configuración**
+
+- lee la instantánea actual sin bloquear carreras.
+
+#### Requisitos clave de ingeniería:
+
+1. **Alternar atomicidad**
+
+- ya sea toda la configuración nueva o antigua; sin "medios estados".
+
+2. **Validez antes de su uso**
+
+- la versión incorrecta no se puede activar.
+
+3. **Listo para revertir**
+
+- en caso de error en la aplicación, el servicio debe permanecer en la
+  configuración de trabajo anterior.
+
+4. **Observabilidad**
+
+- recargar registro de eventos, versión de configuración, métricas de
+  actualizaciones exitosas/fallidas.
+
+#### Lo que normalmente se puede cambiar "sobre la marcha":
+
+1. Límites, tiempos de espera, indicadores de funciones, parámetros de
+   reintento/retraso.
+
+2. Niveles de registro.
+
+3. Políticas de enrutamiento no críticas.
+
+#### Lo que NO se debe cambiar con frecuencia sin reiniciar:
+
+1. Parámetros básicos de enlace de red.
+
+2. Dependencias de inicialización críticas que no admiten la reconfiguración en
+   vivo.
+
+3. Parámetros cuyo cambio rompe las invariantes del estado actual.
+
+#### Conclusión:
+
+La recarga en caliente en Go no es "magia del observador", sino la disciplina de
+la publicación de configuración segura: validar → intercambiar atómicamente →
+observar → revertir en caso de falla. Este enfoque le permite cambiar el
+comportamiento del servicio sin tiempo de inactividad y sin pérdida de control.
+
+</details>

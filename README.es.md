@@ -8455,3 +8455,82 @@ observar → revertir en caso de falla. Este enfoque le permite cambiar el
 comportamiento del servicio sin tiempo de inactividad y sin pérdida de control.
 
 </details>
+
+
+<details>
+<summary>135. ¿Cómo implementar la limitación (limitar la frecuencia de las solicitudes) en el servicio Go para proteger el sistema contra sobrecargas?</summary>
+
+#### Go
+
+`Throttling` en el servicio Go es un límite de intensidad de solicitud
+administrado para proteger la CPU, la base de datos, las API externas y los
+recursos críticos contra la sobrecarga y la degradación en cascada.
+
+#### Principales modelos de aceleración:
+
+1. **Cubo de tokens/Cubo con fugas**
+
+- permite ráfagas cortas dentro de la capacidad;
+
+- estabiliza la tasa promedio.
+
+2. **Ventana fija/corrediza**
+
+- límites para ventanas de tiempo (por segundo/minuto).
+
+3. **Límite de concurrencia**
+
+- limitando el número de solicitudes procesadas simultáneamente (semáforo/grupo
+  de trabajadores).
+
+#### Dónde presentar la solicitud:
+
+1. En el perímetro (puerta de enlace/ingreso): protección global.
+
+2. Dentro del servicio: protección de manipuladores/operaciones costosas.
+
+3. En llamadas de dependencia: límite local para bases de datos/API externas.
+
+#### Secciones limitantes:
+
+1. Globalmente por servicio.
+
+2. Por ruta/por punto final.
+
+3. Por cliente/por clave API/por inquilino/por usuario.
+
+#### Soluciones prácticas en Go:
+
+1. Middleware con un limitador (a menudo un depósito de tokens).
+
+2. Para un entorno de múltiples instancias: un límite centralizado o distribuido
+   (por ejemplo, a través de Redis).
+
+3. Una respuesta clara al cliente:
+
+- HTTP `429 Too Many Requests`;
+
+- `Retry-After` y una carga útil de error clara.
+
+#### Matices importantes:
+
+1. El límite debe ser coherente con las capacidades reales del backend.
+
+2. Métricas requeridas:
+
+- porcentaje de solicitudes rechazadas;
+
+- profundidad de la cola;
+
+- latencia antes/después de la limitación.
+
+3. Vale la pena tener una política para el tráfico prioritario (por ejemplo,
+   clientes del sistema).
+
+#### Conclusión:
+
+La aceleración en Go no es solo un cambio 429, sino parte de una estrategia de
+resiliencia: límites de velocidad y contención, políticas transparentes de
+conmutación por error y métricas para adaptar los parámetros a la carga real.
+
+</details>

@@ -8534,3 +8534,70 @@ resiliencia: límites de velocidad y contención, políticas transparentes de
 conmutación por error y métricas para adaptar los parámetros a la carga real.
 
 </details>
+
+
+<details>
+<summary>136. ¿Cómo funciona la capa de almacenamiento en caché en Go y qué problema resuelve `singleflight.Group` con solicitudes simultáneas?</summary>
+
+#### Go
+
+`Caching layer` en Go es una capa intermedia entre la lógica empresarial y la
+fuente de datos "cara" (DB, API externa, cálculo), que devuelve un resultado
+previamente almacenado para consultas repetidas y reduce la carga en el backend.
+
+#### Cómo funciona un flujo de caché típico:
+
+1. Solicitud recibida con clave `K`.
+
+2. Verificar caché:
+
+- **cache hit** → devolvemos el valor rápidamente;
+
+- **error de caché** → leer desde la fuente, colocar en caché, devolver
+  resultado.
+
+3. TTL/actualización de datos de control de invalidación.
+
+#### ¿Qué problema surge con la competencia?
+
+Durante `cache miss`, la clave popular puede recibir muchas solicitudes al mismo
+tiempo. Sin control adicional, todos irán al backend en paralelo: esto es `cache
+stampede` (rebaño atronador).
+
+#### Qué hace `singleflight.Group`:
+
+1. Deduplica consultas idénticas simultáneas por clave.
+
+2. Solo la primera solicitud realiza la función "cara".
+
+3. Otras solicitudes competidoras están esperando y recibiendo el mismo
+   resultado.
+
+#### ¿Qué problema resuelve esto?
+
+1. Reduce drásticamente las solicitudes duplicadas a la base de datos/API en
+   caso de error.
+
+2. Estabiliza la latencia bajo carga máxima.
+
+3. Protege el backend de picos durante accesos simultáneos masivos.
+
+#### Prácticas importantes:
+
+1. Utilice `singleflight` con el caché, no en lugar del caché.
+
+2. Limitar el tiempo de espera mediante `context`/timeout.
+
+3. Trabaje con cuidado con los errores (para no reproducir fallas transitorias).
+
+4. Agregue fluctuación a TTL para evitar que se muestren varias claves
+   sincrónicamente.
+
+#### Conclusión:
+
+La capa de almacenamiento en caché acelera la lectura y reduce la presión sobre
+las fuentes de datos, y `singleflight.Group` elimina el efecto de estampida bajo
+`cache miss` competidor. Juntos, proporcionan un comportamiento de servicio
+mucho más estable y eficiente.
+
+</details>

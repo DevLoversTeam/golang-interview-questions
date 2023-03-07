@@ -8601,3 +8601,82 @@ las fuentes de datos, y `singleflight.Group` elimina el efecto de estampida bajo
 mucho más estable y eficiente.
 
 </details>
+
+
+<details>
+<summary>137. ¿Cómo diseñar una arquitectura multiinquilino con aislamiento de datos entre clientes en el servicio Go?</summary>
+
+#### Go
+
+La arquitectura multiinquilino significa que una plataforma sirve a muchos
+clientes (inquilinos), pero garantiza el aislamiento de sus datos, acceso y
+recursos. La clave del éxito es hacer que el contexto del inquilino sea una
+parte obligatoria de toda la ruta de consulta.
+
+#### Modelos básicos de aislamiento de datos:
+
+1. **Base de datos compartida, esquema compartido + id_inquilino**
+
+- comienzo más barato;
+
+- filtros duros obligatorios por solicitud.
+
+2. **Base de datos compartida, esquema independiente por inquilino**
+
+- aislamiento lógico más fuerte;
+
+- soporte operativo más complejo.
+
+3. **Base de datos por inquilino**
+
+- máximo aislamiento y cumplimiento;
+
+- mayor valor de infraestructura.
+
+#### Lo que necesitas poner en el servicio Go:
+
+1. **Contexto del inquilino**
+
+- extraer inquilino del token de autenticación/encabezado;
+
+- pasa a través de `context.Context` a todas las capas.
+
+2. **Aplicación por defecto**
+
+- la capa de repositorio no debe ejecutar solicitudes sin filtro de inquilinos;
+
+- "sin inquilino, sin consulta" como invariante.
+
+3. **Autorización**
+
+- verifique que el usuario/clave tenga derecho a un inquilino específico.
+
+4. **Aislamiento de caché**
+
+- las claves de caché deben incluir el ID del inquilino.
+
+5. **Aislamiento de colas/eventos**
+
+- etiquetas de inquilino en eventos, filtrado de consumidores, control de
+  enrutamiento.
+
+#### Aspectos operativos:
+
+1. Cuotas y límites de tarifas por inquilino.
+
+2. Métricas/registros/seguimientos con atributo de inquilino.
+
+3. Estrategia de copia de seguridad/restauración teniendo en cuenta los límites
+   de los inquilinos.
+
+4. Mecanismos de migración entre modelos de aislamiento durante el crecimiento
+   (por ejemplo, de compartido a dedicado para clientes empresariales).
+
+#### Conclusión práctica:
+
+El multiinquilino en Go no es solo un esquema de base de datos, sino una
+disciplina de un extremo a otro: identidad del inquilino, políticas de acceso,
+aislamiento de eventos/caché y control operativo. Cuanto antes se incorpore esto
+a la arquitectura, más fácil será escalar el producto sin fugas entre clientes.
+
+</details>

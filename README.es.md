@@ -8771,3 +8771,86 @@ func (h *Handler) StartReport(w http.ResponseWriter, r *http.Request) {
 ```
 
 </details>
+
+
+<details>
+<summary>139. ¿Cómo crear una transacción entre servicios?</summary>
+
+#### Go
+
+En microservicios, una transacción ACID clásica entre múltiples bases de
+datos/servicios no suele ser práctica. Por lo tanto, una "transacción" entre
+servicios se construye a través de un procedimiento comercial acordado con
+compensaciones y eventual coherencia.
+
+#### Enfoques principales:
+
+1. **Saga (más común)**
+
+- secuencia de transacciones locales en servicios;
+
+- en caso de fallo, se activan acciones compensatorias.
+
+2. **Saga de orquestación**
+
+- el orquestador central gestiona los pasos y las reversiones.
+
+3. **Saga Coreográfica**
+
+- Los servicios  responden a los eventos de cada uno sin un conductor central.
+
+4. **2PC/XA**
+
+- es teóricamente posible, pero generalmente se evita en microservicios debido a
+  la complejidad y degradación de la disponibilidad.
+
+#### Diseño canónico de una transacción entre servicios:
+
+1. Dividir el proceso en pasos atómicos locales.
+
+2. Para cada paso, defina la compensación.
+
+3. Asegurar la idempotencia de comandos y eventos.
+
+4. Implementar entrega confiable a través de patrones de bandeja de
+   entrada/salida.
+
+5. Agregar `transaction/saga id` correlacional para seguimiento.
+
+#### Requisitos críticos:
+
+1. **Idempotencia** en todos los límites.
+
+2. **Reintentar/retrasar** para fallas temporales.
+
+3. **Deduplicación** de eventos reentregados.
+
+4. **Política de tiempo de espera y mensajes no entregados** para pasos
+   "colgados".
+
+5. **Observabilidad**: estados de saga, métricas, auditoría.
+
+#### Conclusión:
+
+Las transacciones entre servicios en microservicios no son ACID globales, sino
+un proceso de coherencia gestionado: transacciones locales + eventos +
+compensaciones. El modelo más práctico para esto es Saga, con invariantes claras
+y un manejo sólido de fallas.
+
+#### Ejemplo:
+
+```go
+// Спрощений оркестратор Saga
+func (s *Saga) Run(ctx context.Context, cmd CreateOrder) error {
+	if err := s.reserveInventory(ctx, cmd); err != nil {
+		return err
+	}
+	if err := s.chargePayment(ctx, cmd); err != nil {
+		_ = s.compensateInventory(ctx, cmd)
+		return err
+	}
+	return s.confirmOrder(ctx, cmd)
+}
+```
+
+</details>

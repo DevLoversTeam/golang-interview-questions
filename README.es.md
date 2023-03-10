@@ -8854,3 +8854,63 @@ func (s *Saga) Run(ctx context.Context, cmd CreateOrder) error {
 ```
 
 </details>
+
+
+<details>
+<summary>140. ¿Qué problemas resuelve el patrón Saga?</summary>
+
+#### Go
+
+El patrón `Saga` aborda el problema de una operación comercial consistente que
+abarca múltiples microservicios con bases de datos separadas donde no es posible
+o práctico aplicar una única transacción ACID global.
+
+#### ¿Qué problemas cubre Saga?
+
+1. **Falta de ACID distribuido entre servicios**
+
+- reemplaza la transacción global con una secuencia de transacciones locales.
+
+2. **Requisito de compensación por falla parcial**
+
+- si uno de los pasos falla, se realizan acciones de compensación.
+
+3. **Gestión de coherencia eventual**
+
+- permite alcanzar el estado empresarial acordado de forma asincrónica.
+
+4. **Disminución de la conectividad entre servicios**
+
+- steps pueden interactuar a través de eventos/comandos sin 2PC duro.
+
+5. **Resistencia a fallos temporales**
+
+- reintento/retroceso e idempotencia hacen que el proceso sea más confiable.
+
+#### Lo que Saga no "cura" automáticamente:
+
+1. No elimina la necesidad de un modelado de dominio explícito de las
+   compensaciones.
+
+2. No elimina la complejidad de la observabilidad y el monitoreo del estado del
+   proceso.
+
+3. No garantiza la coherencia instantánea, solo la coherencia gestionada a lo
+   largo del tiempo.
+
+#### Donde Saga es especialmente relevante:
+
+1. Flujo de trabajo de pago/pedido (reserva de producto, pago, entrega).
+
+2. Reservar/cancelar recursos en múltiples sistemas.
+
+3. Cualquier proceso empresarial de varios pasos con efectos entre servicios.
+
+#### Conclusión:
+
+Saga resuelve el problema central de la coherencia de los microservicios: cómo
+realizar una operación compleja entre servicios sin un coordinador de bloqueo
+global, con recuperación controlada mediante compensaciones y una resiliencia
+operativa aceptable.
+
+</details>

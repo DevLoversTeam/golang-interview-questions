@@ -8914,3 +8914,73 @@ global, con recuperación controlada mediante compensaciones y una resiliencia
 operativa aceptable.
 
 </details>
+
+
+<details>
+<summary>141. ¿Qué es el abastecimiento de eventos?</summary>
+
+#### Go
+
+`Event Sourcing` es un enfoque en el que el sistema no guarda el "estado actual"
+de la entidad, sino la secuencia de eventos que cambiaron este estado. El estado
+actual se reproduce repitiendo eventos.
+
+#### Idea clave:
+
+1. La fuente de la verdad es un registro de eventos de dominio inmutable.
+
+2. El estado del agregado es el resultado derivado de reducir estos eventos en
+   orden temporal.
+
+3. El cambio de estado se produce agregando un nuevo evento, no
+   "sobrescribiendo".
+
+#### Qué proporciona Event Sourcing:
+
+1. **Pista de auditoría completa**: puede ver quién/cuándo/por qué cambió el
+   estado del dominio.
+
+2. **Reproducibilidad del estado** en cualquier momento.
+
+3. **Proyecciones flexibles** (modelos de lectura) para diferentes escenarios de
+   lectura.
+
+4. **Integración natural con arquitectura basada en eventos**.
+
+#### Componentes típicos:
+
+1. Almacén de eventos (solo anexar).
+
+2. Agregado con reglas de validación de comandos.
+
+3. Constructores de modelos de proyección/lectura.
+
+4. Mecanismos de versionado de eventos y upcasters.
+
+#### Retos importantes:
+
+1. La complejidad de la evolución de los patrones de eventos.
+
+2. Necesidad de instantáneas para una rápida restauración de transmisiones
+   largas.
+
+3. Complejidad operativa de coherencia entre modelos de escritura/lectura (a
+   menudo CQRS).
+
+#### Cuando corresponda:
+
+1. Dominios con altos requisitos de auditoría e historial de cambios.
+
+2. Procesos comerciales complejos donde la transparencia de causa y efecto es
+   importante.
+
+3. Sistemas donde los eventos son un contrato de integración natural.
+
+#### Conclusión:
+
+Event Sourcing es un modelo de "almacenar hechos de eventos, no estado final".
+Proporciona una gran transparencia histórica y flexibilidad arquitectónica, pero
+requiere una disciplina madura de modelado de eventos, control de versiones y
+soporte operativo.
+
+</details>

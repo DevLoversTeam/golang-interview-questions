@@ -8984,3 +8984,45 @@ requiere una disciplina madura de modelado de eventos, control de versiones y
 soporte operativo.
 
 </details>
+
+
+<details>
+<summary>142. Formule el teorema CAP.</summary>
+
+#### Go
+
+El teorema CAP establece: en un sistema distribuido durante la separación de la
+red (`Partition`) es imposible garantizar simultáneamente una fuerte coherencia
+(`Consistency`) y una disponibilidad total (`Availability`) para todas las
+solicitudes.
+
+#### Tres propiedades de CAP:
+
+1. **Consistencia (C)** todos los nodos ven el mismo estado de datos actual
+   después de una operación de escritura.
+
+2. **Disponibilidad (A)** cada solicitud obtiene una respuesta (éxito/fracaso
+   sin espera infinita).
+
+3. **El sistema de tolerancia de partición (P)** continúa funcionando incluso si
+   hay interrupciones en la red o retrasos en la comunicación entre los nodos.
+
+#### Énfasis práctico clave:
+
+1. En sistemas distribuidos reales, casi siempre se requiere `P` (la red no es
+   confiable por naturaleza).
+
+2. Por lo tanto, en el momento de la partición, hay que elegir una prioridad:
+
+- **CP**: preserva la coherencia sacrificando parte de la disponibilidad;
+
+- **AP**: Preservar la disponibilidad aceptando una discrepancia temporal.
+
+#### Conclusión:
+
+CAP no dice "elige sólo dos propiedades para siempre". Ella dice: **cuando se
+produce una partición, el máximo C y A son simultáneamente inalcanzables**; el
+arquitecto debe determinar conscientemente lo que sacrifica el sistema en modo
+de emergencia.
+
+</details>

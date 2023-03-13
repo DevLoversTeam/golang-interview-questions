@@ -9026,3 +9026,74 @@ arquitecto debe determinar conscientemente lo que sacrifica el sistema en modo
 de emergencia.
 
 </details>
+
+
+<details>
+<summary>143. Cuéntanos sobre el algoritmo de consenso de Raft.</summary>
+
+#### Go
+
+Raft es un algoritmo de consenso para un registro replicado (registro
+replicado), que permite que un grupo de nodos almacene consistentemente la misma
+secuencia de comandos incluso ante fallas parciales de la red o del nodo.
+
+#### La idea principal de Raft:
+
+1. El clúster tiene **un líder** y varios seguidores.
+
+2. El líder acepta los registros de clientes.
+
+3. El líder replica las entradas del diario a los seguidores.
+
+4. El acta se considera comprometida previa confirmación por la mayoría
+   (quórum).
+
+5. Todos los nodos aplican registros comprometidos en el mismo orden.
+
+#### Roles de nodo:
+
+1. **Líder**: gestiona la replicación y maneja los comandos del cliente.
+
+2. **Seguidor**: acepta pasivamente la replicación del líder.
+
+3. **Candidato**: un rol durante la elección de un nuevo líder.
+
+#### Elecciones de líderes:
+
+1. El tiempo se divide en términos (`term`).
+
+2. Si el seguidor no recibe un latido, se convierte en candidato e inicia una
+   elección.
+
+3. El nodo con más votos se convierte en el líder del mandato actual.
+
+#### Garantías de seguridad:
+
+1. **Coincidencia de registros**: el mismo índice/término significa el mismo
+   historial hasta este punto.
+
+2. **Completitud del líder**: los registros comprometidos se almacenan en los
+   registros de los futuros líderes.
+
+3. **Estado de seguridad de la máquina**: los comandos se aplican en un orden
+   coherente en todos los nodos.
+
+#### Aspectos prácticos:
+
+1. Dependencia del quórum significa: sin una mayoría, el clúster no puede
+   confirmar nuevas entradas.
+
+2. La instantánea/compactación de troncos se utiliza para limitar el crecimiento
+   de los troncos.
+
+3. Los tiempos de espera de elección/latidos correctos son fundamentales para la
+   estabilidad.
+
+#### Conclusión:
+
+Raft proporciona un modelo de consenso claro y confiable: replicación basada en
+líderes, elecciones de quórum y sólidas garantías de coherencia de registros.
+Por eso es ampliamente utilizado en configuración, coordinación y sistemas de
+servicios con estado distribuidos.
+
+</details>

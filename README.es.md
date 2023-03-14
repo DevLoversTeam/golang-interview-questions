@@ -9097,3 +9097,75 @@ Por eso es ampliamente utilizado en configuración, coordinación y sistemas de
 servicios con estado distribuidos.
 
 </details>
+
+
+<details>
+<summary>144. ¿Cómo organizar CI/CD para Go?</summary>
+
+#### Go
+
+CI/CD para Go efectivo se construye como un proceso consistente: validación
+rápida de código, compilación reproducible, pruebas automatizadas,
+implementación segura y reversión controlada.
+
+#### Estructura típica de canalización de CI:
+
+1. **Pelusa + comprobaciones estáticas**
+
+- `go vet`, linters, controles de seguridad básicos.
+
+2. **Pruebas unitarias**
+
+- `go test ./...` (si es necesario `-race` para ramas críticas).
+
+3. **Pruebas de integración**
+
+- services/DB en contenedores o test-env.
+
+4. **Etapa de construcción**
+
+- compilación de artefacto reproducible (binario/contenedor).
+
+5. **Publicación de artefactos**
+
+- enviar la imagen al registro, etiquetarla con versión/compromiso.
+
+#### Estructura típica de CD:
+
+1. Implementación en preparación.
+
+2. Humo/controles automáticos.
+
+3. Promover a producción (puerta manual o basada en políticas).
+
+4. Supervisión de latencia/tasa de errores/SLO posterior a la implementación.
+
+#### Prácticas clave de confiabilidad:
+
+1. **Artefactos inmutables** (no reconstruir la misma versión dos veces).
+
+2. **Fijación de versiones de dependencias/cadena de herramientas**.
+
+3. **Gestión de secretos** a través de bóveda de CI/almacén secreto.
+
+4. **Paridad del entorno** entre puesta en escena y producción.
+
+5. **Lanzamiento canario/azul-verde** para reducir los riesgos de liberación.
+
+#### Lo que es importante específicamente para Go:
+
+1. Las pruebas y compilaciones rápidas permiten un breve ciclo de
+   retroalimentación.
+
+2. Creación de matriz para múltiples `GOOS/GOARCH` según sea necesario.
+
+3. Detección temprana de defectos competitivos (`-race`) en trabajos relevantes.
+
+#### Conclusión:
+
+CI/CD para Go debe ser rápido, repetible y con gestión de riesgos: verificar,
+construir, probar, implementar de forma incremental y tener una ruta de
+reversión garantizada. Es esta disciplina la que produce lanzamientos estables
+sin perder velocidad de desarrollo.
+
+</details>

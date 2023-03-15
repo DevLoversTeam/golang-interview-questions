@@ -9169,3 +9169,72 @@ reversión garantizada. Es esta disciplina la que produce lanzamientos estables
 sin perder velocidad de desarrollo.
 
 </details>
+
+
+<details>
+<summary>145. ¿Cómo organizar una reversión en CI/CD para que el servicio Go revierta de manera rápida y segura una versión fallida?</summary>
+
+#### Go
+
+Una reversión confiable no es un "plan B", sino parte del diseño del proceso de
+liberación. Para revertir un servicio Go de forma rápida y segura, es necesario
+tener artefactos reproducibles, una implementación controlada y activadores de
+reversión claros con anticipación.
+
+#### Principios básicos del proceso listo para revertir:
+
+1. **Artefactos inmutables**
+
+- cada versión tiene una etiqueta/sha única;
+
+- rollback = reedición de un artefacto previamente comprobado.
+
+2. **Implementación sin pasos destructivos**
+
+- los cambios deben ser reversibles;
+
+- Las migraciones de bases de datos son compatibles con versiones anteriores o
+  tienen un plan de reversión independiente.
+
+3. **Cambio de tráfico rápido**
+
+- canary/blue-green/rolling con la capacidad de reducir o restablecer
+  instantáneamente la participación de una nueva versión.
+
+#### Qué debería estar en CI/CD:
+
+1. Humo/controles automáticos después del despliegue.
+
+2. Puertas SLO (tasa de error, latencia p95/p99, saturación).
+
+3. Borrar comando/procedimiento de reversión de un paso.
+
+4. Las alertas se activaron temprano y no después de un incidente masivo.
+
+#### Estrategia de reversión en producción:
+
+1. Degradación de métricas detectada.
+
+2. Detuvo el lanzamiento de forma automática o manual.
+
+3. Tráfico cambiado a la versión estable anterior.
+
+4. Recuperación comprobada de SLO.
+
+5. Se registra la autopsia y la causa de la regresión.
+
+#### El aspecto crítico es la base de datos:
+
+1. Cambiar esquemas según el principio de expansión/contratación.
+
+2. Evite migraciones que rompan inmediatamente el código antiguo.
+
+3. Implementación de código independiente y pasos DDL peligrosos.
+
+#### Conclusión:
+
+La reversión rápida y segura en Go CI/CD solo es posible cuando se diseña de
+antemano: versiones inmutables, implementación administrada, puertas de
+métricas, cambios reversibles y un procedimiento de reversión operativo probado.
+
+</details>

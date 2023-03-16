@@ -9238,3 +9238,66 @@ antemano: versiones inmutables, implementación administrada, puertas de
 métricas, cambios reversibles y un procedimiento de reversión operativo probado.
 
 </details>
+
+
+<details>
+<summary>146. ¿Cómo funciona la implementación azul-verde?</summary>
+
+#### Go
+
+`Blue-green deployment` es una estrategia de lanzamiento donde existen dos
+entornos de producción idénticos simultáneamente:
+
+1. **Azul** es la versión de combate actual.
+
+2. **Green** es una nueva versión preparada para recibir tráfico.
+
+#### Cómo funciona paso a paso:
+
+1. La nueva versión se implementa en `green` sin afectar a `blue`.
+
+2. En `green` realizan controles de salud, pruebas de humo y validación básica.
+
+3. Después de una validación exitosa, el tráfico cambia de `blue` a `green` (a
+   través de LB/ingress/router).
+
+4. La versión anterior (`blue`) sigue estando disponible como una opción de
+   reversión "activa".
+
+#### Ventajas:
+
+1. **Tiempo de inactividad mínimo** al momento del lanzamiento.
+
+2. **Reversión rápida**: basta con devolver el tráfico al entorno anterior.
+
+3. **Validación previa al cambio segura** sin riesgo para todos los usuarios.
+
+4. **Modelo operativo claro** para la gestión de versiones.
+
+#### Riesgos y limitaciones:
+
+1. Requiere recursos duales (dos entornos al mismo tiempo).
+
+2. Complicaciones con componentes con estado y migraciones de bases de datos.
+
+3. Requiere una sincronización exhaustiva de la configuración, los secretos y
+   las dependencias externas.
+
+#### Recomendaciones prácticas:
+
+1. Combine azul-verde con verificación automática de SLO antes de la transición.
+
+2. Para la base de datos, utilice migraciones compatibles con versiones
+   anteriores (expandir/contraer).
+
+3. Tener un procedimiento de verificación y reversión formalizado después del
+   cambio.
+
+#### Conclusión:
+
+La implementación azul-verde proporciona una liberación rápida y controlada con
+una reversión casi instantánea. Esta es una de las estrategias de producción más
+confiables, siempre que el sistema esté preparado para un entorno dual y una
+gestión estatal disciplinada.
+
+</details>

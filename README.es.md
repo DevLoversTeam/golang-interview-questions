@@ -887,7 +887,7 @@ genera carreras de datos y comportamientos indefinidos.
    localmente en una sola rutina; un bloqueo incorporado para cada operación
    haría que estos escenarios fueran más lentos.
 
-2. **Modelo explícito de competencia:** Go pone el control de la sincronización
+2. **Modelo explícito de concurrencia:** Go pone el control de la sincronización
    en manos del desarrollador, para que elija un mecanismo para una carga de
    trabajo específica.
 
@@ -1264,7 +1264,7 @@ significativamente más costoso que pasar un único puntero a los mismos datos.
    compartido implícito).
 
 3. Pointer agrega riesgos de alias y la necesidad de una sincronización más
-   cuidadosa en el código de la competencia.
+   cuidadosa en el código concurrente.
 
 #### Conclusión práctica:
 
@@ -1969,7 +1969,7 @@ aumentar la latencia y complicar el tiempo de ejecución.
 #### Cuando las gorutinas pueden ralentizar el sistema:
 
 1. **Número excesivo de gorutinas (explosión de gorutinas):** miles o cientos de
-   miles de tareas sin limitar la competencia ejercen presión sobre el
+   miles de tareas sin limitar la concurrencia ejercen presión sobre el
    programador y la memoria.
 
 2. **Tareas detalladas:** si el trabajo es muy pequeño, la sobrecarga de
@@ -1992,7 +1992,7 @@ aumentar la latencia y complicar el tiempo de ejecución.
 
 #### Cómo evitar la degradación:
 
-1. Limitar la competencia (grupo de trabajadores, semáforo, colas acotadas).
+1. Limitar la concurrencia (worker pool, semáforo, colas acotadas).
 
 2. Perfil (`pprof`, rastreo) en lugar de confiar en la intuición.
 
@@ -2090,7 +2090,7 @@ buf <- 2
 
 Un canal `nil` en Go es un canal sin búfer interno inicializado ni mecanismos de
 sincronización. Su comportamiento está estrictamente definido y es muy
-importante para la lógica competitiva.
+importante para la lógica de concurrencia.
 
 #### Comportamiento del canal `nil`:
 
@@ -2291,7 +2291,7 @@ primera rama y reducir la "hambruna" sistemática de canales individuales.
 2. **No se puede codificar la prioridad empresarial** solo en el orden `case` en
    `select`.
 
-3. **El comportamiento es competitivamente correcto, pero no determinista**, lo
+3. **El comportamiento es seguro bajo concurrencia, pero no determinista**, lo
    cual es normal para la lógica basada en eventos.
 
 #### Cómo implementar la prioridad, si es necesario:
@@ -2419,7 +2419,7 @@ permitido de operaciones simultáneas (paralelismo).
 2. **Sincronización transparente:** El tiempo de ejecución de Go realiza
    bloqueo/activación sin control manual de variables condicionales.
 
-3. **Se lee bien en el código:** la intención de "restringir la competencia" es
+3. **Se lee bien en el código:** la intención de "limitar la concurrencia" es
    inmediatamente evidente.
 
 #### Precauciones prácticas:
@@ -2436,7 +2436,7 @@ permitido de operaciones simultáneas (paralelismo).
 
 Un canal almacenado en búfer en Go es una implementación canónica del semáforo
 de conteo: simple, confiable y bien integrada en el modelo de rutina. Ésta es
-una de las mejores formas de controlar el nivel de competencia en los servicios
+una de las mejores formas de controlar el nivel de concurrencia en los servicios
 de producción.
 
 #### Ejemplo:
@@ -2532,7 +2532,7 @@ masivas. Para grandes cantidades de datos, a menudo generan gastos innecesarios.
    costos de pausas/tiempo de ejecución.
 
 4. **Degradación de la localidad de caché:** los objetos grandes pasan por el
-   canal competitivo peor que las señales compactas + acceso al almacenamiento
+   canal peor que las señales compactas + acceso al almacenamiento
    compartido.
 
 #### Mejores alternativas:
@@ -2571,7 +2571,7 @@ memoria más adecuadas.
 #### Go
 
 Una rutina no puede "devolver" un valor directamente a través de `return` a la
-persona que llama. Por tanto, el error de la tarea competitiva se transmite
+persona que llama. Por tanto, el error de la tarea concurrente se transmite
 explícitamente: a través del canal de error o a través de `errgroup`, que
 encapsula este patrón.
 
@@ -2678,7 +2678,7 @@ llamadas.
 #### Conclusión:
 
 `recover` en Go tiene un alcance local: una única rutina. Por lo tanto, la
-interceptación de pánico en el código competitivo debe diseñarse a nivel de cada
+interceptación de pánico en el código concurrente debe diseñarse a nivel de cada
 rutina secundaria por separado.
 
 </details>
@@ -2711,7 +2711,7 @@ es proporcionar un paralelismo manejable sin caos, fugas ni bloqueos.
 
 - los datos pasan por sucesivas etapas de procesamiento;
 
-- cada etapa puede tener su propia competencia y contrapresión.
+- cada etapa puede tener su propia concurrencia y contrapresión.
 
 4. **Semáforo mediante canal almacenado en búfer**
 
@@ -2955,9 +2955,9 @@ sincronización.
 1. Carreras clásicas de lectura/escritura y escritura/escritura en variables
    compartidas.
 
-2. Bloqueo/desbloqueo perdido en áreas competitivas.
+2. Bloqueos/desbloqueos omitidos en secciones concurrentes.
 
-3. Parte de errores de coordinación en escenarios de prueba con competencia
+3. Algunos errores de coordinación en escenarios de prueba con concurrencia
    real.
 
 #### Lo que `-race` no garantiza:
@@ -2966,7 +2966,7 @@ sincronización.
    ejemplo, protocolo de interacción incorrecto sin carrera de datos directa.
 
 2. **No ve código no ejecutado:** si las pruebas no cubren un camino
-   competitivo, la carrera puede pasar desapercibida.
+   concurrente, la condición de carrera puede pasar desapercibida.
 
 3. **No está libre de errores:** Una ejecución "limpia" significa únicamente que
    la herramienta no detectó ninguna infracción durante esa ejecución.
@@ -2977,7 +2977,7 @@ sincronización.
 #### Conclusión práctica:
 
 `-race` es una herramienta obligatoria para la higiene del código de la
-competencia, pero no un oráculo absoluto de corrección. Su poder se revela en
+concurrencia, pero no un oráculo absoluto de corrección. Su poder se revela en
 combinación con pruebas de calidad, invariantes de diseño y disciplina de
 sincronización.
 
@@ -2985,11 +2985,11 @@ sincronización.
 
 
 <details>
-<summary>51. ¿Cuáles son las ventajas de las operaciones atómicas en comparación con mutex para operaciones competitivas simples?</summary>
+<summary>51. ¿Qué ventajas ofrecen las operaciones atómicas frente a un mutex para operaciones concurrentes simples?</summary>
 
 #### Go
 
-Las operaciones `atomic` en Go son apropiadas para escenarios competitivos muy
+Las operaciones `atomic` en Go son apropiadas para escenarios concurrentes muy
 simples en los que es necesario realizar de forma segura una operación elemental
 en un solo valor (incrementar, leer una bandera, CAS). En tales casos, pueden
 ser más claros que `mutex`.
@@ -3161,7 +3161,7 @@ tienen diferentes niveles de abstracción: `WaitGroup` solo espera, mientras que
 1. Necesita un modelo claro de "fallo en una tarea → detener el resto".
 
 2. Necesidad de implementar de forma rápida y limpia una orquestación
-   competitiva.
+   de concurrencia.
 
 3. La legibilidad y el código breve y fácil de mantener son importantes.
 
@@ -3304,7 +3304,7 @@ transporte de datos.
 
 #### Go
 
-`sync.Map` es un mapa competitivo especializado del paquete `sync`, optimizado
+`sync.Map` es un mapa concurrente especializado del paquete `sync`, optimizado
 principalmente para cargas de trabajo de lectura intensa y escenarios donde las
 claves se leen con frecuencia y rara vez se cambian.
 
@@ -3329,7 +3329,7 @@ claves se leen con frecuencia y rara vez se cambian.
 
 2. **Claves mayoritariamente estables**, sin abandono agresivo.
 
-3. **Acceso de lectura altamente competitivo** de muchas rutinas.
+3. **Acceso de lectura altamente concurrente** desde muchas goroutines.
 
 #### Cuando más es mejor `map + mutex`:
 
@@ -3354,7 +3354,7 @@ lecturas masivas.
 
 `sync.Map` no es el "mejor mapa en general", sino una herramienta puntual para
 un perfil de carga específico. Si tiene un escenario de lectura mayoritaria con
-alta competencia, puede obtener una victoria; en otros casos, el simple `map +
+alta concurrencia, puede ofrecer ventajas; en otros casos, el simple `map +
 mutex` suele ser más transparente y eficiente.
 
 </details>
@@ -3367,7 +3367,7 @@ mutex` suele ser más transparente y eficiente.
 
 Las pruebas de concurrencia en Go son pruebas que prueban el comportamiento del
 código en condiciones de ejecución paralela de rutinas, intercambio de estados y
-competencia de recursos. Su objetivo es detectar defectos que no aparecen en un
+contención de recursos. Su objetivo es detectar defectos que no aparecen en un
 escenario lineal.
 
 #### ¿Qué verifican exactamente estas pruebas?
@@ -3380,11 +3380,11 @@ escenario lineal.
 
 4. Completación correcta de gorutinas (sin fugas).
 
-5. Observancia de invariantes bajo carga competitiva.
+5. Observancia de invariantes bajo carga concurrente.
 
 #### ¿Por qué son necesarios?
 
-1. **Detección temprana de errores competitivos:** muchos de ellos solo aparecen
+1. **Detección temprana de errores de concurrencia:** muchos de ellos solo aparecen
    bajo presión de paralelismo.
 
 2. **Disminución del comportamiento inestable en producción:** las pruebas
@@ -3393,7 +3393,7 @@ escenario lineal.
 3. **Afirmación de garantías arquitectónicas:** como que el sistema no pierde
    eventos y no viola la coherencia del estado.
 
-4. **Refactorización más segura:** los invariantes competitivos permanecen
+4. **Refactorización más segura:** los invariantes de concurrencia permanecen
    protegidos por el conjunto de regresión.
 
 #### Herramientas y prácticas en Go:
@@ -3475,7 +3475,7 @@ de "parada".
 
 `context.Context` es la consulta "sistema nervioso" en Go. Distribuye el control
 de tiempos y cancelaciones en todo el árbol de llamadas, lo que hace que el
-código de la competencia sea manejable, económico y predecible en un entorno de
+código concurrente sea manejable, económico y predecible en un entorno de
 producción.
 
 #### Ejemplo:
@@ -4081,7 +4081,7 @@ sino perfiles bajo carga real o cercana a la real.
 
 - entrada fija;
 
-- perfil competitivo conocido;
+- perfil de concurrencia conocido;
 
 - entorno de inicio estable.
 
@@ -4849,7 +4849,7 @@ para los paquetes reutilizables.
    saber que existe un estado global en algún lugar que afecta el
    comportamiento.
 
-2. **Problemas de competitividad:** los globales se convierten fácilmente en una
+2. **Problemas de concurrencia:** los globales se convierten fácilmente en una
    fuente de raza/contención.
 
 3. **Pruebas complejas:** las pruebas comienzan a depender del orden de
@@ -5821,7 +5821,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
 #### Go
 
 `ACID` son cuatro propiedades básicas de los sistemas transaccionales que
-garantizan la exactitud de los datos incluso en caso de fallas, competencia y
+garantizan la exactitud de los datos incluso en caso de fallas, concurrencia y
 alta carga: Atomicidad, Consistencia, Aislamiento y Durabilidad.
 
 #### Descifrado ACID:
@@ -5960,7 +5960,7 @@ consistencia.
 Los niveles de aislamiento determinan qué tan "visibles" son los cambios de las
 transacciones paralelas entre sí. Cuanto mayor sea el nivel de aislamiento,
 menos anomalías, pero normalmente con un mayor coste en rendimiento y
-competitividad.
+concurrencia.
 
 #### Niveles de aislamiento clásicos (SQL):
 
@@ -5992,7 +5992,7 @@ competitividad.
 
 - garantiza un resultado equivalente a la ejecución secuencial de transacciones;
 
-- máxima protección contra anomalías, pero más cara que la competencia.
+- máxima protección contra anomalías, pero más costosa en términos de concurrencia.
 
 #### Conclusión práctica:
 
@@ -6218,7 +6218,7 @@ servidor en términos de volumen de datos, carga y ancho de banda.
 2. Aumente el rendimiento de escritura/lectura mediante la operación paralela de
    fragmentos.
 
-3. Localice conjuntos de datos candentes y reduzca la competencia por los
+3. Localice los datos calientes y reduzca la contención por los
    recursos.
 
 #### Los principales tipos de fragmentación:
@@ -6481,7 +6481,7 @@ de la caída.
 
 2. `go test ./...` para una ejecución normal.
 
-3. `-race` para sitios competitivos.
+3. `-race` para rutas de código concurrentes.
 
 4. Si es necesario - `testify` (afirmar/requerir), pero sin magia excesiva.
 
@@ -6871,7 +6871,7 @@ bien y sigue siendo transparente.
 
 2. Mot en el límite del módulo, no dentro de la lógica del dominio.
 
-3. Para escenarios competitivos, proteja el doble de prueba estatal (`mutex`,
+3. Para escenarios concurrentes, proteja el estado del test double (`mutex`,
    atómicos).
 
 4. No duplique excesivamente la lógica de producción en falsificaciones; de lo
@@ -7128,7 +7128,7 @@ fácilmente las pruebas estables en pruebas inestables.
    nombres/esquema separado por prueba.
 
 5. Ejecute el conjunto con `-race` para la detección temprana de problemas de
-   competencia.
+   concurrencia.
 
 #### Conclusión:
 
@@ -8558,7 +8558,7 @@ previamente almacenado para consultas repetidas y reduce la carga en el backend.
 
 3. TTL/actualización de datos de control de invalidación.
 
-#### ¿Qué problema surge con la competencia?
+#### ¿Qué problema surge con la concurrencia?
 
 Durante `cache miss`, la clave popular puede recibir muchas solicitudes al mismo
 tiempo. Sin control adicional, todos irán al backend en paralelo: esto es `cache
@@ -8730,7 +8730,7 @@ correcto es la ejecución asincrónica a través de una cola/trabajadores.
 
 6. **Contrapresión**
 
-- restricción de la competencia de trabajadores para evitar sobrecargar
+- limitación de la concurrencia de workers para evitar sobrecargar
   DB/dependencias.
 
 #### Cómo el cliente obtiene el resultado:
@@ -9159,7 +9159,7 @@ implementación segura y reversión controlada.
 
 2. Creación de matriz para múltiples `GOOS/GOARCH` según sea necesario.
 
-3. Detección temprana de defectos competitivos (`-race`) en trabajos relevantes.
+3. Detección temprana de defectos de concurrencia (`-race`) en jobs relevantes.
 
 #### Conclusión:
 

@@ -50,3 +50,50 @@ services évolutifs, maintenables et performants où la fiabilité, la vitesse d
 développement et la simplicité opérationnelle sont importantes.
 
 </details>
+
+
+<details>
+<summary>2. Quels sont les grands principes de conception du langage Go ?</summary>
+
+#### Go
+
+La conception de Go n'est pas basée sur une « expressivité » maximale à tout
+prix, mais sur la faisabilité technique : le code doit être facile à lire,
+facile à maintenir et fiable pendant le long cycle de vie du système.
+
+#### Principes de base de la conception Go :
+
+1. **La simplicité plutôt que la complexité :** Le langage évite délibérément
+   les constructions trop complexes pour réduire le nombre d'erreurs et le seuil
+   d'entrée dans la base de code.
+
+2. **Lisibilité et absence d'ambiguïté :** Un code clair qui peut être
+   rapidement compris par n'importe quel ingénieur de l'équipe, et pas seulement
+   par l'auteur, est préféré.
+
+3. **Compilation rapide et développement productif :** Le cycle "écrit →
+   construit → testé" doit être court, ce qui accélère les itérations dans les
+   projets réels.
+
+4. **Concurrence intégrée :** `goroutine` et `channel` sont une partie organique
+   du langage, et non un correctif externe, le calcul parallèle est donc pris en
+   charge de manière native.
+
+5. **Composition sur une hiérarchie lourde :** Go privilégie l'approche
+   consistant à "composer un comportement à partir de parties simples" plutôt
+   que de construire des chaînes d'héritage profondes.
+
+6. **Minimalisme dans les fonctionnalités, maximisation dans la praticité :**
+   moins de "magie", comportement plus prévisible lors de l'exécution et du
+   débogage.
+
+7. **Norme d'outillage unique :** `go fmt`, `go test`, `go mod`, `go vet`
+   forment une culture de développement commune sans fragmentation des outils.
+
+#### Généralisation :
+
+Go est conçu comme un langage de développement d'équipe et de programmation
+industrielle : il discipline le style, encourage la clarté de la pensée dans le
+code et offre un bon équilibre entre simplicité et efficacité.
+
+</details>

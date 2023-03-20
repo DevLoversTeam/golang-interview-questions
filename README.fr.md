@@ -97,3 +97,55 @@ industrielle : il discipline le style, encourage la clarté de la pensée dans 
 code et offre un bon équilibre entre simplicité et efficacité.
 
 </details>
+
+
+<details>
+<summary>3. Quelles sont les principales fonctionnalités de Go par rapport aux autres langages ?</summary>
+
+#### Go
+
+Go se distingue par le fait qu'il combine une syntaxe concise avec un modèle
+d'exécution d'ingénierie très pratique : le langage ne surcharge pas le
+développeur d'une complexité inutile, mais fournit des outils pour construire
+des systèmes rapides et fiables.
+
+#### Principales fonctionnalités de Go :
+
+1. **Syntaxe simple et stricte :** le code est facile à lire et l'uniformité
+   stylistique est maintenue automatiquement via `go fmt`.
+
+2. **Compilez en binaire natif :** une application est généralement compilée en
+   un seul exécutable sans dépendances externes lourdes au démarrage.
+
+3. **Typage statique à haute prévisibilité :** un grand nombre d'erreurs sont
+   détectées au stade de la compilation, ce qui augmente la fiabilité de la
+   production.
+
+4. **Concurrence intégrée :** `goroutine` et `channel` font de la programmation
+   parallèle un mécanisme naturel plutôt qu'auxiliaire.
+
+5. **Cycle de développement rapide :** une compilation relativement rapide et
+   des outils standard accélèrent les tests et la livraison des modifications.
+
+6. **Bibliothèque standard solide :** mise en réseau, HTTP, cryptographie,
+   manipulation de fichiers, profilage et tests disponibles immédiatement.
+
+7. **Modèle d'erreur explicite :** Dans Go, les erreurs sont gérées
+   explicitement via `error`, ce qui rend le contrôle d'état transparent et
+   contrôlable.
+
+8. **GC et mémoire gérée :** Le langage simplifie le développement backend du
+   système sans vous obliger à gérer manuellement le cycle de vie de la plupart
+   des objets.
+
+9. **Une approche modulaire pratique :** `go mod` standardise la gestion des
+   dépendances et la reproductibilité des builds.
+
+#### Conclusion :
+
+Contrairement à de nombreux langages qui gravitent soit vers une abstraction
+maximale, soit vers une contrôlabilité de bas niveau, Go maintient délibérément
+un équilibre technique : simplicité, performances, évolutivité et commodité de
+développement en équipe.
+
+</details>

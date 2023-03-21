@@ -149,3 +149,55 @@ un équilibre technique : simplicité, performances, évolutivité et commodit�
 développement en équipe.
 
 </details>
+
+
+<details>
+<summary>4. Quelle est la différence entre le paradigme de programmation impératif et déclaratif ? Donnez des exemples de langues.</summary>
+
+#### Go
+
+Les paradigmes impératifs et déclaratifs diffèrent principalement par l'objet de
+la description : le premier explique **comment** effectuer la tâche étape par
+étape, le second — **ce qui exactement** devrait être obtenu en conséquence.
+
+#### Paradigme impératif :
+
+1. **Essence :** Le programmeur spécifie explicitement la séquence
+   d'instructions, les transitions d'état, les boucles, les branches et l'ordre
+   d'exécution.
+
+2. **Focus :** contrôle des algorithmes et contrôle du flux d'exécution.
+
+3. **Caractéristiques typiques :** variables, affectations, `for`, `if`,
+   mutation de données.
+
+4. **Exemples de langages :** Go, C, C++, Rust (dans la plupart des pratiques),
+   Java.
+
+#### Paradigme déclaratif :
+
+1. **Essence :** décrit le résultat souhaité ou les propriétés du système sans
+   détailler les étapes de mise en œuvre.
+
+2. **Focus :** modèle de données, règles et contraintes, pas de mécanique
+   algorithmique.
+
+3. **Caractéristiques typiques :** expressions de niveau supérieur, minimisation
+   des mutations explicites, abstraction de l'ordre d'exécution.
+
+4. **Exemples de langages/approches :** SQL, HCL (Terraform), HTML/CSS, styles
+   fonctionnels en Haskell et en partie en Elixir.
+
+#### Conclusion pratique :
+
+- Dans les systèmes réels, les paradigmes sont souvent combinés.
+
+- Go est principalement de nature impérative, mais certains éléments déclaratifs
+  apparaissent dans les configurations, les descriptions de schémas, les DSL et
+  les requêtes de données.
+
+- Pour l'entretien, il est important de souligner que le choix du paradigme
+  n'est pas une question de "meilleur ou pire", mais une question d'adéquation à
+  la tâche, à l'équipe et aux exigences de support du code.
+
+</details>

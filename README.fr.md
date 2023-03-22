@@ -201,3 +201,56 @@ la description : le premier explique **comment** effectuer la tâche étape par
   la tâche, à l'équipe et aux exigences de support du code.
 
 </details>
+
+
+<details>
+<summary>5. Pourquoi Go est-il adapté à l'écriture de services Cloud Natifs ?</summary>
+
+#### Go
+
+Ce n'est pas un hasard si Go est considéré comme l'un des langages les plus
+naturels pour Cloud Native : ses propriétés architecturales correspondent bien
+aux exigences des systèmes distribués modernes : évolutivité, observabilité,
+fiabilité et simplicité opérationnelle.
+
+#### Pourquoi Go est efficace dans un environnement Cloud Native :
+
+1. **Informatique concurrente légère :** `goroutine` et `channel` simplifient la
+   construction de services qui gèrent simultanément un grand nombre de
+   requêtes.
+
+2. **Hautes performances et durée d'exécution prévisible :** Le compilateur Go
+   et le planificateur optimisé fonctionnent bien dans les scénarios de réseau
+   chargés.
+
+3. **Démarrage et déploiement rapides :** généralement, le résultat d'une build
+   est un binaire unique facile à conteneuriser et à déployer sur Kubernetes ou
+   d'autres orchestrateurs.
+
+4. **Faible surcharge opérationnelle :** Images Docker simples, construction
+   rapide, moins de problèmes de dépendance au démarrage.
+
+5. **Puissante bibliothèque standard :** `net/http`, `context`, `crypto`,
+   `encoding` et d'autres packages vous permettent de créer des solutions de
+   production sans dépendance excessive à l'égard de frameworks tiers.
+
+6. **Commodité pour les praticiens de l'observabilité :** Dans Go, il est facile
+   d'intégrer les métriques, le traçage et le profilage, ce qui est essentiel
+   pour l'exploitation du cloud.
+
+7. **Écosystème résistant d'outils d'infrastructure :** Une grande partie de la
+   pile Cloud Native est écrite spécifiquement en Go (par exemple Kubernetes,
+   Prometheus, Helm, Terraform), ce qui simplifie les intégrations et le
+   contexte des commandes.
+
+8. **Clarté du code dans le développement d'équipe :** Go encourage les
+   solutions simples, ce qui réduit la charge cognitive liée à la prise en
+   charge d'une architecture de microservices.
+
+#### Résumé :
+
+Go est bien adapté aux services Cloud Native car il combine prévisibilité
+technique, performances et commodité pratique : de l'écriture du code à son
+déploiement, sa surveillance et son support à long terme.
+
+</details>

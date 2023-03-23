@@ -254,3 +254,67 @@ technique, performances et commodité pratique : de l'écriture du code à son
 déploiement, sa surveillance et son support à long terme.
 
 </details>
+
+
+<details>
+<summary>6. Que sont les variables `shadowing` et comment peuvent-elles provoquer des erreurs dans la logique métier ?</summary>
+
+#### Go
+
+`Shadowing` (shadowing) se produit lorsqu'une nouvelle variable est déclarée
+dans la portée interne avec le même nom que la portée externe. De ce fait, le
+code ne fonctionne pas avec la variable "attendue", mais avec sa copie locale
+par nom.
+
+#### Comment cela se produit le plus souvent :
+
+1. **Déclaration courte `:=` dans un bloc imbriqué :** le développeur attend une
+   affectation, et en fait une nouvelle variable est créée.
+
+2. **La gestion des erreurs (`err`) dans `if`/`for`/`switch` :** le `err` local
+   éclipse celui externe, provoquant l'échec des vérifications d'état
+   ultérieures.
+
+3. **Travailler avec l'état dans des fonctions longues :** l'ombrage des
+   variables intermédiaires rend la lecture plus difficile et augmente le risque
+   de défauts logiques.
+
+#### Pourquoi cela est dangereux pour la logique métier :
+
+1. **Vérifications de fausses conditions :** le système peut passer à la
+   mauvaise branche d'exécution car la "mauvaise" variable est vérifiée.
+
+2. **État perdu ou incorrect :** par exemple, le résultat du calcul est resté
+   dans le bloc local et l'état externe n'a pas été mis à jour.
+
+3. **Débogage complexe :** visuellement, le nom est le même, mais
+   sémantiquement, ce sont des objets différents ; l'erreur se manifeste
+   discrètement et souvent uniquement dans les cas de combat.
+
+4. **Défauts discrets sans panique :** un programme peut se compiler et
+   s'exécuter, mais renvoyer un résultat incorrect pour l'entreprise.
+
+#### Comment éviter `shadowing` :
+
+- Faites délibérément la distinction entre `=` et `:=` dans tous les blocs
+  imbriqués.
+
+- Gardez une visibilité variable courte et évitez les fonctions trop longues.
+
+- Utilisez des noms clairs et sémantiquement précis, en particulier pour les
+  états et les erreurs.
+
+- Connectez l'analyse statique (`go vet`, `golangci-lint`) aux règles de
+  détection d'ombrage.
+
+- Dans les endroits critiques de la logique, ajoutez des tests pour les
+  scénarios négatifs et les conditions aux limites.
+
+#### Conclusion :
+
+`Shadowing` n'est pas une bizarrerie syntaxique, mais une source d'erreurs
+logiques insidieuses. Dans le code Go de production, la discipline de
+déclaration des variables affecte directement l'exactitude du comportement
+commercial du système.
+
+</details>

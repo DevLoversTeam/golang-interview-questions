@@ -318,3 +318,57 @@ déclaration des variables affecte directement l'exactitude du comportement
 commercial du système.
 
 </details>
+
+
+<details>
+<summary>7. Pourquoi utiliser `struct{}` (une structure vide) et dans quels scénarios est-il efficace ?</summary>
+
+#### Go
+
+`struct{}` dans Go est une structure vide, c'est-à-dire un type sans champ. Sa
+propriété clé : il ne transporte pas de charge utile de données, mais enregistre
+uniquement le fait même de l'existence d'une valeur ou d'un événement.
+
+#### Pourquoi `struct{}` est efficace :
+
+1. **Volume d'informations nul :** le type ne contient aucun champ, il est donc
+   utilisé comme jeton et non comme conteneur de données.
+
+2. **Sémantique d'intention claire :** le code montre explicitement que le fait
+   "est/n'est pas" est important, pas la charge utile.
+
+3. **Réduire les allocations redondantes dans les structures de service :** dans
+   de nombreux modèles, il s'agit d'un choix plus pratique que `bool` ou des
+   valeurs arbitraires lorsque les données ne sont pas nécessaires.
+
+#### Scénarios d'utilisation typiques :
+
+1. **Défini via `map[K]struct{}` :** `map` dans Go est une valeur-clé, et pour
+   un ensemble, nous n'avons besoin que de clés uniques. `struct{}` signifie ici
+   idéalement « clé présente ».
+
+2. **Les canaux de signal `chan struct{}` :** sont utilisés pour la notification
+   « un événement s'est produit » (arrêt/terminé/arrêt) lorsqu'aucune donnée ne
+   doit être transmise.
+
+3. **Types de jetons et contrats d'API :** Une structure vide peut agir comme un
+   jeton sémantique léger dans les protocoles internes de l'application.
+
+4. **Incorporation de composition de comportement :** `struct{}` est parfois
+   utilisé comme élément technique de composition lorsqu'une structure apatride
+   est requise.
+
+#### Quand ne pas utiliser :
+
+- Lorsque l'état ou les attributs réels d'une entité sont requis.
+
+- Lorsque `bool` donne une sémantique commerciale plus claire (par exemple, un
+  indicateur de condition explicite plutôt qu'un fait défini).
+
+#### Résumé :
+
+`struct{}` est un outil pour une intention précise : si des données ne sont pas
+nécessaires, mais qu'un fait, une présence ou un signal doit être indiqué, une
+structure vide est une solution élégante et efficace dans le code Go.
+
+</details>

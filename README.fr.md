@@ -372,3 +372,90 @@ nécessaires, mais qu'un fait, une présence ou un signal doit être indiqué, u
 structure vide est une solution élégante et efficace dans le code Go.
 
 </details>
+
+
+<details>
+<summary>8. Comment fonctionne la structure interne `slice` et que se passe-t-il lorsque vous la transmettez à une fonction ?</summary>
+
+#### Go
+
+Dans Go, `slice` n'est pas le tableau lui-même, mais un descripteur «
+complémentaire » léger sur une section du tableau. C'est pourquoi le
+comportement de `slice` diffère de la copie normale d'un tableau et provoque
+souvent des erreurs dans les entretiens et dans le code réel.
+
+#### Modèle interne `slice` :
+
+`slice` se compose conceptuellement de trois parties :
+
+1. **Pointeur vers le tableau de base** (`ptr`)
+
+2. **Longueur** (`len`) - combien d'articles sont disponibles maintenant
+
+3. **Capacité** (`cap`) — combien d'éléments sont disponibles jusqu'à la limite
+   du tableau de base
+
+Autrement dit, `slice` stocke les métadonnées sur la région en mémoire, plutôt
+que de dupliquer tous les éléments.
+
+#### Que se passe-t-il lorsque vous transmettez `slice` à une fonction :
+
+1. **L'en-tête `slice` (ptr/len/cap) est copié, pas l'intégralité du tableau.**
+
+2. **Les deux parties (appelant et appelé) regardent initialement le même
+   tableau de base.**
+
+3. **La modification d'éléments via l'index** (`s[i] = ...`) dans la fonction
+   est généralement visible de l'extérieur, car les données du tableau partagé
+   sont modifiées.
+
+4. **La modification de l'en-tête lui-même** (`s = s[:n]`, `s = append(...)`)
+   dans une fonction ne modifie pas l'en-tête de l'appelant, sauf si vous
+   renvoyez un nouveau `slice`.
+
+#### Nuance clé avec `append` :
+
+- S'il y a suffisamment de `cap` pendant `append`, l'entrée va au même tableau
+  de base.
+
+- Si `cap` est manquant, le runtime alloue un nouveau tableau, y copie les
+  données et le `slice` local dans la fonction commence à faire référence à une
+  autre mémoire.
+
+Ainsi, après `append`, la fonction peut déjà fonctionner avec le nouveau
+tableau, tandis que l'ancien `slice` restera à l'extérieur si la nouvelle valeur
+n'est pas renvoyée.
+
+#### Conclusion pratique :
+
+- Vous souhaitez modifier des éléments - vous pouvez transmettre `slice` tel
+  quel.
+
+- Vous souhaitez modifier la longueur/capacité ou le résultat de `append` -
+  renvoyez le `slice` mis à jour à partir de la fonction (ou passez un pointeur
+  vers `slice` lorsque cela est vraiment justifié sur le plan architectural).
+
+#### Exemple :
+
+```go
+package main
+
+import "fmt"
+
+func grow(s []int) {
+	s = append(s, 99) // змінюємо локальний заголовок slice
+}
+
+func mutate(s []int) {
+	s[0] = 42 // змінюємо спільний базовий масив
+}
+
+func main() {
+	s := []int{1, 2, 3}
+	mutate(s)
+	grow(s)
+	fmt.Println(s) // [42 2 3], append у grow не змінив заголовок у викликачі
+}
+```
+
+</details>

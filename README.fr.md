@@ -520,3 +520,74 @@ Si la taille de la collection est connue ou bien estimée à l'avance, `make([]T
 meilleures performances et un comportement plus stable sous charge.
 
 </details>
+
+
+<details>
+<summary>10. Comment une expression de tranche `a[low:high:max]` contrôle-t-elle `cap` une nouvelle tranche ?</summary>
+
+#### Go
+
+Dans Go, le formulaire de tranche complète `a[low:high:max]` vous permet de
+contrôler non seulement la longueur (`len`) mais également la capacité (`cap`)
+du nouveau `slice`. Il s'agit d'un outil important pour contrôler les effets
+secondaires pendant `append`.
+
+#### Formules :
+
+Pour `s := a[low:high:max]` :
+
+1. `len(s) = high - low`
+
+2. `cap(s) = max - low`
+
+Sous réserve de limites correctes :
+
+- `0 <= low <= high <= max <= cap(a)` (pour base de tranche)
+
+#### Ce que ça donne concrètement :
+
+1. **Limitation de capacité visible :** vous pouvez "couper" l'accès à la queue
+   du tableau sous-jacent même s'il existe physiquement.
+
+2. **Plus sûr `append` :** si `cap` est artificiellement réduit, `append`
+   réallouera la mémoire plus rapidement au lieu d'écraser les données
+   adjacentes dans le tableau partagé.
+
+3. **Meilleure isolation entre les morceaux de code :** ceci est
+   particulièrement utile lorsqu'une tranche est transmise à une autre fonction
+   ou couche système et que vous ne souhaitez pas qu'elle « se développe » dans
+   la zone de quelqu'un d'autre.
+
+#### Exemple conceptuel :
+
+- `a[2:5]` donne `len=3`, `cap` s'étend jusqu'à la fin du tableau de base.
+
+- `a[2:5:5]` donne `len=3`, `cap=3` - de plus `append` est en rupture de stock
+  et force un nouveau tableau.
+
+#### Conclusion :
+
+Le troisième index dans `a[low:high:max]` est le levier de commande de précision
+`cap`. Il est nécessaire lorsqu'il est important de contrôler la croissance de
+`slice`, d'éviter un écrasement inattendu de la mémoire partagée et de rendre
+prévisible le comportement du code.
+
+#### Exemple :
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	a := []int{0, 1, 2, 3, 4, 5}
+	s := a[2:4:4] // len=2 (2,3), cap=2
+	fmt.Println(len(s), cap(s)) // 2 2
+
+	s = append(s, 99) // новий backing array, а не розширення в a
+	fmt.Println(a)    // [0 1 2 3 4 5]
+	fmt.Println(s)    // [2 3 99]
+}
+```
+
+</details>

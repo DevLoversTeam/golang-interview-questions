@@ -591,3 +591,56 @@ func main() {
 ```
 
 </details>
+
+
+<details>
+<summary>11. Un pointeur vers un élément slice est-il garanti de rester valide après l'appel de `append`?</summary>
+
+#### Go
+
+Réponse courte : **non, non garanti**. Après `append`, un pointeur vers un
+élément de l'ancien `slice` peut perdre sa pertinence par rapport au nouveau
+`slice` si le tableau sous-jacent a été réaffecté.
+
+#### Pourquoi cela se produit :
+
+1. `append` ajoute des éléments dans le `cap` existant s'il y a suffisamment
+   d'espace.
+
+2. Si `cap` est épuisé, le runtime crée un nouveau tableau, copie les données et
+   renvoie `slice`, qui fait déjà référence à la nouvelle adresse.
+
+3. Les pointeurs précédemment pris restent liés à l'ancien tableau, et non au
+   `slice` mis à jour.
+
+#### Conséquences pratiques :
+
+1. **L'alias de pointeur devient dangereux :** la logique peut « regarder » dans
+   une zone mémoire obsolète.
+
+2. **Bogues inattendus dans les modifications :** les modifications via l'ancien
+   pointeur n'affectent pas le nouveau `slice` après le déplacement.
+
+3. **Débogage difficile :** le code se compile et s'exécute souvent, mais
+   présente un comportement imprévisible sous charge ou sur d'autres volumes de
+   données.
+
+#### Comment écrire en toute sécurité :
+
+- Ne stockez pas de pointeurs à longue durée de vie vers des éléments `slice`
+  qui pourraient potentiellement se développer via `append`.
+
+- Si le pointeur est vraiment nécessaire, assurez-vous de la stabilité de la
+  mémoire : pré-réservez la capacité (`make(..., 0, n)`) ou n'exécutez pas
+  `append` après avoir pris des adresses.
+
+- Il est souvent plus sûr de transmettre un index ou de renvoyer un nouveau
+  `slice` et de lier toutes les références dérivées.
+
+#### Conclusion :
+
+Après `append`, la validité des pointeurs vers les éléments `slice` n'est pas un
+contrat Go. Le code sécurisé doit supposer que `append` peut modifier l'adresse
+de base des données.
+
+</details>

@@ -644,3 +644,59 @@ contrat Go. Le code sécurisé doit supposer que `append` peut modifier l'adress
 de base des données.
 
 </details>
+
+
+<details>
+<summary>12. Comment supprimer efficacement des éléments d'une tranche sans préserver l'ordre dans Go ?</summary>
+
+#### Go
+
+Si l'ordre des éléments n'a pas d'importance, la stratégie de suppression la
+plus efficace consiste à remplacer l'élément à supprimer par le dernier élément
+de `slice`, puis à raccourcir `slice` de un.
+
+#### L'idée de la démarche :
+
+1. Recherchez l'index `i` de l'élément à supprimer.
+
+2. Attribuer `s[i] = s[len(s)-1]`.
+
+3. Réduire la longueur : `s = s[:len(s)-1]`.
+
+#### Pourquoi c'est efficace :
+
+1. **O(1) dans le temps** (sans décaler tous les éléments suivants).
+
+2. **Copies minimales** par rapport à la suppression dans l'ordre.
+
+3. **S'adapte bien** aux grandes collections et aux boucles chaudes.
+
+#### À quoi faire attention :
+
+- L'ordre des éléments change après l'opération.
+
+- Il est nécessaire de vérifier l'exactitude de l'index.
+
+- Pour `slice` avec des types pointeur, il est parfois approprié d'annuler
+  l'élément de queue avant la troncature pour éviter de conserver des références
+  redondantes en mémoire.
+
+#### Conclusion :
+
+Lorsque l'ordre stable n'est pas une exigence de logique métier, "échanger avec
+last + truncate" est le moyen canonique et le plus rapide de supprimer un
+élément de `slice` dans Go.
+
+#### Exemple :
+
+```go
+func removeUnordered[T any](s []T, i int) []T {
+	last := len(s) - 1
+	s[i] = s[last]
+	var zero T
+	s[last] = zero // опційно: щоб не тримати зайве посилання
+	return s[:last]
+}
+```
+
+</details>

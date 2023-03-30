@@ -700,3 +700,68 @@ func removeUnordered[T any](s []T, i int) []T {
 ```
 
 </details>
+
+
+<details>
+<summary>13. Quel est l’ordre des itérations des clés dans `map` et peut-on s’y fier ? Comment cela affecte-t-il les tests et la sérialisation ?</summary>
+
+#### Go
+
+Dans Go, l'ordre d'itération des clés dans `map` est **non déterministe**. Cela
+signifie que pendant `for range`, la séquence de touches peut varier entre les
+exécutions du programme et même entre les itérations individuelles au sein d'une
+même exécution.
+
+#### Pouvez-vous vous fier à la commande :
+
+1. **Non, vous ne pouvez pas.**
+
+2. La commande en `map` ne fait pas partie du contrat linguistique.
+
+3. Toute logique qui repose implicitement sur un ordre « stable » est
+   potentiellement erronée.
+
+#### Comment cela affecte les tests :
+
+1. **Tests instables :** les comparaisons de chaînes/tableaux formés avec `map`
+   peuvent échouer de manière aléatoire en raison d'un ordre différent des
+   éléments.
+
+2. **Fausses régressions :** il n'y a aucun changement dans la logique métier,
+   mais le test échoue en raison d'une sortie instable.
+
+3. **Approche correcte :** les tests nécessitent soit :
+
+- comparer les structures en tant qu'ensembles/collections associatives ;
+
+- ou pré-triez les clés et construisez un résultat déterministe.
+
+#### Comment cela affecte la sérialisation :
+
+1. Si la sérialisation est construite sur un contournement direct `map`, le
+   résultat du texte peut avoir un ordre différent de champs/paires clé-valeur.
+
+2. Cela rend les choses difficiles :
+
+- instantané/golden-tests ;
+
+- hachage des charges utiles ;
+
+- comparaison d'artefacts dans CI.
+
+3. Pour une sortie stable, vous devez :
+
+- obtenir les clés séparément ;
+
+- triez-les ;
+
+- formule le résultat dans un ordre fixe.
+
+#### Conclusion :
+
+`map` dans Go est optimisé pour un accès rapide par clé, sans préservation de
+l'ordre. Par conséquent, les tests, la journalisation, la signature des données
+et la sérialisation doivent délibérément introduire le déterminisme via le tri
+des clés ou d'autres règles canoniques.
+
+</details>

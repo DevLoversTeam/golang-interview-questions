@@ -765,3 +765,62 @@ et la sérialisation doivent délibérément introduire le déterminisme via le 
 des clés ou d'autres règles canoniques.
 
 </details>
+
+
+<details>
+<summary>14. Comment parcourir `map` dans un ordre prévisible ?</summary>
+
+#### Go
+
+Étant donné que `map` dans Go ne garantit pas un ordre de parcours stable,
+l'itération prévue doit être organisée explicitement : d'abord collecter les
+clés, puis les trier, et ensuite seulement lire les valeurs dans cet ordre fixe.
+
+#### Approche canonique (Go 1.23+) :
+
+1. Utilisez `maps.Keys` pour obtenir un itérateur de clé.
+
+2. Utilisez `slices.Sorted` (`slices.SortedFunc`) pour obtenir une tranche de
+   clé triée.
+
+3. Parcourir la tranche triée.
+
+#### Pourquoi c'est vrai :
+
+1. **Déterminisme :** la même entrée donne le même ordre de sortie.
+
+2. **Tests stables :** les plantages aléatoires dus à une séquence différente
+   disparaissent.
+
+3. **Sérialisation prévue :** plus facile d'effectuer des tests de référence,
+   des signatures et de comparer des artefacts.
+
+#### Nuances importantes :
+
+- Un critère de tri explicite doit être défini pour les clés de structure ou les
+  types personnalisés.
+
+- La difficulté augmente en raison du tri (`O(n log n)`), mais c'est le prix de
+  la prévisibilité.
+
+- Si l'ordre est critique dans un hotpath, il est parfois approprié d'envisager
+  une structure de données différente (par exemple en maintenant une liste
+  ordonnée de clés séparée).
+
+#### Conclusion :
+
+L'itération prévue de `map` dans Go est toujours une stratégie consciente en
+trois phases : "collecter les clés → trier → parcourir". Ce modèle est considéré
+comme la norme de production pour une production stable. Un formulaire compact
+via `slices.Sorted(maps.Keys(m))` est disponible depuis Go 1.23.
+
+#### Exemple :
+
+```go
+keys := slices.Sorted(maps.Keys(m))
+for _, k := range keys {
+	fmt.Printf("%v=%v\n", k, m[k])
+}
+```
+
+</details>

@@ -824,3 +824,56 @@ for _, k := range keys {
 ```
 
 </details>
+
+
+<details>
+<summary>15. Pourquoi ne puis-je pas obtenir l'adresse de l'élément cartographique ?</summary>
+
+#### Go
+
+Dans Go, vous ne pouvez pas prendre l'adresse de l'élément `map` (par exemple,
+`&m[key]`), car la valeur dans `map` n'a pas d'adresse stable en mémoire. Lors
+d'une croissance, d'un rééquilibrage ou d'une réorganisation interne, le runtime
+`map` peut déplacer des éléments entre les compartiments.
+
+#### Principale raison de la limitation :
+
+1. **Instabilité de placement :** `map` modifie la structure interne de manière
+   dynamique.
+
+2. **Danger de pointeurs « pendants » :** l'adresse obtenue aujourd'hui peut
+   devenir invalide après des opérations ultérieures avec `map`.
+
+3. **Garantie de sécurité du langage :** le compilateur interdit cette opération
+   pour éviter les bugs mémoire cachés.
+
+#### Conséquences pratiques :
+
+1. Vous ne pouvez pas modifier un champ de structure directement via
+   `m[key].Field = ...` si la valeur de la carte est une structure.
+
+2. Le modèle de mise à jour pour map-value-struct ressemble à ceci :
+
+- lire la valeur dans une variable temporaire ;
+
+- changez-le ;
+
+- réécrivez à `map`.
+
+#### Lorsque la mutabilité est nécessaire à :
+
+- Utilisez `map[K]*T` au lieu de `map[K]T` si vous devez travailler avec le même
+  objet via un pointeur.
+
+- Mais soyez conscient des compromis : allocations supplémentaires, problèmes de
+  cycle de vie des objets et nécessité d'une synchronisation avec un accès
+  simultané.
+
+#### Conclusion :
+
+L'interdiction de prendre l'adresse de l'élément `map` est une conception
+délibérée de Go en faveur de la sécurité de la mémoire. Si des modifications «
+sur place » sont requises, choisissez soit une boucle de
+lecture-modification-écriture, soit `map` avec des valeurs de pointeur.
+
+</details>

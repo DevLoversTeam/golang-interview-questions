@@ -877,3 +877,54 @@ sur place » sont requises, choisissez soit une boucle de
 lecture-modification-écriture, soit `map` avec des valeurs de pointeur.
 
 </details>
+
+
+<details>
+<summary>16. Pourquoi `map` n'est-il pas thread-safe prêt à l'emploi dans Go ?</summary>
+
+#### Go
+
+`map` dans Go n'est pas thread-safe de par sa conception : l'accès simultané à
+partir de plusieurs goroutines sans synchronisation (surtout lorsqu'il existe un
+enregistrement) conduit à des courses de données et à un comportement indéfini.
+
+#### Pourquoi est-ce fait :
+
+1. **Performances dans le scénario de base :** la plupart des `map` sont
+   utilisés localement dans une seule goroutine ; un verrou intégré pour chaque
+   opération ralentirait ces scénarios.
+
+2. **Modèle explicite de compétition :** Go confie le contrôle de la
+   synchronisation au développeur, afin qu'il choisisse un mécanisme pour une
+   charge de travail spécifique.
+
+3. **Flexibilité de l'architecture :** différentes tâches nécessitent
+   différentes stratégies (mutex, partitionnement, approche par acteur,
+   `sync.Map`), et un verrouillage automatique « taille unique » n'est pas
+   optimal pour tous les cas.
+
+#### Ce que cela signifie en pratique :
+
+1. **La lecture et l'écriture simultanées sans protection sont interdites.**
+
+2. **L'écriture + l'écriture sans protection sont interdites.**
+
+3. **Lecture + lecture seule** peut être sûr si personne ne modifie `map`.
+
+#### Comment faire les choses correctement :
+
+- `map` + `sync.Mutex` ou `sync.RWMutex` pour la synchronisation gérée.
+
+- `sync.Map` pour des modèles d'accès spécifiques (nombreuses lectures,
+  écritures rares ou clés indépendantes).
+
+- Isolement architectural de l'état via un goroutine et des canaux «
+  propriétaires ».
+
+#### Conclusion :
+
+`map` la sécurité anti-flux prête à l'emploi n'est pas un défaut, mais un
+compromis conscient de Go : une surcharge minimale dans le cas général et un
+contrôle total de la concurrence entre les mains de l'ingénieur.
+
+</details>

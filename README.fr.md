@@ -928,3 +928,72 @@ compromis conscient de Go : une surcharge minimale dans le cas général et un
 contrôle total de la concurrence entre les mains de l'ingénieur.
 
 </details>
+
+
+<details>
+<summary>17. Une structure peut-elle être une clé dans `map` et quelles sont les restrictions à ce sujet ? En quoi est-ce mieux que les cartes imbriquées ?</summary>
+
+#### Go
+
+Oui, dans Go, une structure peut être une clé dans `map` **si elle est
+comparée** (`comparable`). Cela signifie que tous ses champs doivent également
+être comparables.
+
+#### Restrictions pour la clé struct :
+
+1. **Tous les champs de la structure doivent être comparables.**
+
+- Autorisé, en particulier : nombres, chaînes, booléens, pointeurs, tableaux
+  (avec des éléments comparables), autres structures comparables.
+
+- Champs de types interdits dans la clé : `slice`, `map`, `func` (ils ne sont
+  pas comparables).
+
+2. **La comparaison est basée sur la valeur de tous les champs.**
+
+- Deux clés sont considérées comme égales uniquement si tous les champs
+  correspondants sont égaux.
+
+3. **La clé doit être stable après l'insertion.**
+
+- Modifier le « sens » d'une clé via un état mutable externe est une mauvaise
+  pratique car elle détruit la prévisibilité de l'accès.
+
+#### Pourquoi struct-key est souvent meilleur que `map` imbriqué :
+
+1. **Un modèle de données plus simple :**
+
+- Au lieu de `map[A]map[B]V`, vous pouvez utiliser `map[CompositeKey]V`, où
+  `CompositeKey` est une structure avec des champs `A`, `B`.
+
+2. **Moins de passe-partout et de contrôles sur `nil` :**
+
+- Les cartes internes Dans les `map` imbriquées doivent être initialisées et les
+  clés manquantes intermédiaires traitées.
+
+3. **Meilleure localité logique :**
+
+- Toutes les dimensions clés sont regroupées dans un seul type, ce qui améliore
+  la lisibilité et la maintenabilité.
+
+4. **Moins de marge d'erreur :**
+
+- Il est plus facile d'éviter les structures partiellement initialisées et les
+  chemins d'accès incohérents.
+
+#### Lorsqu'il est imbriqué, `map` peut être approprié :
+
+- Lorsque la sémantique des données hiérarchiques est requise.
+
+- Lors d'opérations fréquentes avec des tranches intermédiaires au niveau de la
+  première touche.
+
+- Lorsque différents niveaux ont des règles de cycle de vie distinctes.
+
+#### Conclusion :
+
+La clé de structure de Go est un outil puissant et propre pour l'adressage
+composite. Si le type de clé est correctement conçu et est `comparable`, cette
+solution est souvent plus élégante et fiable que `map` imbriquée.
+
+</details>

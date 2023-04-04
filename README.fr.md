@@ -997,3 +997,55 @@ composite. Si le type de clé est correctement conçu et est `comparable`, cette
 solution est souvent plus élégante et fiable que `map` imbriquée.
 
 </details>
+
+
+<details>
+<summary>18. Comment comparer deux structures : quand elles se compilent et quand elles ne le font pas ?</summary>
+
+#### Go
+
+En Go, deux structures peuvent être comparées avec l'opérateur `==` ou `!=`
+uniquement lorsque le type de la structure est `comparable`. En pratique, cela
+signifie : **tous les champs de la structure doivent être comparés**.
+
+#### Lorsque la comparaison est compilée :
+
+1. Les structures sont du même type.
+
+2. Chaque champ de la structure est de type comparable.
+
+3. La comparaison est effectuée sur la valeur de tous les champs.
+
+#### Lorsque la comparaison ne compile pas :
+
+1. Si au moins un champ a un type non comparable :
+
+- `slice`
+
+- `map`
+
+- `func`
+
+2. Si vous essayez de comparer différents types de structures, même avec des
+   champs similaires.
+
+#### Précisions importantes :
+
+1. **Les tableaux sont comparés** si leurs éléments sont comparés.
+
+2. **Les pointeurs sont comparés** (les adresses sont comparées).
+
+3. **Les interfaces sont comparées** si la valeur dynamique à l'intérieur est
+   également comparée ; sinon, une panique d'exécution pendant la comparaison
+   est possible.
+
+#### Conclusion pratique :
+
+- Si la structure est entièrement composée de champs comparables, n'hésitez pas
+  à utiliser `==`.
+
+- Si la structure est `slice/map/func`, utilisez une comparaison de champs
+  explicite ou des approches distinctes (telles qu'une logique de comparaison
+  spécialisée) plutôt qu'un opérateur d'égalité direct.
+
+</details>

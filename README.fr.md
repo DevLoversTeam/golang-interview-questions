@@ -1049,3 +1049,73 @@ signifie : **tous les champs de la structure doivent être comparés**.
   spécialisée) plutôt qu'un opérateur d'égalité direct.
 
 </details>
+
+
+<details>
+<summary>19. Comment implémenter une comparaison de deux structures si elles contiennent des tranches ou des cartes ? Qu'est-ce que `reflect.DeepEqual()` ?</summary>
+
+#### Go
+
+Si la structure contient `slice` ou `map`, une comparaison directe via `==` ne
+compile pas. Dans de tels cas, la comparaison doit être mise en œuvre séparément
+: soit manuellement, soit à l'aide d'utilitaires de comparaison approfondis.
+
+#### Approches de base :
+
+1. **Comparaison de champs explicite (recommandée pour la logique critique) :**
+
+- comparez directement les champs simples ;
+
+- pour `slice` vérifier la longueur et les éléments ;
+
+- pour `map`, vérifiez le nombre de clés et les valeurs correspondantes.
+
+2. **`reflect.DeepEqual(a, b)` :**
+
+- effectue une comparaison récursive (« approfondie ») de structures complexes ;
+
+- pratique pour des contrôles rapides, des prototypes et une partie des
+  scénarios de test.
+
+#### Qu'est-ce que `reflect.DeepEqual()` :
+
+`reflect.DeepEqual()` est une fonction du package standard `reflect` qui tente
+de déterminer l'égalité profonde de deux valeurs en parcourant de manière
+récursive des champs imbriqués, des éléments de collection et des structures de
+données.
+
+#### Nuances `reflect.DeepEqual` qu'il est important de retenir :
+
+1. **La sémantique peut ne pas correspondre à l'égalité commerciale :**
+
+- par exemple, `nil`-slice et vide `[]T{}` sont souvent traités différemment.
+
+2. **Diagnostics moins transparents :**
+
+- en cas de chute, il est plus difficile de comprendre quel champ est différent
+  sans outils supplémentaires.
+
+3. **Performances :**
+
+- reflection est plus lente que la comparaison manuelle spécialisée dans les
+  hotpaths.
+
+#### Quand choisir :
+
+1. **Règles commerciales de production :** comparaison de domaine explicite
+   (sémantique claire).
+
+2. **Tests et contrôles auxiliaires :** `reflect.DeepEqual` ou bibliothèques de
+   tests plus spécialisées.
+
+3. **Scénarios critiques :** évitez la réflexion « magique » où une vérification
+   stricte d'équivalence est requise.
+
+#### Conclusion :
+
+Pour les structures avec `slice/map`, la comparaison correcte est avant tout une
+question de sémantique et non de technique. `reflect.DeepEqual()` est un outil
+utile, mais une méthode de comparaison explicite basée sur le domaine reste la
+méthode d'ingénierie la plus fiable.
+
+</details>

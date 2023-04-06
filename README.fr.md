@@ -1119,3 +1119,58 @@ utile, mais une méthode de comparaison explicite basée sur le domaine reste la
 méthode d'ingénierie la plus fiable.
 
 </details>
+
+
+<details>
+<summary>20. Que se passe-t-il lors de la conversion entre des types nommés ayant la même structure s'ils ont des méthodes différentes ?</summary>
+
+#### Go
+
+Dans Go, la conversion entre des types nommés avec la même structure enfant
+s'applique **uniquement aux valeurs de données**, mais ne « porte » pas les
+méthodes. Autrement dit, après la conversion, vous obtenez une nouvelle valeur
+d'un autre type nommé avec son propre ensemble de méthodes.
+
+#### Le grand principe :
+
+1. **La conversion modifie le type de la valeur plutôt que d'unifier le
+   comportement des types.**
+
+2. **Les méthodes appartiennent au type nommé spécifique** sur lequel elles sont
+   déclarées.
+
+3. Après `T2(vT1)`, les méthodes `T2` sont disponibles, et les méthodes `T1` ne
+   sont plus directement accessibles.
+
+#### Ce qui est enregistré lors de la conversion :
+
+1. Représentation bit/booléenne des champs (selon les règles de compatibilité de
+   types).
+
+2. Valeur des données.
+
+#### Ce qui n'est pas enregistré :
+
+1. Ensemble de méthodes du type d'origine.
+
+2. Correspondance automatique de l'interface fournie par le type d'origine.
+
+#### Conséquences pratiques :
+
+1. Deux types avec les mêmes champs peuvent avoir un comportement différent dans
+   l'API.
+
+2. Après la conversion, la compilation du code peut échouer aux endroits où une
+   interface implémentée uniquement par le type source était attendue.
+
+3. Ceci est utile pour la modélisation de domaine : même structure de données
+   mais différents rôles et contrats sémantiques.
+
+#### Conclusion :
+
+Dans Go, la conversion entre les types nommés modifie « l’identité » du type, et
+non la copie du comportement. Les données peuvent être les mêmes, mais les
+méthodes et les capacités de l'interface sont définies uniquement par le type de
+cible.
+
+</details>

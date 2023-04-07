@@ -1174,3 +1174,56 @@ méthodes et les capacités de l'interface sont définies uniquement par le type
 cible.
 
 </details>
+
+
+<details>
+<summary>21. Qu'est-ce que `Memory Alignment` (alignement) et comment affecte-t-il la taille des structures ?</summary>
+
+#### Go
+
+`Memory Alignment` (alignement) est une règle permettant de placer des données
+en mémoire à des adresses multiples d'une certaine étape (exigence d'alignement)
+pour un type spécifique. Le processeur et le runtime lisent ces données plus
+rapidement et de manière plus sûre lorsque ces exigences sont remplies.
+
+#### Comment ça marche dans les frameworks :
+
+1. Chaque champ a ses propres exigences d'alignement (par exemple, `int64`
+   nécessite généralement un alignement plus strict que `byte`).
+
+2. Entre les champs, le compilateur peut ajouter du **padding** (octets de
+   service d'espace réservé) afin que le champ suivant commence à la bonne
+   adresse.
+
+3. Il peut également y avoir un rembourrage de queue à l'extrémité d'une
+   structure afin qu'un ensemble de telles structures préserve l'alignement
+   correct de chaque élément.
+
+#### Impact sur la taille de la structure :
+
+1. **La taille de la structure est souvent supérieure à la somme des tailles de
+   champ** en raison du remplissage.
+
+2. **L'ordre des champs est important :** un mauvais placement (`byte`, `int64`,
+   `byte`, ...) peut augmenter considérablement la taille totale.
+
+3. **Le regroupement optimal des champs** (du plus grand aligné au plus petit)
+   réduit généralement l'utilisation de la mémoire.
+
+#### Pourquoi c'est important dans la pratique :
+
+1. Taille de structure plus petite = meilleure localité de cache.
+
+2. Moins de consommation de RAM dans les grands tableaux/caches/index.
+
+3. Débit plus élevé dans les chemins chauds en raison d'une pression mémoire
+   réduite.
+
+#### Conclusion technique :
+
+L'alignement n'est pas un "exotisme de bas niveau", mais un facteur de
+performance pratique. En Go, l'ordre correct des champs dans une structure
+affecte directement sa taille, et donc l'efficacité de la mémoire et la vitesse
+du système.
+
+</details>

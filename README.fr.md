@@ -1227,3 +1227,58 @@ affecte directement sa taille, et donc l'efficacité de la mémoire et la vitess
 du système.
 
 </details>
+
+
+<details>
+<summary>22. Pourquoi le passage d'une grande structure « par valeur » est-il souvent plus lent que le passage d'un pointeur ?</summary>
+
+#### Go
+
+Passer une grande structure par valeur signifie copier l'intégralité de son
+contenu à chaque fois que la fonction est appelée. Pour les types groupés, cela
+peut être beaucoup plus coûteux que de transmettre un seul pointeur vers les
+mêmes données.
+
+#### Pourquoi il y a une différence de performances :
+
+1. **Coût de copie de mémoire :** plus la structure est grande, plus il faut
+   copier d'octets lors des appels d'E/S.
+
+2. **Charge sur le cache du processeur :** les copies massives augmentent le
+   trafic mémoire et peuvent dégrader la localisation du cache dans les zones de
+   code chaud.
+
+3. **Effet en cascade dans les boucles et les pipelines :** si une structure est
+   transmise plusieurs fois, la surcharge s'accumule.
+
+4. **Impact potentiel sur les allocations :** Dans certains scénarios, le
+   comportement de copie et d'échappement peut augmenter le temps d'exécution et
+   la pression du GC.
+
+#### Quand un pointeur est souvent meilleur :
+
+1. Lorsque la structure est volumineuse et souvent passée entre les fonctions.
+
+2. Lorsque vous devez modifier l'état partagé sans copie supplémentaire.
+
+3. Lorsqu'un comportement de latence stable sous charge est important.
+
+#### Mais un pointeur n'est pas toujours automatiquement meilleur :
+
+1. Pour les petites structures, la transmission par valeur peut être plus simple
+   et assez efficace.
+
+2. Value offre une meilleure isolation de l'état (pas d'état mutable partagé
+   implicite).
+
+3. Pointer ajoute des risques d'alias et la nécessité d'une synchronisation plus
+   minutieuse dans le code concurrent.
+
+#### Conclusion pratique :
+
+En Go, le choix entre valeur et pointeur ne se fait pas de manière dogmatique,
+mais en fonction du profil des données : les grandes structures et les appels
+fréquents favorisent le pointeur ; il est souvent approprié de transmettre de
+petites données de type immuable par valeur.
+
+</details>

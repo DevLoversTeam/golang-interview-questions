@@ -1282,3 +1282,58 @@ fréquents favorisent le pointeur ; il est souvent approprié de transmettre de
 petites données de type immuable par valeur.
 
 </details>
+
+
+<details>
+<summary>23. Pourquoi `map` est-il plus lent que `slice` avec un accès séquentiel et quand choisir quoi ?</summary>
+
+#### Go
+
+Pour l'accès séquentiel (`sequential access`), `slice` est généralement plus
+rapide que `map` car les éléments de `slice` sont compacts et lus de manière
+linéaire, tandis que `map` effectue le hachage de clé et l'accès à une structure
+interne plus complexe.
+
+#### Pourquoi `slice` est plus rapide dans une passe séquentielle :
+
+1. **Placement linéaire en mémoire :** les éléments sont côte à côte, ce qui
+   correspond bien aux caches CPU.
+
+2. **Accès simple par index :** opérations auxiliaires minimum par élément.
+
+3. **Meilleure prévisibilité pour le processeur :** le modèle linéaire réduit le
+   nombre d'échecs de cache.
+
+#### Pourquoi `map` est plus lent dans ce scénario :
+
+1. **Les clés de hachage** ajoutent une surcharge de calcul.
+
+2. **Un placement inégal du compartiment** est pire pour la localité de mémoire.
+
+3. **Logique d'accès plus complexe** (recherche dans les compartiments,
+   collisions, contrôles de service).
+
+#### Quand choisir `slice` :
+
+1. Les données sont transmises de manière séquentielle.
+
+2. Nécessite des itérations, un tri et un traitement par lots.
+
+3. La clé est en fait une position (index), et non un identifiant arbitraire.
+
+#### Quand choisir `map` :
+
+1. Nécessite un accès rapide par clé (`id`, `name`, clé composite).
+
+2. La sémantique des ensembles/dictionnaires est importante.
+
+3. La recherche par valeur clé domine le parcours linéaire complet.
+
+#### Conclusion pratique :
+
+`slice` — un outil pour des itérations ordonnées et denses ; `map` — pour
+l'accès à l'adresse par clé. Si la charge de travail est principalement
+séquentielle, `slice` offre généralement de meilleures performances et une
+surcharge réduite.
+
+</details>

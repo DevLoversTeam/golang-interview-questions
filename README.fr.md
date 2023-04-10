@@ -1337,3 +1337,66 @@ séquentielle, `slice` offre généralement de meilleures performances et une
 surcharge réduite.
 
 </details>
+
+
+<details>
+<summary>24. Comment vérifier si une variable implémente une interface ?</summary>
+
+#### Go
+
+En Go, l'implémentation d'une interface est implicite : un type est considéré
+comme implémentant une interface s'il possède l'ensemble complet de méthodes
+requis. Par conséquent, la vérification est possible à la fois au stade de la
+compilation et au moment de l'exécution.
+
+#### 1) Vérification au stade de la compilation (recommandé) :
+
+L'approche la plus fiable consiste à ajouter une assertion au moment de la
+compilation :
+
+```go
+var _ MyInterface = (*MyType)(nil)
+```
+
+Ce que cela signifie :
+
+1. Si `*MyType` n'implémente pas `MyInterface`, le code ne sera pas compilé.
+
+2. Ceci documente le contrat de type directement dans la base de code.
+
+3. Particulièrement utile pour les API publiques, les adaptateurs et les
+   commandes volumineuses.
+
+#### 2) Vérifiez pendant l'exécution (runtime) :
+
+Lorsqu'il existe une valeur de type `any`/interface, l'assertion de type est
+appliquée :
+
+```go
+v, ok := x.(MyInterface)
+```
+
+1. `ok == true` — la valeur implémente l'interface.
+
+2. `ok == false` — n'implémente pas.
+
+3. Variant sans `ok` peut provoquer la panique, le code de production utilise
+   donc généralement le formulaire sécurisé avec `ok`.
+
+#### Pointeur vs récepteur de valeur – une nuance critique :
+
+1. Les ensembles de méthodes `T` et `*T` sont différents.
+
+2. Souvent, c'est `*T` qui implémente l'interface et `T` ne le fait pas.
+
+3. Lors de l'entretien, il est important de parler clairement de ce point, car
+   c'est une source typique d'erreurs.
+
+#### Conclusion :
+
+La meilleure pratique consiste à corriger l'implémentation de l'interface avec
+une assertion au moment de la compilation et à utiliser la vérification à
+l'exécution via une assertion où le type de la valeur n'est connu qu'au moment
+de l'exécution.
+
+</details>

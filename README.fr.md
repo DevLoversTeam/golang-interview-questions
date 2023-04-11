@@ -1400,3 +1400,95 @@ l'exécution via une assertion où le type de la valeur n'est connu qu'au moment
 de l'exécution.
 
 </details>
+
+
+<details>
+<summary>25. Que sont `type assertion` et `type switch` ? Quels sont leurs avantages et comment gérer les affirmations sans panique ?</summary>
+
+#### Go
+
+`type assertion` et `type switch` dans Go sont des mécanismes permettant de
+travailler avec des valeurs d'interface lorsque le type réel (dynamique) doit
+être spécifié au moment de l'exécution.
+
+#### Qu'est-ce que `type assertion` :
+
+`type assertion` a la forme :
+
+```go
+v, ok := x.(T)
+```
+
+1. `x` — valeur du type d'interface.
+
+2. `T` est le type auquel nous essayons de mener.
+
+3. `ok == true` signifie que le type dynamique est compatible avec `T`.
+
+#### Avantage `type assertion` :
+
+1. Autorise l'accès à un comportement spécifique d'un type spécifique.
+
+2. Permet de travailler en toute sécurité avec `any`/interfaces dans les
+   adaptateurs, décodeurs et middleware.
+
+3. Utile lorsqu'un type spécifique est attendu.
+
+#### Comment éviter la panique :
+
+Forme dangereuse :
+
+```go
+v := x.(T) // panic, якщо x не є T
+```
+
+Forme sécurisée :
+
+```go
+v, ok := x.(T)
+if !ok {
+    // обробити невідповідність типу
+}
+```
+
+C'est le formulaire à deux chiffres avec `ok` qui est la norme de production.
+
+#### Qu'est-ce que `type switch` :
+
+`type switch` est un moyen pratique de gérer plusieurs types possibles à la
+fois :
+
+```go
+switch v := x.(type) {
+case string:
+    // ...
+case int:
+    // ...
+default:
+    // ...
+}
+```
+
+#### Avantage `type switch` :
+
+1. Rend les branchements de types lisibles.
+
+2. Réduit la cascade d'assertions multiples.
+
+3. Donne un chemin `default` explicite pour les types inconnus.
+
+#### Quand utiliser quoi :
+
+1. **`type assertion`** — lors de la vérification d'un type attendu.
+
+2. **`type switch`** — lorsque nous autorisons plusieurs types et avons besoin
+   d'une logique différente pour chacun.
+
+#### Conclusion :
+
+`type assertion` et `type switch` sont un moyen contrôlé d'« exposer » un type
+de valeur d'interface dynamique. Pour éviter les plantages, l'assertion doit
+être effectuée sous une forme sécurisée `v, ok := ...` et toujours disposer d'un
+script de traitement `ok == false`.
+
+</details>

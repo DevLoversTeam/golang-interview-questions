@@ -1492,3 +1492,56 @@ de valeur d'interface dynamique. Pour éviter les plantages, l'assertion doit
 script de traitement `ok == false`.
 
 </details>
+
+
+<details>
+<summary>26. Pourquoi `interface{}` et `any` sont-ils identiques, mais `*interface{}` est presque toujours une erreur ?</summary>
+
+#### Go
+
+Dans Go, `any` n'est qu'un alias (`alias`) pour `interface{}`. Autrement dit, du
+point de vue d'un système typique, ils sont absolument identiques : la
+différence n'est que stylistique et sémantique pour la lisibilité du code.
+
+#### Pourquoi `interface{}` == `any` :
+
+1. `any` est introduit pour une meilleure clarté, en particulier dans le code
+   générique.
+
+2. Le compilateur interprète `any` et `interface{}` comme le même type.
+
+3. Le comportement lors de l'affectation, de l'assertion, du changement est
+   identique.
+
+#### Pourquoi `*interface{}` est presque toujours une erreur :
+
+1. **Une interface est déjà un "conteneur de référence" pour valeur + type.**
+   L'ajout d'un autre niveau de pointeur n'a généralement pas de sens.
+
+2. **Complication de la sémantique nulle :** avec `*interface{}` une autre
+   couche d'états apparaît (pointeur `nil`, pointeur non nul sur l'interface
+   nil, etc.), ce qui génère des bugs non évidents.
+
+3. ** Mauvaise lisibilité et conception de l'API :** ce type signale presque
+   toujours que le modèle de données ou la signature de fonction est mal conçu.
+
+4. **Au lieu de `*interface{}` suffit généralement :**
+
+- ou passez `interface{}`/`any` par valeur ;
+
+- ou utilisez un type de pointeur spécifique (`*T`) si la mutabilité de l'objet
+  `T` est requise.
+
+#### Quand `*interface{}` peut se produire :
+
+- Dans des scénarios techniques étroits (où exactement une variable d'interface
+  comme une cellule doit être modifiée), mais dans le code de production
+  appliqué, il s'agit d'un modèle rare et pour la plupart indésirable.
+
+#### Conclusion :
+
+`any` et `interface{}` sont identiques. Au lieu de cela, `*interface{}` est dans
+la plupart des cas une abstraction inutile qui complique le code et augmente le
+risque d'erreurs logiques.
+
+</details>

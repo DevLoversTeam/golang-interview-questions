@@ -1545,3 +1545,63 @@ la plupart des cas une abstraction inutile qui complique le code et augmente le
 risque d'erreurs logiques.
 
 </details>
+
+
+<details>
+<summary>27. Quand `interface{}` (`any`) doit-il être utilisé et quand est-il considéré comme un mauvais ton ?</summary>
+
+#### Go
+
+`any` (c'est-à-dire `interface{}`) est approprié lorsque le type de la valeur
+est objectivement inconnu à la limite de l'API. Cependant, une utilisation
+excessive de `any` dans la logique de domaine dégrade généralement la sécurité
+des types et rend la maintenance difficile.
+
+#### Lorsque `any` est vraiment justifié :
+
+1. **Couches d'infrastructure et conteneurs universels :** journalisation,
+   wrappers génériques, middleware, bibliothèques de bas niveau.
+
+2. **Décodage des formats faiblement typés :** tels que les parties JSON avec un
+   schéma imprévisible.
+
+3. **Points d'intégration avec des API externes :** lorsque le contrat est
+   dynamique et que le type strict ne peut pas être fixé à l'avance.
+
+4. **Étapes de refactorisation transitoires :** comme compromis temporaire avec
+   un retour ultérieur aux types concrets.
+
+#### Quand c'est un mauvais ton :
+
+1. **Dans un modèle économique dont le type est connu :** `any` masque les
+   erreurs jusqu'à l'exécution au lieu de la compilation.
+
+2. **Lorsque `any` remplace la conception normale de l'API :** plusieurs
+   assertions et changements de type à un autre endroit sont le symptôme de
+   contrats non définis.
+
+3. **Lorsque vous pouvez utiliser des génériques ou une interface avec une
+   méthode minimale :** cela donne des contraintes plus strictes et plus
+   lisibles.
+
+4. **Lorsque `any` devient "partout" par inertie :** le code devient fragile,
+   plus difficile à tester et plus difficile à faire évoluer.
+
+#### Règle générale :
+
+- Par défaut, choisissez **type spécifique**.
+
+- Si l'abstraction du comportement est requise – **interface avec un contrat
+  clair**.
+
+- Si une généralisation des données est requise : **génériques**.
+
+- `any` partez pour des limites de système véritablement dynamiques.
+
+#### Conclusion :
+
+`any` est un outil utile, mais pas une réponse universelle. Dans le code Go
+mature, il est utilisé ponctuellement : là où l'ambiguïté de type est naturelle,
+et non là où un contrat strict peut et doit être exprimé.
+
+</details>

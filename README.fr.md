@@ -1605,3 +1605,65 @@ mature, il est utilisé ponctuellement : là où l'ambiguïté de type est natur
 et non là où un contrat strict peut et doit être exprimé.
 
 </details>
+
+
+<details>
+<summary>28. Quel est l'avantage d'accepter des interfaces et de renvoyer des structures spécifiques ?</summary>
+
+#### Go
+
+En Go, il existe un principe commun et extrêmement pratique : **accepter les
+interfaces, renvoyer les structures**. Sa force réside dans le fait de maintenir
+les dépendances d’entrée flexibles et les contrats de sortie clairs et riches en
+fonctionnalités.
+
+#### Que signifie « accepter les interfaces » :
+
+1. La fonction/méthode accepte un contrat de comportement minimal (par exemple
+   `io.Reader`) plutôt qu'un type codé en dur.
+
+2. Cela réduit le couplage entre les modules.
+
+3. Simplifie les tests : il est facile de remplacer le stub/mock/fake par les
+   méthodes requises.
+
+#### Que signifie « structures de retour » :
+
+1. L'appel reçoit un type concret avec son ensemble complet de méthodes.
+
+2. API devient plus transparente : l'utilisateur voit les capacités réelles de
+   l'objet.
+
+3. Plus facile de faire évoluer un type sans rompre les contrats d'interface
+   externe.
+
+#### Pourquoi cette combinaison est efficace :
+
+1. **A l'entrée — abstraction, à la sortie — concret.**
+
+2. **Une plus grande flexibilité d'intégration** sans perdre l'expressivité de
+   l'API.
+
+3. **Meilleure maintenabilité :** les limites des modules sont claires, les
+   dépendances sont contrôlées.
+
+4. **Refactoring plus facile :** Les modifications internes sont plus faciles à
+   effectuer sans modifications en cascade.
+
+#### Quand faire attention :
+
+1. Ne créez pas d'interfaces de secours sans réel besoin.
+
+2. Une interface doit vivre là où elle est consommée, et non là où elle est
+   implémentée.
+
+3. Si une seule implémentation est nécessaire et qu'il n'y a aucun avantage en
+   matière de test, trop d'abstraction peut nuire à la lisibilité.
+
+#### Conclusion :
+
+Accepter les interfaces et restituer les structures en béton est un équilibre
+entre extensibilité et clarté. Il vous permet d'écrire du code Go qui est à la
+fois pratique à tester, facile à maintenir et à développer naturellement.
+
+</details>

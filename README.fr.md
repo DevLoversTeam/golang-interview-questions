@@ -1667,3 +1667,51 @@ entre extensibilité et clarté. Il vous permet d'écrire du code Go qui est à 
 fois pratique à tester, facile à maintenir et à développer naturellement.
 
 </details>
+
+
+<details>
+<summary>29. Pourquoi Go utilise-t-il des interfaces à méthode unique (par exemple `io.Reader`, `fmt.Stringer`) et quel avantage architectural apporte-t-il ?</summary>
+
+#### Go
+
+Les interfaces mono-méthode dans Go sont un contrat de comportement concentré :
+elles décrivent exactement une capacité d'un objet, sans surcharger l'API. C'est
+pourquoi `io.Reader`, `io.Writer`, `fmt.Stringer` sont devenus les éléments
+fondamentaux de l'écosystème.
+
+#### Pourquoi cette approche est si puissante :
+
+1. **Contrat minimum :** le type n'a besoin d'implémenter qu'une seule méthode
+   pour s'intégrer à un grand nombre de composants.
+
+2. **Couplage faible :** Les modules dépendent d'une capacité, et non d'une
+   implémentation spécifique ou d'une grosse interface "grosse".
+
+3. **Compositibilité :** des capacités complexes sont facilement créées à partir
+   de combinaisons de petites interfaces.
+
+4. **Test simple :** un petit faux/stub avec une seule méthode suffit pour le
+   test.
+
+#### Avantage architectural :
+
+1. **Interchangeabilité des implémentations de type plug-in :** fichier, socket
+   réseau, tampon en mémoire peuvent fonctionner de la même manière que
+   `io.Reader`.
+
+2. **Limites de module stables :** les dépendances entre les couches du système
+   deviennent claires et stables au cours de l'évolution.
+
+3. **Évolution facile du code :** une nouvelle implémentation peut être ajoutée
+   sans changer de consommateur si le contrat est préservé.
+
+4. **Lisibilité de l'intention :** la signature de la fonction répond
+   immédiatement à la question "ce qui est attendu de l'argument".
+
+#### Conclusion pratique :
+
+Les interfaces à méthode unique ne sont pas une décoration stylistique, mais une
+stratégie architecturale de Go : petits contrats, haute composabilité,
+testabilité facile et évolutivité contrôlée du système.
+
+</details>

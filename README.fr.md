@@ -1715,3 +1715,73 @@ stratégie architecturale de Go : petits contrats, haute composabilité,
 testabilité facile et évolutivité contrôlée du système.
 
 </details>
+
+
+<details>
+<summary>30. Pourquoi `nil != nil` est-il dans Go et quel est son rapport avec les interfaces ?</summary>
+
+#### Go
+
+L'expression "`nil != nil`" dans Go fait généralement référence aux interfaces
+et signifie qu'une valeur d'interface peut contenir **type + valeur** où la
+valeur à l'intérieur est `nil`, mais l'interface elle-même n'est pas `nil`.
+
+#### Comment l'interface est organisée conceptuellement :
+
+L'interface se compose de deux parties :
+
+1. **Type dynamique**
+
+2. **Valeur dynamique**
+
+Une interface est `nil` uniquement lorsque **les deux** parties sont manquantes.
+
+#### Où le piège se produit :
+
+1. Nous avons `var p *MyType = nil`.
+
+2. Attribuer `var i any = p`.
+
+3. Maintenant, `i` contient :
+
+- type : `*MyType`
+
+- valeur : `nil`
+
+Donc `i != nil` car la partie typique est remplie.
+
+#### Conséquences pratiques :
+
+1. La vérification `if err != nil` ou `if x != nil` peut ne pas se comporter
+   comme le développeur l'attend si la valeur nil est saisie dans l'interface.
+
+2. Il s'agit d'une source typique de bugs dans les erreurs, les usines, le
+   middleware, le code DI.
+
+#### Comment éviter les problèmes :
+
+1. Renvoyer `nil` exactement comme "interface vide", non tapé nil à l'intérieur
+   de l'interface.
+
+2. Construisez `error` et les autres résultats d'interface avec soin.
+
+3. Si nécessaire, effectuez une vérification explicite d'un type spécifique via
+   une assertion/un commutateur.
+
+#### Conclusion :
+
+Dans Go, "`nil != nil`" n'est pas un paradoxe, mais une conséquence de la nature
+à deux composants de l'interface. La règle clé est qu'une interface est `nil`
+uniquement lorsqu'elle ne contient ni un type dynamique ni une valeur dynamique.
+
+#### Exemple :
+
+```go
+var p *bytes.Buffer = nil
+var x any = p
+
+fmt.Println(p == nil) // true
+fmt.Println(x == nil) // false: type=*bytes.Buffer, value=nil
+```
+
+</details>

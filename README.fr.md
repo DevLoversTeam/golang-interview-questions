@@ -1785,3 +1785,60 @@ fmt.Println(x == nil) // false: type=*bytes.Buffer, value=nil
 ```
 
 </details>
+
+
+<details>
+<summary>31. Les méthodes peuvent-elles être appelées sur des valeurs `nil` et où est-ce activement utilisé ?</summary>
+
+#### Go
+
+Oui, en Go, une méthode peut être appelée sur une valeur `nil`, **si cela est
+permis du point de vue du type de récepteur**. Le plus souvent, nous parlons de
+méthodes avec un récepteur pointeur (`*T`), où le récepteur peut être `nil`.
+
+#### Idée clé :
+
+1. Appeler une méthode sur un pointeur `nil` est techniquement possible.
+
+2. La question est de savoir ce que fait le code de la méthode à l'intérieur.
+
+3. Si la méthode dénomme le récepteur sans vérifier, nous allons paniquer.
+
+#### Quand cela fonctionne en toute sécurité :
+
+1. La méthode  gère explicitement le récepteur `nil` :
+
+- renvoie la valeur par défaut ;
+
+- renvoie une erreur ;
+
+- se comporte comme un non-op.
+
+2. Cette conception est parfois délibérément utilisée pour une API pratique.
+
+#### Où ceci est réellement utilisé :
+
+1. **Types d'erreurs et wrappers :** les méthodes sur les types de pointeurs
+   peuvent fonctionner correctement avec `nil` pour simplifier la gestion des
+   erreurs.
+
+2. **Structures liées/liste/arborescentes :** `nil`-node peut être interprété
+   comme un état vide avec un comportement correct.
+
+3. **Objets de service avec composants optionnels :** Le récepteur `nil` est
+   parfois utilisé en mode "désactivé" ou "vide".
+
+#### Une nuance importante avec les interfaces :
+
+Si un pointeur `nil` est enveloppé dans une interface, l'interface elle-même
+peut ne pas être `nil`. Par conséquent, les vérifications de `nil` doivent être
+effectuées avec soin pour éviter toute fausse confiance.
+
+#### Conclusion pratique :
+
+Les méthodes sur les valeurs `nil` dans Go sont un outil légitime, mais
+uniquement avec une conception d'API consciente : soit une gestion sûre de `nil`
+à l'intérieur de la méthode, soit une documentation claire indiquant qu'un appel
+à `nil` n'est pas autorisé.
+
+</details>

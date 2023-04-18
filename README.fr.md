@@ -1842,3 +1842,76 @@ uniquement avec une conception d'API consciente : soit une gestion sûre de `ni
 à `nil` n'est pas autorisé.
 
 </details>
+
+
+<details>
+<summary>32. Comment dire à la goroutine principale d'attendre la fin de toutes les goroutines de travail ?</summary>
+
+#### Go
+
+La manière canonique d'attendre la fin de toutes les goroutines fonctionnelles
+dans Go est d'utiliser `sync.WaitGroup`. Il fournit un modèle simple et
+robuste : incrémentez le compteur avant de démarrer le travail, décrémentez-le
+une fois terminé et appelez `Wait()` dans la goroutine principale.
+
+#### Schéma de base :
+
+1. Créez `var wg sync.WaitGroup`.
+
+2. Avant chaque goroutine, appelez `wg.Add(1)`.
+
+3. À l'intérieur de la goroutine, exécutez `defer wg.Done()`.
+
+4. Dans la routine goroutine principale, appelez `wg.Wait()`.
+
+#### Pourquoi ça marche :
+
+1. `WaitGroup` compte le nombre de tâches inachevées.
+
+2. `Wait()` bloque l'exécution jusqu'à ce que le compteur atteigne zéro.
+
+3. Cela garantit que `main` ne se terminera pas avant les goroutines de travail.
+
+#### Erreurs typiques à éviter :
+
+1. Appeler `Add(1)` **après** le départ de la goroutine (risque de course et
+   terminaison incorrecte).
+
+2. Oubliez `Done()` dans le bug ou dans la première branche `return`.
+
+3. Réutilisation du même `WaitGroup` dans différentes phases sans
+   synchronisation claire.
+
+#### Quand est-ce mieux `errgroup` :
+
+Si, en plus d’attendre, vous avez également besoin de :
+
+1. collecter la première erreur,
+
+2. annuler d'autres tâches via `context`,
+
+alors il est plus pratique d'utiliser `errgroup.Group`.
+
+#### Conclusion :
+
+Pour la tâche "attendre que toutes les goroutines soient terminées", l'outil
+standard est `sync.WaitGroup` : contrat simple, comportement prévisible et
+fiabilité de la production.
+
+#### Exemple :
+
+```go
+var wg sync.WaitGroup
+
+for i := 0; i < 3; i++ {
+	wg.Add(1)
+	go func(id int) {
+		defer wg.Done()
+		fmt.Println("worker", id)
+	}(i)
+}
+
+wg.Wait()
+```
+
+</details>

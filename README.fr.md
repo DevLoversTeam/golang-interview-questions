@@ -1915,3 +1915,61 @@ wg.Wait()
 ```
 
 </details>
+
+
+<details>
+<summary>33. Pourquoi le modèle `value := value` a-t-il été utilisé dans les boucles et est-il pertinent après Go 1.22 ?</summary>
+
+#### Go
+
+Le modèle `value := value` était historiquement utilisé dans les boucles `for
+range` pour créer une copie locale distincte d'une variable et la capturer en
+toute sécurité dans une fermeture, en particulier dans une goroutine.
+
+#### Pourquoi cela était nécessaire avant Go 1.22 :
+
+1. La variable d'itération dans `range` a en fait été réutilisée entre les
+   itérations.
+
+2. Une fermeture capture souvent la même variable au lieu de sa valeur
+   "actuelle".
+
+3. En conséquence, la goroutine a vu des données inattendues (généralement la
+   dernière valeur).
+
+C’est pourquoi ils ont écrit :
+
+`v := v`
+
+pour créer une nouvelle variable dans une itération.
+
+#### Ce qui a changé depuis Go 1.22 :
+
+1. La sémantique de `range` a été modifiée : pour chaque itération, les
+   variables de boucle ont des valeurs distinctes à capturer dans la fermeture.
+
+2. Un bug typique avec une valeur "tardive" dans les goroutines a été corrigé au
+   niveau de la langue.
+
+3. Dans la plupart des cas modernes, le modèle `value := value` n'est plus
+   nécessaire.
+
+#### Le modèle est-il pertinent aujourd'hui :
+
+1. **Pour un code dont le fonctionnement est garanti sur Go 1.22+** -
+   généralement pas.
+
+2. **Pour les projets avec d'anciennes versions de Go** - oui, cela peut être
+   nécessaire.
+
+3. **Pour les environnements/bibliothèques mixtes**, vous devez viser la version
+   la plus basse prise en charge.
+
+#### Conclusion pratique :
+
+`value := value` était un schéma de protection contre le piège spécifique
+`range`. Après Go 1.22, son besoin a pratiquement disparu, mais il reste
+pertinent dans le code existant ou lors de la prise en charge d'anciennes
+versions.
+
+</details>

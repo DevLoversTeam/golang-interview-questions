@@ -1973,3 +1973,58 @@ pertinent dans le code existant ou lors de la prise en charge d'anciennes
 versions.
 
 </details>
+
+
+<details>
+<summary>34. L'utilisation de goroutines peut-elle ralentir le système et dans quels cas ?</summary>
+
+#### Go
+
+Oui, c'est possible. Malgré la nature légère des goroutines, elles ne sont pas «
+gratuites ». Une utilisation inappropriée ou excessive de ceux-ci peut réduire
+les performances, augmenter la latence et compliquer le temps d'exécution.
+
+#### Quand les goroutines peuvent ralentir le système :
+
+1. **Nombre excessif de goroutines (explosion de goroutines) :** des milliers ou
+   des centaines de milliers de tâches sans limiter la concurrence exercent une
+   pression sur le planificateur et la mémoire.
+
+2. **Tâches précises :** si le travail est très petit, la surcharge de
+   démarrage/coordination peut être supérieure au travail utile.
+
+3. **Synchronisation intensive :** les blocages fréquents (`mutex`, canaux,
+   `select`) créent des conflits et réduisent le débit.
+
+4. **Échec de l'échange de données sur les canaux :** le transfert redondant de
+   charges utiles volumineuses ou les topologies complexes d'entrée/sortie
+   peuvent coûter plus cher que des modèles plus simples.
+
+5. **Absence de contre-pression :** lorsque les producteurs génèrent du travail
+   plus rapidement que les consommateurs ne le traitent, les files d'attente
+   s'accumulent, la mémoire et les retards augmentent.
+
+6. **Problèmes d'E/S et de ressources externes :** un parallélisme excessif peut
+   surcharger la base de données, le réseau, le système de fichiers ou les API
+   tierces, dégradant l'ensemble du système plutôt que de l'accélérer.
+
+#### Comment éviter la dégradation :
+
+1. Limiter la concurrence (pool de nœuds de calcul, sémaphore, files d'attente
+   délimitées).
+
+2. Profile (`pprof`, trace) au lieu de vous fier à l'intuition.
+
+3. Réduire l'état mutable partagé et les conflits de verrouillage.
+
+4. Sélectionnez la taille du parallélisme en fonction de la charge de travail et
+   des ressources réelles.
+
+#### Conclusion :
+
+Les Horoutines accélèrent le système uniquement lorsque le parallélisme est
+contrôlé. En production, le principe est simple : non pas « plus de goroutines
+», mais « assez de goroutines avec les bonnes limites et la bonne
+synchronisation ».
+
+</details>

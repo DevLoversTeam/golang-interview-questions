@@ -2028,3 +2028,77 @@ contrôlé. En production, le principe est simple : non pas « plus de goroutine
 synchronisation ».
 
 </details>
+
+
+<details>
+<summary>35. Quelle est la différence entre les canaux tamponnés et non tamponnés ? Quand est-il approprié d'utiliser slice + mutex au lieu de canaux ?</summary>
+
+#### Go
+
+Les canaux dans Go peuvent être mis en mémoire tampon ou non, et cette
+différence définit la sémantique de synchronisation entre les goroutines. Le
+choix du type de canal est un choix de modèle de coordination, et pas seulement
+une « chose technique ».
+
+#### Canal sans tampon (`make(chan T)`) :
+
+1. **Échange synchrone :** `send` est bloqué jusqu'à ce qu'une autre goroutine
+   exécute le `receive` correspondant (et vice versa).
+
+2. **Transfert clair :** est utile lorsqu'une synchronisation étroite des étapes
+   est requise.
+
+3. **File d'attente minimale :** les données ne s'accumulent pas dans le canal.
+
+#### Canal tamponné (`make(chan T, n)`) :
+
+1. **Plus d'interaction asynchrone :** `send` ne bloque pas tant qu'il y a de la
+   place dans le tampon.
+
+2. **File d'attente gérée :** permet de lisser les courts pics de charge.
+
+3. **Contre-pression due à la capacité :** lorsque le tampon est plein, `send`
+   se bloque à nouveau.
+
+#### Lorsque `slice + mutex` est approprié à la place des canaux :
+
+1. **Nécessite un tampon partagé avec des opérations non triviales :**
+   suppression par lots, réorganisation, accès aléatoire, règles d'agrégation
+   complexes.
+
+2. **Lorsque le modèle est « état partagé avec verrouillage explicite » et non
+   un flux de messages :** les canaux ne sont pas toujours l'outil le plus
+   simple pour les collections mutables.
+
+3. **Lorsqu'une optimisation subtile de la mémoire/de la disposition est
+   importante :** `slice` donne un contrôle plus direct sur la structure et les
+   opérations des données.
+
+4. **Lorsque l'architecture de canal crée une complexité inutile :** parfois
+   `mutex` + un invariant clair est plus simple, plus lisible et plus rapide.
+
+#### Règle pratique de choix :
+
+1. **Canaux** — pour transmettre des événements/messages entre des goroutines
+   indépendantes de type acteur.
+
+2. **`slice + mutex`** — pour gérer une collection partagée avec un riche
+   ensemble d'opérations d'état.
+
+#### Conclusion :
+
+Les canaux tamponnés et non tamponnés diffèrent par le niveau de synchronicité
+des échanges. L'alternative `slice + mutex` est justifiée lorsque vous souhaitez
+une structure d'état partagée gérée plutôt qu'un transport de messages.
+
+#### Exemple :
+
+```go
+unbuf := make(chan int)    // надсилання чекає отримувача
+buf := make(chan int, 100) // надсилання не блокується, поки є місце
+
+buf <- 1
+buf <- 2
+```
+
+</details>

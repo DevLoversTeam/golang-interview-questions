@@ -2149,3 +2149,75 @@ Cette propriété est à la fois une source d'erreurs courantes et une puissante
 technique de contrôle `select` lorsqu'elle est utilisée délibérément.
 
 </details>
+
+
+<details>
+<summary>37. Comment et pourquoi utiliser les canaux `nil` dans `select` ? Pourquoi le canal `nil` se bloque-t-il pour toujours et comment l'utiliser ?</summary>
+
+#### Go
+
+Le canal `nil` dans `select` est un moyen contrôlé d'activer ou de désactiver
+dynamiquement des branches individuelles. Étant donné que les opérations sur le
+canal `nil` ne peuvent pas se terminer, le `case` correspondant devient inactif.
+
+#### Pourquoi le canal `nil` se bloque définitivement :
+
+1. Le canal n'est pas initialisé (`var ch chan T`), c'est-à-dire qu'il n'a pas
+   de structure d'exécution pour l'envoi/la réception.
+
+2. `send` et `receive` n'ont pas de « point de rendez-vous », ils attendent donc
+   indéfiniment.
+
+3. Dans `select` cela signifie : un cas avec ce canal ne sera jamais
+   sélectionné.
+
+#### Comment l'utiliser dans `select` :
+
+1. **Désactiver dynamiquement la source d'événement :** attribuez `ch = nil` et
+   la branche `case <-ch:` n'est plus activée.
+
+2. **Gestion du cycle de vie des étapes du pipeline :** après l'achèvement d'une
+   certaine étape, le pipeline est réinitialisé pour l'exclure de toute
+   sélection ultérieure.
+
+3. **Éviter les indicateurs d'état redondants :** au lieu de `if`
+   supplémentaires à l'intérieur de la boucle, la logique d'état est transférée
+   au mécanisme `select` lui-même.
+
+#### Précautions pratiques :
+
+1. Si toutes les chaînes de `select` deviennent `nil` et qu'il n'y a pas de
+   `default`, vous obtiendrez un verrouillage permanent.
+
+2. `close(nil)` provoque la panique, donc l'annulation et la fermeture ne
+   doivent pas être confondues.
+
+3. Code avec `nil`-channels nécessite des invariants clairs, sinon il est facile
+   d'obtenir un blocage difficile à déboguer.
+
+#### Conclusion :
+
+Le canal `nil` dans `select` est un élégant commutateur d'activité de boîtier.
+Il est utile pour une logique de concurrence contrôlée tant que les états sont
+soigneusement contrôlés et évitent une situation dans laquelle tous les chemins
+deviennent dans une impasse.
+
+#### Exemple :
+
+```go
+var in <-chan int = source
+for {
+	select {
+	case v, ok := <-in:
+		if !ok {
+			in = nil // вимикаємо гілку
+			continue
+		}
+		_ = v
+	case <-ctx.Done():
+		return
+	}
+}
+```
+
+</details>

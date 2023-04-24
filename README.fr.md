@@ -2221,3 +2221,58 @@ for {
 ```
 
 </details>
+
+
+<details>
+<summary>38. Quand est-il approprié d’utiliser `select` avec la branche `default` et quels scénarios cela couvre-t-il ?</summary>
+
+#### Go
+
+`select` avec la branche `default` rend l'opération non bloquante : si aucun
+canal n'est prêt à être échangé, le contrôle passe immédiatement à `default`.
+Ceci est utile pour contrôler la réactivité, mais dangereux lorsqu'il est
+utilisé de manière inconsidérée.
+
+#### Le cas échéant :
+
+1. **Scénarios d'essai-envoi/essai-réception :** devrait essayer l'échange et,
+   si ce n'est pas possible maintenant, emprunter un chemin alternatif sans
+   bloquer.
+
+2. **Boucles d'événements avec travail en arrière-plan :** lorsque, en attendant
+   des événements, la goroutine doit effectuer des actions auxiliaires
+   (battement cardiaque, entretien ménager, télémétrie lumineuse).
+
+3. **Contre-pression et délestage contrôlé :** si le tampon est plein, `default`
+   peut refuser/retarder la tâche au lieu de bloquer toute la boucle.
+
+4. **Délai d'attente logiciel/interrogation d'état :** en combinaison avec
+   `time.Ticker` ou une autre logique vous permet de ne pas « se bloquer » en
+   attendant un canal.
+
+#### Quels risques couvre-t-il et crée-t-il :
+
+1. **Couvre le risque de gel** dans les zones critiques où le blocage est
+   inacceptable.
+
+2. **Mais peut créer une boucle occupée** (rotation active du processeur) si
+   `default` se déclenche trop souvent sans pause ni travail significatif.
+
+#### Précautions pratiques :
+
+1. N'utilisez pas `default` si vous souhaitez bloquer la synchronisation.
+
+2. Dans les boucles, ajoutez un contrôle de rythme (`ticker`, `sleep`, limites)
+   pour éviter une consommation inutile de processeur.
+
+3. Corrigez clairement la politique : que faisons-nous lorsque le canal n'est
+   pas prêt (abandon, nouvelle tentative, file d'attente, journal, métrique).
+
+#### Conclusion :
+
+`select` de `default` est un outil de concurrence non bloquant. Il est approprié
+lorsque la réactivité et la gestion de la charge sont une priorité, mais
+nécessite de la discipline pour ne pas transformer le cycle de traitement en
+interrogation active inefficace.
+
+</details>

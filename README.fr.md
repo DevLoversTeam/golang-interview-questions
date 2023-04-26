@@ -2333,3 +2333,79 @@ l'équité globale, mais la priorisation nécessite une logique architecturale
 explicite en plus du `select` de base.
 
 </details>
+
+
+<details>
+<summary>40. Comment fermer en toute sécurité un canal dans Go si plusieurs goroutines y écrivent ?</summary>
+
+#### Go
+
+Règle de base de Go : un canal est fermé par **qui possède le côté écriture** et
+seulement après que toutes les opérations `send` soient garanties d'être
+terminées. Un script avec plusieurs goroutines d'écriture nécessite une
+coordination d'exécution.
+
+#### Approche sûre (canonique) :
+
+1. Démarrez plusieurs sous-programmes d'écriture.
+
+2. Chaque écrivain le signale après l'achèvement du travail
+   (`WaitGroup.Done()`).
+
+3. Une goroutine de contrôle distincte attend `wg.Wait()`.
+
+4. Appelle ensuite `close(ch)`.
+
+#### Pourquoi c'est sûr :
+
+1. Aucune goroutine n'écrit sur le canal après `close`.
+
+2. Évite la panique `send on closed channel`.
+
+3. La fermeture se produit exactement une fois par point contrôlé.
+
+#### Ce qui ne peut pas être fait :
+
+1. Autoriser chaque rédacteur à fermer indépendamment la chaîne partagée.
+
+2. Fermez la chaîne "juste au cas où" à partir de plusieurs emplacements.
+
+3. Attraper la panique en tant que « mécanisme de synchronisation » est un
+   anti-modèle.
+
+#### Pratiques supplémentaires :
+
+1. Pour un arrêt anticipé, utilisez un `done/context` séparé plutôt que
+   `close(dataCh)` côté lecteur.
+
+2. Si vous devez garantir une fermeture unique dans une topologie complexe,
+   utilisez `sync.Once`.
+
+#### Conclusion :
+
+Dans un scénario multi-écrivain, le canal est fermé en toute sécurité par le
+coordinateur après avoir explicitement confirmé l'achèvement de tous les
+sous-programmes d'écriture. Le principe est simple : **plusieurs expéditeurs, un
+plus proche, un envoi proche après tout**.
+
+#### Exemple :
+
+```go
+ch := make(chan int)
+var wg sync.WaitGroup
+
+for i := 0; i < 5; i++ {
+	wg.Add(1)
+	go func(v int) {
+		defer wg.Done()
+		ch <- v
+	}(i)
+}
+
+go func() {
+	wg.Wait()
+	close(ch) // один координатор закриває канал
+}()
+```
+
+</details>

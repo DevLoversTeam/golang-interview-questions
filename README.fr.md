@@ -2409,3 +2409,71 @@ go func() {
 ```
 
 </details>
+
+
+<details>
+<summary>41. Comment implémenter un sémaphore via un canal tamponné ?</summary>
+
+#### Go
+
+En Go, un sémaphore est naturellement modélisé par un canal tamponné à capacité
+fixe. Le nombre d'emplacements dans le tampon est égal au nombre maximum
+autorisé d'opérations simultanées (parallélisme).
+
+#### Principe de fonctionnement :
+
+1. **Acquérir (occuper un emplacement) :** avant de commencer le travail, la
+   goroutine exécute `sem <- token`. Si le buffer est plein, l'envoi est bloqué.
+
+2. **Release (libérer l'emplacement) :** une fois terminé, la goroutine exécute
+   `<-sem`. Cela libère de l'espace pour la tâche suivante.
+
+#### Forme typique :
+
+- `sem := make(chan struct{}, N)`
+
+- `N` — limite des tâches actives simultanément.
+
+- `struct{}` est choisi comme jeton léger sans charge utile.
+
+#### Pourquoi c'est efficace :
+
+1. **Modèle simple de contre-pression :** Les tâches redondantes attendent
+   naturellement.
+
+2. **Synchronisation transparente :** Le runtime Go effectue un
+   verrouillage/réveil sans contrôle manuel des variables conditionnelles.
+
+3. **Se lit bien dans le code :** l'intention de "restreindre la concurrence"
+   est immédiatement apparente.
+
+#### Précautions pratiques :
+
+1. Faites toujours `release` plutôt que `defer` pour éviter de perdre un
+   emplacement en cas d'erreur.
+
+2. Pour annuler l'attente, utilisez `select` avec `context.Done()`.
+
+3. Ne confondez pas un sémaphore (limite de parallélisme) avec une file
+   d'attente de tâches (pool de tâches).
+
+#### Conclusion :
+
+Un canal tamponné dans Go est une implémentation canonique du sémaphore de
+comptage : simple, fiable et bien intégré au modèle goroutine. C'est l'un des
+meilleurs moyens de contrôler le niveau de concurrence dans les services de
+production.
+
+#### Exemple :
+
+```go
+sem := make(chan struct{}, 10) // максимум 10 одночасних задач
+
+run := func(job Job) {
+	sem <- struct{}{}         // зайняти слот
+	defer func() { <-sem }() // звільнити слот
+	job.Do()
+}
+```
+
+</details>

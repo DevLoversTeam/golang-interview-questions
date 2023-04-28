@@ -2477,3 +2477,61 @@ run := func(job Job) {
 ```
 
 </details>
+
+
+<details>
+<summary>42. Comment implémenter les modèles `Fan-in` et `Fan-out`?</summary>
+
+#### Go
+
+`Fan-out` et `Fan-in` sont des modèles de concurrence de base dans Go pour le
+parallélisme géré : le premier répartit le travail entre plusieurs exécuteurs,
+le second collecte les résultats dans un thread partagé.
+
+#### `Fan-out` (branchement de charge) :
+
+1. Il existe un canal problématique entrant.
+
+2. Démarre la routine de travail `N`.
+
+3. Chaque travailleur lit à partir d'un canal d'entrée commun et traite sa
+   partie.
+
+#### `Fan-in` (fusion des résultats) :
+
+1. Plusieurs chaînes de producteurs ou résultats de travailleurs.
+
+2. Les routines de fusion individuelles envoient des données à un canal de
+   sortie.
+
+3. Une fois toutes les branches de fusion terminées, le canal de sortie est
+   fermé.
+
+#### Schéma architectural typique :
+
+1. Canal `jobs` → `fan-out` sur les travailleurs.
+
+2. Chaque travailleur écrit à `results`.
+
+3. `fan-in` regroupe `results` (ou plusieurs `results`-canaux) en un seul canal
+   pour l'étape suivante du pipeline.
+
+#### Règles d'importance cruciale :
+
+1. La fermeture des canaux doit être centralisée et unique.
+
+2. Utilisez `WaitGroup` pour coordonner le licenciement des travailleurs.
+
+3. Pour une résiliation anticipée, utilisez `context`/`done` pour éviter les
+   fuites de routine.
+
+4. Contrôlez la taille des tampons et le niveau de parallélisme pour éviter de
+   surcharger la mémoire ou les dépendances externes.
+
+#### Conclusion :
+
+`Fan-out` met à l'échelle le traitement, `Fan-in` renvoie le contrôle sur le
+flux de résultats. Ensemble, ils constituent la base des solutions de pipeline
+les plus efficaces dans les services Go.
+
+</details>

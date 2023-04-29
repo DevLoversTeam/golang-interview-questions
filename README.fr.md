@@ -2535,3 +2535,59 @@ flux de résultats. Ensemble, ils constituent la base des solutions de pipeline
 les plus efficaces dans les services Go.
 
 </details>
+
+
+<details>
+<summary>43. Pourquoi ne devriez-vous pas utiliser des canaux pour transférer de grandes quantités de données ?</summary>
+
+#### Go
+
+Les canaux dans Go sont un excellent outil pour coordonner et transmettre des
+événements/petits messages, mais ce n'est pas le meilleur moyen de transport
+pour des charges utiles massives. Pour de grandes quantités de données, ils
+créent souvent une surcharge inutile.
+
+#### Pourquoi cela pourrait ne pas être efficace :
+
+1. **Coût de copie :** le passage de valeurs élevées sur le canal augmente les
+   opérations de mémoire et le trafic entre les goroutines.
+
+2. **Coûts de contention et de synchronisation :** les canaux ont une
+   coordination d'accès interne ; à charge élevée, cela peut devenir un goulot
+   d'étranglement.
+
+3. **GC et pression de la mémoire :** des tampons de canal volumineux ou de
+   nombreux messages volumineux augmentent la pression de la mémoire et peuvent
+   augmenter les coûts de pauses/d'exécution.
+
+4. **Dégradation de la localité du cache :** les objets volumineux traversent le
+   pipeline concurrentiel moins bien que les signaux compacts + accès au
+   stockage partagé.
+
+#### Meilleures alternatives :
+
+1. Transfert via le canal **liens/poignées/index**, pas via le Big Data.
+
+2. Conservez la charge utile dans un tampon/pool partagé et utilisez le canal
+   comme signal prêt.
+
+3. Utilisez un pool de nœuds de calcul avec un accès contrôlé à une structure de
+   données partagée (`slice/map + mutex`), le cas échéant.
+
+#### Lorsque les canaux sont toujours appropriés :
+
+1. Pour les petits messages de contrôle.
+
+2. Pour les événements, les commandes, les statuts et les signaux d'achèvement.
+
+3. Pour un pipeline dans lequel le contexte de métadonnées léger se déplace dans
+   le pipeline.
+
+#### Conclusion :
+
+Un canal dans Go est avant tout un mécanisme de synchronisation et de
+coordination. Pour les données volumineuses, il est plus efficace de séparer :
+transmettre « ce qu'il faut faire » via un canal, et les charges utiles les plus
+massives – via des structures de mémoire plus adaptées.
+
+</details>

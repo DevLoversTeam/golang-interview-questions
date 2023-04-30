@@ -2591,3 +2591,73 @@ transmettre « ce qu'il faut faire » via un canal, et les charges utiles les pl
 massives – via des structures de mémoire plus adaptées.
 
 </details>
+
+
+<details>
+<summary>44. Comment renvoyer correctement une erreur d'une goroutine vers le thread principal ?</summary>
+
+#### Go
+
+Une routine ne peut pas « renvoyer » une valeur directement via `return` à
+l'appelant. Par conséquent, l'erreur de la tâche concurrente est transmise
+explicitement : via le canal d'erreur ou via `errgroup`, qui encapsule ce
+modèle.
+
+#### Approches canoniques :
+
+1. **`errgroup.Group` + `context` (recommandé) :** idéal pour exécuter un groupe
+   de goroutines, collecter la première erreur et annuler les tâches restantes.
+
+2. **Séparé `errCh` + `WaitGroup` :** contrôle explicite sur le cycle de vie ;
+   une fois tous les travailleurs terminés, le canal est fermé et le thread
+   principal lit les erreurs.
+
+#### Règles clés d'exactitude :
+
+1. Les erreurs sont transmises dans un canal/agrégateur convenu.
+
+2. La clôture `errCh` est effectuée par le coordinateur une fois toutes les
+   routines d'écriture terminées.
+
+3. Pour la première erreur critique, les autres tâches doivent être arrêtées via
+   `context` (pour éviter un travail inutile et des fuites de routine).
+
+4. Les erreurs dans les branches concurrentes ne peuvent être ignorées - cela
+   crée des défauts "silencieux".
+
+#### Stratégie de traitement typique :
+
+1. Démarrez les travailleurs ayant accès à `ctx`.
+
+2. En cas d'erreur, envoyez `error` à l'agrégateur.
+
+3. Annuler le contexte (si une stratégie de défaillance rapide est requise).
+
+4. Attendez que toutes les goroutines soient terminées.
+
+5. Renvoyer le résultat convenu (première erreur ou erreur agrégée).
+
+#### Conclusion :
+
+Corriger le « retour » d'erreur de goroutine est la discipline du canal de
+communication explicite ainsi que la gestion du cycle de vie via
+`WaitGroup`/`errgroup` et `context`. En production, le choix optimal est le plus
+souvent `errgroup`.
+
+#### Exemple (Go 1.22+) :
+
+```go
+g, ctx := errgroup.WithContext(context.Background())
+
+for _, task := range tasks {
+	g.Go(func() error {
+		return task.Run(ctx)
+	})
+}
+
+if err := g.Wait(); err != nil {
+	return err
+}
+```
+
+</details>

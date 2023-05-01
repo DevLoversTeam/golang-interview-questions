@@ -2661,3 +2661,54 @@ if err := g.Wait(); err != nil {
 ```
 
 </details>
+
+
+<details>
+<summary>45. `defer` dans Go peut-il détecter une (`recover`) panique survenue dans une goroutine enfant ?</summary>
+
+#### Go
+
+Réponse courte : **non**. `recover` ne fonctionne que dans la même goroutine où
+la panique s'est produite, et uniquement dans une fonction `defer` s'exécutant
+dans sa pile d'appels.
+
+#### La règle principale :
+
+1. Panic ne « vole » pas entre les goroutines comme signal contrôlé pour
+   `recover`.
+
+2. `defer` dans la goroutine parent ne peut pas capter la panique de l'enfant.
+
+3. Afin d'attraper la panique dans une routine de travail, `defer` avec
+   `recover` doivent être à l'intérieur de cette routine de travail
+   particulière.
+
+#### Conséquences pratiques :
+
+1. Si la panique dans la goroutine enfant n'est pas détectée localement, le
+   processus peut planter.
+
+2. Pour les services stables, chaque goroutine "à risque" est enveloppée d'un
+   `defer func(){ if r := recover(); r != nil { ... } }()` de protection.
+
+3. Après `recover`, il est nécessaire de signaler clairement une panne au
+   circuit principal (via le canal `error`, `errgroup`, les métriques, la
+   journalisation).
+
+#### Ce qui est considéré comme une bonne pratique :
+
+1. Local `recover` au point de lancement des travailleurs de longue durée.
+
+2. Politique claire : la panique se transforme en erreur/alerte et ne disparaît
+   pas silencieusement.
+
+3. Utilisation de `context` pour l'arrêt coordonné d'autres goroutines après une
+   panne critique.
+
+#### Conclusion :
+
+`recover` dans Go a une portée locale – une seule goroutine. Par conséquent,
+l’interception de panique dans le code concurrent doit être conçue séparément au
+niveau de chaque goroutine enfant.
+
+</details>

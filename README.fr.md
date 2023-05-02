@@ -2712,3 +2712,87 @@ l’interception de panique dans le code concurrent doit être conçue séparém
 niveau de chaque goroutine enfant.
 
 </details>
+
+
+<details>
+<summary>46. Parlez des modèles de concurrence dans Go.</summary>
+
+#### Go
+
+Les modèles de concurrence dans Go sont des modèles architecturaux répétitifs
+permettant de coordonner les goroutines, les tuyaux et les primitives de
+synchronisation. Leur objectif est de fournir un parallélisme gérable sans
+chaos, fuites et blocages.
+
+#### Les modèles les plus utilisés :
+
+1. **Groupe de travailleurs**
+
+- un nombre fixe de routines de travail lisent les tâches de la file d'attente ;
+
+- limite le niveau de parallélisme et stabilise la charge.
+
+2. **Fan-out / Fan-in**
+
+- `fan-out` : allocation d'une file d'attente de tâches à plusieurs exécuteurs ;
+
+- `fan-in` : Fusion des résultats de plusieurs sources dans un seul canal.
+
+3. **Pipeline (convoyeur d'étages)**
+
+- les données passent par des étapes successives de traitement ;
+
+- chaque étape peut avoir sa propre compétition et sa propre contre-pression.
+
+4. **Sémaphore via canal tamponné**
+
+- limite le nombre d'opérations simultanées ;
+
+- utile pour travailler avec des bases de données, des descripteurs de fichiers
+  et des API externes.
+
+5. **Annulation contextuelle**
+
+- annulation centralisée de l'ensemble du groupe de goroutines ;
+
+- empêche les fuites en cas d'expiration, d'erreur ou d'arrêt.
+
+6. **Errgroup (orchestration rapide en cas d'échec)**
+
+- collecte les erreurs d'un groupe de tâches ;
+
+- se combine facilement avec `context` pour arrêter le reste du travail plus
+  tôt.
+
+7. **Propriétaire unique / Boucle de type acteur**
+
+- une goroutine a un état mutable ;
+
+- d'autres interagissent via des messages, réduisant ainsi les conflits de
+  verrouillage.
+
+8. **Publier/Abonnez-vous (diffusion)**
+
+- Les événements  sont envoyés à plusieurs consommateurs ;
+
+- nécessite une surveillance attentive des tampons et du cycle de vie des
+  abonnés.
+
+#### Principes critiques pour tous les modèles :
+
+1. Propriété explicite des ressources et règles de fermeture des canaux.
+
+2. Restrictions du concours (pas de goroutines "infinies").
+
+3. Chemin de terminaison requis (`context`, `done`, `WaitGroup`).
+
+4. Observabilité : métriques, journalisation, profilage.
+
+#### Conclusion :
+
+La puissance du Go ne réside pas dans « les goroutines elles-mêmes », mais dans
+la discipline des modèles. C'est la bonne combinaison de pool de travailleurs,
+de pipeline, de fan-in/fan-out, d'annulation et de coordination des erreurs qui
+confère aux systèmes évolutivité, prévisibilité et fiabilité de la production.
+
+</details>

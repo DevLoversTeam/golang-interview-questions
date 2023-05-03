@@ -2796,3 +2796,66 @@ de pipeline, de fan-in/fan-out, d'annulation et de coordination des erreurs qui
 confère aux systèmes évolutivité, prévisibilité et fiabilité de la production.
 
 </details>
+
+
+<details>
+<summary>47. Quand utiliser `sync.Mutex` et quand utiliser `sync.RWMutex`?</summary>
+
+#### Go
+
+`sync.Mutex` et `sync.RWMutex` résolvent le même problème : protéger l'État
+partagé, mais avec un modèle de concurrence différent. Le bon choix dépend du
+profil d'accès aux données : le ratio de lectures et d'écritures, la durée des
+sections critiques et le niveau de contention.
+
+#### `sync.Mutex` — quand choisir :
+
+1. **Écritures mixtes ou fréquentes :** à moins que les opérations d'écriture ne
+   soient peu fréquentes, l'avantage de `RWMutex` est souvent annulé.
+
+2. **Courtes sections critiques :** un simple verrouillage/déverrouillage donne
+   généralement un comportement prévisible et rapide.
+
+3. **Choix de base par défaut :** moins de complexité, moins de risques de
+   erreur de modèle de verrouillage.
+
+4. **Lorsque la facilité de maintenance est importante :** `Mutex` est plus
+   facile à lire, à déboguer et à profiler.
+
+#### `sync.RWMutex` — quand cela a du sens :
+
+1. **Les lectures dominent, les écritures sont rares :** de nombreux lecteurs
+   simultanés peuvent travailler en parallèle.
+
+2. **Les lectures sont relativement longues :** l'accès en lecture parallèle
+   apporte un réel gain de débit.
+
+3. **Le conflit de lecture est élevé :** et il existe des preuves empiriques
+   selon lesquelles c'est le verrou de lecture qui devient le goulot
+   d'étranglement.
+
+#### Avis importants :
+
+1. `RWMutex` n'est pas "automatiquement plus rapide" - en raison d'une
+   coordination interne plus complexe, il peut être plus lent dans les charges
+   de travail réelles.
+
+2. Les lecteurs sont toujours bloqués lors d'opérations d'écriture fréquentes.
+
+3. Le choix final doit être fait sur la base du profilage (`pprof`, benchmarks),
+   et non de l'intuition.
+
+#### Règle générale :
+
+1. Commencez par `sync.Mutex`.
+
+2. Accédez à `sync.RWMutex` uniquement lorsqu'il existe un scénario de lecture
+   lourde mesuré et un gain de performances prouvé.
+
+#### Conclusion :
+
+`sync.Mutex` est une valeur par défaut fiable pour la plupart des tâches.
+`sync.RWMutex` est un outil d'optimisation de points pour les charges de travail
+orientées lecteurs, où le gain est confirmé par des métriques.
+
+</details>

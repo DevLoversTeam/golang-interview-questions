@@ -2859,3 +2859,54 @@ sections critiques et le niveau de contention.
 orientées lecteurs, où le gain est confirmé par des métriques.
 
 </details>
+
+
+<details>
+<summary>48. Pourquoi les objets `sync.Mutex` ne peuvent-ils pas être copiés ?</summary>
+
+#### Go
+
+`sync.Mutex` contient l'état du verrouillage interne. Après la première
+utilisation, la copie d'un tel objet crée une situation dangereuse : deux
+instances différentes de l'état de verrouillage apparaissent, que le programmeur
+peut percevoir à tort comme une seule.
+
+#### Pourquoi c'est essentiellement interdit :
+
+1. **Mutex n'est pas seulement des "données", mais une primitive de
+   synchronisation avec état.**
+
+2. **La copie ne partage pas le même état de verrouillage** que l'original.
+
+3. Cela rompt les garanties d'exclusion mutuelle et peut conduire à une course,
+   à une impasse ou à la panique dans des scénarios complexes.
+
+#### Manières typiques de copier accidentellement un mutex :
+
+1. Passez une structure avec `sync.Mutex` par valeur à une fonction.
+
+2. Renvoyer la structure suivante par valeur après initialisation/utilisation.
+
+3. Conserver/transmettre des copies via des canaux ou des collections de
+   valeurs.
+
+#### Bonne pratique :
+
+1. Les structures de `sync.Mutex` doivent être utilisées via des pointeurs
+   (`*T`), et non via une copie de valeur.
+
+2. N'exportez pas `Mutex` directement dans l'API publique.
+
+3. Si le type a un verrou, documentez qu'il n'est pas copié après la première
+   utilisation.
+
+4. Utilisez `go vet` (copylocks) et linters pour une détection précoce.
+
+#### Conclusion :
+
+`sync.Mutex` ne peut pas être copié car cela compromet le modèle de
+synchronisation lui-même. N'oubliez pas la règle : les primitives de
+verrouillage ont une identité stable et doivent vivre dans une instance par état
+protégé.
+
+</details>

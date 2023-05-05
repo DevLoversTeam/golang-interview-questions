@@ -2910,3 +2910,53 @@ verrouillage ont une identité stable et doivent vivre dans une instance par ét
 protégé.
 
 </details>
+
+
+<details>
+<summary>49. Pourquoi la lecture et l'écriture d'un état partagé sans synchronisation constituent-elles une course aux données, même si elles sont « logiquement sûres » ?</summary>
+
+#### Go
+
+En termes de modèle de mémoire Go, `data race` se produit lorsque deux ou
+plusieurs goroutines accèdent simultanément à la même variable, dont au moins
+une est une opération d'écriture, et qu'il n'y a pas de relation
+`happens-before` établie (c'est-à-dire de synchronisation) entre ces accès.
+
+#### Pourquoi "logiquement sûr" ne sauvegarde pas :
+
+1. **Logique dans la tête du développeur ≠ garantie du modèle de mémoire.** Sans
+   synchronisation, l'ordre de visibilité des enregistrements entre
+   cores/threads n'est pas défini.
+
+2. **Les optimisations du compilateur et du processeur peuvent modifier l'ordre
+   observé** des lectures/écritures dans le modèle de mémoire autorisé.
+
+3. **Instabilité sous charge :** le code peut "fonctionner" au démarrage local,
+   mais s'interrompre en production ou en CI.
+
+#### Quelles sont les conséquences de la race :
+
+1. Lecture de valeurs obsolètes ou partiellement mises à jour.
+
+2. Bogues irréproductibles (heisenbugs) difficiles à déboguer.
+
+3. Violation des invariants de l'état de l'entreprise sans panique explicite.
+
+#### Qu'est-ce qui est considéré comme une synchronisation correcte :
+
+1. `sync.Mutex` / `sync.RWMutex`
+
+2. Atomics (`sync/atomic`) pour des scénarios simples de bas niveau
+
+3. Canaux comme mécanisme de propriété/signalisation
+
+4. `WaitGroup`, `Cond`, `Once`, `context` — dans leurs rôles de coordination
+
+#### Conclusion :
+
+Sans synchronisation, la lecture/écriture partagée dans Go est une course par
+définition, quelle que soit la « sécurité logique » subjective. Le seul moyen
+fiable consiste à former explicitement la relation `happens-before` via les
+primitives de concurrence correctes.
+
+</details>

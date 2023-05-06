@@ -2960,3 +2960,59 @@ fiable consiste à former explicitement la relation `happens-before` via les
 primitives de concurrence correctes.
 
 </details>
+
+
+<details>
+<summary>50. Qu'est-ce que la condition de concurrence et comment fonctionne le détecteur `-race` ? Qu'est-ce qu'il peut et ne peut pas détecter ?</summary>
+
+#### Go
+
+`Race Condition` est une classe générale de défauts de concurrence où le
+résultat d'un programme dépend d'un ordre imprévisible d'événements entre les
+threads d'exécution. `Data race` est un cas particulier de condition de
+concurrence critique, qui fait référence à un accès simultané dangereux à la
+même mémoire sans synchronisation.
+
+#### Comment fonctionne `-race` :
+
+1. Pendant `go test -race` / `go run -race`, le code est instrumenté.
+
+2. Runtime suit les lectures/écritures de mémoire entre les goroutines.
+
+3. Si des accès sans `happens-before` sont détectés (et qu'il existe un
+   enregistrement) — `data race` avec des traces de pile est signalé.
+
+#### Ce que `-race` détecte bien :
+
+1. Courses classiques de lecture/écriture et d'écriture/écriture sur des
+   variables partagées.
+
+2. Verrouillage/déverrouillage manqué dans les zones compétitives.
+
+3. Partie d'erreurs de coordination dans des scénarios de test avec une
+   compétition réelle.
+
+#### Ce que `-race` ne garantit pas :
+
+1. **Ne détecte pas toutes les conditions de concurrence comme des bogues
+   logiques :** par exemple, protocole d'interaction incorrect sans course
+   directe aux données.
+
+2. **Ne voit pas le code non exécuté :** si les tests ne couvrent pas un
+   parcours compétitif, la course peut passer inaperçue.
+
+3. **Ne s'avère pas exempt de bogues :** Une exécution « propre » signifie
+   uniquement que l'outil n'a détecté aucune violation au cours de cette
+   exécution.
+
+4. **A des frais généraux :** un ralentissement et une consommation de mémoire
+   accrue en mode instrumentation.
+
+#### Conclusion pratique :
+
+`-race` est un outil obligatoire pour l'hygiène du code concurrent, mais pas un
+oracle absolu de l'exactitude. Sa puissance se révèle en combinaison avec des
+tests de qualité, des invariants de conception et une discipline de
+synchronisation.
+
+</details>

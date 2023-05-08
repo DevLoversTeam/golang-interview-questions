@@ -3074,3 +3074,72 @@ coûteuse pour les cas simples. Pour les invariants d’état partagés et
 d’entreprise complexes, `mutex` est généralement l’outil le plus fiable.
 
 </details>
+
+
+<details>
+<summary>52. Comment fonctionne `sync.WaitGroup` et que se passera-t-il avec un compteur négatif ? Pourquoi `wg.Done()` ne peut-il pas être appelé avant `wg.Add()` ?</summary>
+
+#### Go
+
+`sync.WaitGroup` est un compteur de tâches concurrentes actives. Son but est de
+permettre à une goroutine (`Wait`) d'attendre que les autres terminent leur
+travail.
+
+#### Comment ça marche :
+
+1. `wg.Add(n)` augmente le compteur de `n` (on ajoute le nombre de tâches).
+
+2. Chaque tâche terminée déclenche `wg.Done()` (équivalent à `Add(-1)`).
+
+3. `wg.Wait()` est bloqué jusqu'à ce que le compteur atteigne zéro.
+
+#### Que se passera-t-il avec un compteur négatif :
+
+1. Il s'agit d'une erreur de coordination logique.
+
+2. L'exécution provoque une panique (généralement : `sync: negative WaitGroup
+   counter`).
+
+3. Cette situation signifie que `Done()` a été appelé plus de fois que `Add()`
+   ne l'a été.
+
+#### Pourquoi vous ne pouvez pas faire `Done()` à `Add()` :
+
+1. Le contrat du cycle de vie des tâches est violé.
+
+2. `Wait()` peut se terminer prématurément, car au moment de l'attente, le
+   compteur ne reflète pas encore le nombre réel de travaux.
+
+3. Dans le pire des cas, nous aurons un compteur négatif et nous paniquerons.
+
+#### Discipline correcte :
+
+1. Appelez `Add(1)` **avant** le démarrage de la goroutine.
+
+2. À l'intérieur de la goroutine, placez `defer wg.Done()` immédiatement à
+   l'entrée.
+
+3. Appelez `Wait()` seulement après avoir enregistré toutes les tâches.
+
+#### Conclusion :
+
+`WaitGroup` n'est fiable que dans le cadre d'une séquence `Add -> go -> Done ->
+Wait` stricte. Un compteur négatif et `Done()` à `Add()` est le signal d'un
+modèle de synchronisation brisé, ce qui conduit inévitablement à un comportement
+instable ou à une panique.
+
+#### Exemple :
+
+```go
+var wg sync.WaitGroup
+wg.Add(1)
+
+go func() {
+	defer wg.Done()
+	work()
+}()
+
+wg.Wait()
+```
+
+</details>

@@ -3209,3 +3209,64 @@ contexte". Pour la plupart des scénarios de production avec des erreurs et une
 sémantique de défaillance rapide, `errgroup` est plus pratique.
 
 </details>
+
+
+<details>
+<summary>54. Décrivez l'objectif et la mise en œuvre de `sync.Once` : comment garantit-il une initialisation unique ?</summary>
+
+#### Go
+
+`sync.Once` est destiné à l'exécution unique garantie d'une fonction dans des
+conditions d'accès simultané. Quel que soit le nombre de goroutines appelant
+`once.Do(f)` en même temps, le corps de `f` ne doit être exécuté qu'une seule
+fois.
+
+#### A quoi sert-il :
+
+1. Initialisation paresseuse des ressources singleton.
+
+2. Configuration/chargement unique du cache.
+
+3. Exécutez en toute sécurité une initialisation lourde sans dupliquer le
+   travail.
+
+#### Comment `sync.Once` garantit la reproductibilité :
+
+1. Vérifie un indicateur d'état interne terminé/échec.
+
+2. Si l'initialisation n'a pas encore été effectuée, bloque les concurrents de
+   manière synchrone.
+
+3. Exactement une goroutine exécute `f`.
+
+4. En cas de succès, l'état est "terminé" et `Do` revient sans redémarrer `f`.
+
+#### Propriétés importantes :
+
+1. La visibilité correcte des données initialisées pour les autres goroutines
+   est garantie (sécurité de la mémoire grâce à la synchronisation interne).
+
+2. Les autres goroutines apparues lors de l'exécution de `f` attendront d'être
+   terminées.
+
+3. `Once` n'est pas destiné à être "redémarré" - il s'agit d'un cycle de vie
+   unique.
+
+#### Nuances et avertissements :
+
+1. Si `f` panique, le comportement doit être soigneusement étudié lors de la
+   conception : `Once` n'est pas un mécanisme de secours.
+
+2. Vous ne devez pas cacher une logique métier trop complexe dans `Do` ; il vaut
+   mieux y conserver l'initialisation de la ressource.
+
+3. Les tâches de réinitialisation/rechargement nécessitent d'autres modèles
+   (pointeur atomique, mutex, état versionné, etc.).
+
+#### Conclusion :
+
+`sync.Once` est une primitive d'initialisation unique disciplinée : sûre pour la
+course, prévisible et très utile lorsque la réexécution de l'initialisation est
+soit redondante, soit dangereuse.
+
+</details>

@@ -3270,3 +3270,67 @@ course, prévisible et très utile lorsque la réexécution de l'initialisation 
 soit redondante, soit dangereuse.
 
 </details>
+
+
+<details>
+<summary>55. Qu'est-ce que `sync.Cond` et quand remplace-t-il un canal ?</summary>
+
+#### Go
+
+`sync.Cond` est une primitive de synchronisation conditionnelle : elle permet
+aux goroutines d'attendre qu'un certain état (condition) devienne vrai et d'être
+réveillées par un signal provenant d'une autre goroutine.
+
+#### Modèle de base `sync.Cond` :
+
+1. `Cond` fonctionne par-dessus `Locker` (généralement `*sync.Mutex`).
+
+2. La routine dans la boucle vérifie la condition sous verrouillage.
+
+3. Si la condition est fausse, appelle `Wait()`.
+
+4. Une autre goroutine appelle `Signal()` ou `Broadcast()` après un changement
+   d'état.
+
+#### Méthodes clés :
+
+1. **`Wait()`** — libère le verrou de manière atomique, s'endort et, après son
+   réveil, saisit à nouveau le verrou.
+
+2. **`Signal()`** — réveille une goroutine en attente.
+
+3. **`Broadcast()`** - réveille tous les attendus.
+
+#### Lorsque le canal `sync.Cond` prévaut :
+
+1. **Condition complexe sur l'état partagé, pas de transfert de message :**
+   lorsqu'il est important d'attendre le "prédicat sur l'état" et de ne pas
+   recevoir de charge utile.
+
+2. **De nombreux serveurs sur une ressource protégée par un verrou :** `Cond`
+   exprime plus naturellement la coordination autour d'un état partagé.
+
+3. **Contrôle de réveil précis requis :** `Signal/Broadcast` sont parfois mieux
+   adaptés que la sémantique des canaux.
+
+4. **Scénarios haute fréquence avec bruit d'allocation minimal :** dans certains
+   cas de bas niveau, `Cond` fournit un modèle plus efficace que la création de
+   protocoles de canal supplémentaires.
+
+#### Quand la chaîne est meilleure :
+
+1. Lorsque la tâche consiste à transférer des événements/données entre acteurs
+   indépendants.
+
+2. Lorsqu'un modèle de pipeline simple et un flux de messages lisible sont
+   importants.
+
+3. Lorsque vous ne souhaitez pas gérer l'état mutable partagé sous verrouillage.
+
+#### Conclusion :
+
+`sync.Cond` est un outil "d'attente que la condition mutex change", tandis qu'un
+canal est un outil de "passage de message". `Cond` prévaut là où le centre de la
+logique est l'état lui-même et ses invariants, et non le transport des données.
+
+</details>

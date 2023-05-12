@@ -3334,3 +3334,65 @@ canal est un outil de "passage de message". `Cond` prévaut là où le centre de
 logique est l'état lui-même et ses invariants, et non le transport des données.
 
 </details>
+
+
+<details>
+<summary>56. Comment `sync.Map` est-il organisé, quand donne-t-il de meilleures performances par rapport à map + mutex et où est-il utilisé dans la bibliothèque standard ?</summary>
+
+#### Go
+
+`sync.Map` est une carte concurrentielle spécialisée du package `sync`,
+optimisée principalement pour les charges de travail lourdes en lecture et les
+scénarios dans lesquels les clés sont lues fréquemment et rarement modifiées.
+
+#### Comment `sync.Map` est organisé conceptuellement :
+
+1. Possède un modèle d'accès à deux couches :
+
+- **read-part** pour des lectures rapides, généralement sans verrouillage ;
+
+- **dirty-part** pour les mises à jour et les nouvelles entrées synchronisées.
+
+2. La lecture à partir d'une zone de lecture "chaude" se passe souvent de mutex
+   commun, ce qui réduit les conflits.
+
+3. Les écritures/promotions inter-couches ont une logique interne plus complexe,
+   mais visent à ne pas pénaliser les lectures groupées.
+
+#### Lorsque `sync.Map` peut être plus rapide que `map + mutex` :
+
+1. **Beaucoup de lectures, peu d'écritures** (charge de travail classique
+   principalement en lecture).
+
+2. **Clés pour la plupart stables**, sans désabonnement agressif.
+
+3. **Accès en lecture hautement compétitif** à partir de nombreux goroutines.
+
+#### Quand plus c'est mieux `map + mutex` :
+
+1. Les entrées sont nombreuses ou dominent.
+
+2. Nécessite des invariants complexes sur plusieurs clés.
+
+3. La sécurité des types est plus importante (car `sync.Map` fonctionne via
+   `any`).
+
+4. Nécessite une logique plus simple et plus évidente que l'équipe doit prendre
+   en charge.
+
+#### Où utilisé dans la bibliothèque standard :
+
+`sync.Map` est utilisé dans les caches et les tables internes où la nature de
+l'accès est proche de la lecture lourde (en particulier, dans certaines parties
+des packages d'exécution/standard pour la mise en cache des métadonnées et des
+structures auxiliaires). L’idée clé est la même partout : minimiser le blocage
+lors des lectures groupées.
+
+#### Conclusion :
+
+`sync.Map` n'est pas une "meilleure carte globale", mais un outil ponctuel pour
+un profil de charge spécifique. Si vous avez un scénario de lecture majoritaire
+avec une forte concurrence, cela peut donner lieu à une victoire ; dans d'autres
+cas, un simple `map + mutex` est souvent plus transparent et efficace.
+
+</details>

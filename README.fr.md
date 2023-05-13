@@ -3396,3 +3396,60 @@ avec une forte concurrence, cela peut donner lieu à une victoire ; dans d'autre
 cas, un simple `map + mutex` est souvent plus transparent et efficace.
 
 </details>
+
+
+<details>
+<summary>57. Que sont les tests de concurrence dans Go et pourquoi sont-ils utilisés ?</summary>
+
+#### Go
+
+Les tests de concurrence dans Go sont des tests qui testent le comportement du
+code dans des conditions d'exécution parallèle de goroutines, de partage d'état
+et de compétition de ressources. Leur objectif est de détecter les défauts qui
+n’apparaissent pas dans un scénario linéaire.
+
+#### Que vérifient exactement ces tests :
+
+1. Correction de la synchronisation (`mutex`, `channel`, `atomic`, `WaitGroup`).
+
+2. Absence de course aux données dans l'état partagé.
+
+3. Résistance aux scénarios de blocage/verrouillage en direct.
+
+4. Réalisation correcte des goroutines (pas de fuite).
+
+5. Observation des invariants sous charge compétitive.
+
+#### Pourquoi sont-ils nécessaires :
+
+1. **Détection précoce des bogues concurrents :** beaucoup d'entre eux
+   n'apparaissent que sous la pression du parallélisme.
+
+2. **Réduction des comportements instables en production :** les tests capturent
+   des scénarios dans lesquels l'ordre des événements n'est pas déterministe.
+
+3. **Affirmation de garanties architecturales :** telles que le fait que le
+   système ne perd pas d'événements et ne viole pas la cohérence de l'état.
+
+4. **Refactoring plus sûr :** les invariants compétitifs restent protégés par
+   l'ensemble de régression.
+
+#### Outils et pratiques en Go :
+
+1. `go test -race` comme niveau de vérification obligatoire.
+
+2. Scripts parallèles via goroutines, `t.Run`, `t.Parallel`.
+
+3. Délais d'attente explicites/`context` pour empêcher les tests de se bloquer.
+
+4. Exécutions de stress et exécutions multiples pour augmenter le risque de
+   reproduction d'erreurs non déterministes.
+
+#### Conclusion :
+
+Les tests de concurrence ne sont pas un « luxe supplémentaire », mais un élément
+de qualité nécessaire aux services Go. Ils vérifient non seulement la
+fonctionnalité, mais aussi l'exactitude de l'interaction des goroutines dans des
+conditions réelles de parallélisme.
+
+</details>

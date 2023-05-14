@@ -3453,3 +3453,84 @@ fonctionnalité, mais aussi l'exactitude de l'interaction des goroutines dans de
 conditions réelles de parallélisme.
 
 </details>
+
+
+<details>
+<summary>58. Pourquoi Go utilise-t-il `context.Context` et comment est-il transmis via l'arborescence des appels de fonction ?</summary>
+
+#### Go
+
+`context.Context` in Go est un mécanisme standard de gestion du cycle de vie des
+demandes/opérations : annulations, délais, délais d'attente et métadonnées des
+demandes. Il permet à toutes les branches d'exécution de voir un seul signal
+"stop".
+
+#### Pourquoi avez-vous besoin de `Context` :
+
+1. **Annulation :** arrête le travail qui n'est plus nécessaire (le client s'est
+   déconnecté, une erreur s'est produite dans une succursale à proximité, le
+   service se termine).
+
+2. **Deadline/timeout :** limite le temps d'exécution des opérations (HTTP, DB,
+   API externes) afin de ne pas bloquer indéfiniment.
+
+3. **Valeurs liées à la requête :** transférez les données de demande de service
+   (identifiant de trace, jeton d'authentification, identifiant de locataire)
+   entre les couches.
+
+#### Comment il est transmis via l'arborescence des appels :
+
+1. `ctx` est transmis comme **premier paramètre** à une fonction qui peut
+   bloquer ou effectuer des E/S.
+
+2. Chaque appel enfant reçoit le même `ctx` ou dérivé :
+
+- `context.WithCancel`
+
+- `context.WithTimeout`
+
+- `context.WithDeadline`
+
+- `context.WithValue`
+
+3. Les contextes enfants forment une arborescence :
+
+- l'annulation d'un contexte parent annule tous les enfants ;
+
+- Les délais  sont hérités (ou réduits).
+
+#### Règles pratiques :
+
+1. Ne stockez pas `Context` dans une structure comme champ de longue durée.
+
+2. Ne transmettez pas le contexte `nil` (utilisez `context.Background()` ou
+   `context.TODO()`).
+
+3. N'utilisez pas `WithValue` pour les paramètres métier qui doivent être des
+   arguments de fonction explicites.
+
+#### Conclusion :
+
+`context.Context` est la requête "système nerveux" dans Go. Il répartit le
+contrôle de synchronisation et d'annulation dans toute l'arborescence des
+appels, rendant le code concurrent gérable, économique et prévisible dans un
+environnement de production.
+
+#### Exemple :
+
+```go
+func handler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	if err := service.Do(ctx); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+}
+
+func (s *Service) Do(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	return s.repo.Call(ctx)
+}
+```
+
+</details>

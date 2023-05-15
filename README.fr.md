@@ -3534,3 +3534,54 @@ func (s *Service) Do(ctx context.Context) error {
 ```
 
 </details>
+
+
+<details>
+<summary>59. `context.Context` est-il immuable et qu'est-ce que cela signifie en pratique ?</summary>
+
+#### Go
+
+Oui, `context.Context` est conceptuellement immuable : après la création, le
+contexte existant n'est pas "modifié", mais un nouveau contexte dérivé est
+construit par-dessus celui parent.
+
+#### Que signifie immuable dans le cas de `Context` :
+
+1. Les appels `WithCancel`, `WithTimeout`, `WithDeadline`, `WithValue` ne
+   modifient pas l'ancien `ctx`.
+
+2. Ils renvoient un **nouveau** contexte descendant.
+
+3. Le contexte parent reste tel qu'avant.
+
+#### Conséquences pratiques :
+
+1. **Propagation sécurisée entre les goroutines :** le même `ctx` peut être
+   transmis sans risque d'"écrasement caché" des paramètres.
+
+2. **Cycle de vie transparent :** L'arborescence contextuelle montre clairement
+   qui a hérité de l'annulation/de la date limite.
+
+3. **Comportement prévu de l'API :** une fonction qui a reçu `ctx` ne peut pas
+   la "tordre" sournoisement pour d'autres appels ; il ne peut créer qu'un
+   descendant local.
+
+4. **Meilleures testabilité et débogage :** il est plus facile de retracer
+   exactement l'endroit où le délai d'attente/annulation/valeur est apparu, car
+   il s'agit de nœuds dérivés distincts, et non de mutations d'un seul objet.
+
+#### Précision importante :
+
+L'immuabilité ne signifie pas qu'il n'y a pas de dynamique à l'intérieur : le
+signal d'annulation et l'état d'échéance peuvent changer avec le temps. Mais il
+s'agit d'un changement de **l'état d'exécution** dans le modèle de contexte, et
+non d'une mutation « sur place » du contrat API de l'objet transmis.
+
+#### Conclusion :
+
+`context.Context` dans Go est un modèle de chaîne fonctionnelle : nous ne
+modifions pas celui existant, mais créons un dérivé. Cela offre une composition
+propre, une concurrence sécurisée et une gestion prévisible du cycle de vie des
+requêtes.
+
+</details>

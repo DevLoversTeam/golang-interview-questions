@@ -3585,3 +3585,65 @@ propre, une concurrence sécurisée et une gestion prévisible du cycle de vie d
 requêtes.
 
 </details>
+
+
+<details>
+<summary>60. Comment l'utilisation de `context.WithCancel` aide-t-elle à éviter les fuites de routine ?</summary>
+
+#### Go
+
+`context.WithCancel` donne un signal de fin géré à toutes les goroutines
+exécutées dans la même arborescence contextuelle. C'est la clé pour éviter les
+fuites de goroutines — une situation dans laquelle les goroutines auxiliaires
+restent « vivantes » après que le travail ait perdu de sa pertinence.
+
+#### Comment se produit une fuite de goroutine :
+
+1. La routine attend un canal/réseau/minuterie sans condition d'arrêt.
+
+2. La demande est déjà terminée ou est devenue inutile, mais le travailleur ne
+   le savait pas.
+
+3. Ces goroutines « orphelines » accumulent et consomment des ressources.
+
+#### Rôle `WithCancel` :
+
+1. Création du contexte enfant : `ctx, cancel := context.WithCancel(parent)`.
+
+2. Toutes les goroutines de travail ont `select` avec la branche `case
+   <-ctx.Done():`.
+
+3. Lorsque `cancel()` est appelé, toutes les goroutines dépendantes reçoivent un
+   signal d'arrêt.
+
+4. Les groutines se terminent de manière contrôlée, libérant ainsi des
+   ressources.
+
+#### Règles pratiques de sécurité :
+
+1. Appelez toujours `cancel()` (souvent via `defer cancel()`), même en cas de
+   réussite.
+
+2. Dans chaque opération de boucle/blocage de longue durée, vérifiez
+   `ctx.Done()`.
+
+3. Passer `ctx` à tous les appels d'E/S prenant en charge l'annulation.
+
+4. Combinez avec `WaitGroup`/`errgroup` pour attendre l'achèvement réel.
+
+#### Ce que cela donne au système :
+
+1. Absence de travailleurs d'arrière-plan "suspendus".
+
+2. Meilleure utilisation du processeur/mémoire sous charge.
+
+3. Arrêt prévu et comportement plus stable du service.
+
+#### Conclusion :
+
+`context.WithCancel` est le mécanisme anti-fuite de base dans la concurrence
+Go : un seul signal d'arrêt explicite qui met fin à toutes les goroutines
+associées de manière cohérente et sauve le système de la surcharge des
+ressources.
+
+</details>

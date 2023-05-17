@@ -3647,3 +3647,76 @@ associées de manière cohérente et sauve le système de la surcharge des
 ressources.
 
 </details>
+
+
+<details>
+<summary>61. Pourquoi Go utilise-t-il des types de clés non standard (par exemple `struct{}`) pour `context.WithValue` et comment cela évite-t-il les collisions ?</summary>
+
+#### Go
+
+Dans `context.WithValue`, la clé doit être comparable, mais surtout, elle doit
+être **unique au sein de votre application et de votre espace de dépendance**.
+C'est pourquoi il est recommandé d'utiliser vos propres types de clés (non
+standard) au lieu du `string` couramment utilisé.
+
+#### Pourquoi les clés `string` sont dangereuses :
+
+1. Différents packages peuvent accidentellement utiliser la même chaîne
+   (`"userID"`, `"request_id"`, etc.).
+
+2. La valeur dans le contexte sera écrasée ou "masquée" par un autre package.
+
+3. Obtenez des erreurs de routage/authentification/connexion silencieuses et
+   difficiles à reproduire.
+
+#### Comment un type non standard empêche les collisions :
+
+1. Crée un type de clé privée dans le package, par exemple : `type ctxKey
+   struct{}` ou `type ctxKey int`.
+
+2. Le code externe ne peut pas utiliser accidentellement le même type et la même
+   valeur de clé.
+
+3. De cette façon, l'espace de noms de clé est isolé au niveau du système
+   typique.
+
+#### Pourquoi `struct{}` est-il souvent pris :
+
+1. Type de marqueur léger sans charge utile.
+
+2. Souligne que l'identité de la clé est importante, et non ses « données ».
+
+3. Correspond bien à l'idiome "clé unique locale du package".
+
+#### Règle générale :
+
+1. Déclarez les clés en tant que variables de package non exportées.
+
+2. N'utilisez pas de chaînes "vides" comme clés pour `WithValue`.
+
+3. Stockez dans `Context` uniquement les données de service liées à la demande,
+   et non les paramètres commerciaux.
+
+#### Conclusion :
+
+Les types de clés non standard dans `context.WithValue` sont un mécanisme
+d'espace de noms de type sécurisé. Ils réduisent de manière fiable le risque de
+collisions entre les packages et rendent les valeurs contextuelles prévisibles
+dans les grandes bases de code.
+
+#### Exemple :
+
+```go
+type requestIDKey struct{}
+
+func withRequestID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, requestIDKey{}, id)
+}
+
+func requestID(ctx context.Context) (string, bool) {
+	v, ok := ctx.Value(requestIDKey{}).(string)
+	return v, ok
+}
+```
+
+</details>

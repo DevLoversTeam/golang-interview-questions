@@ -3720,3 +3720,62 @@ func requestID(ctx context.Context) (string, bool) {
 ```
 
 </details>
+
+
+<details>
+<summary>62. Quelle est la différence entre `context.Value` et la transmission de paramètres via des arguments de fonction ?</summary>
+
+#### Go
+
+`context.Value` et les arguments de fonction normaux ont des objectifs
+différents. Dans une conception Go compétente, ils ne sont pas
+interchangeables : les arguments transmettent des données commerciales et
+`context.Value` est un métacontexte axé sur la demande de service.
+
+#### Passer les arguments :
+
+1. **Contrat API explicite :** toutes les données requises sont visibles dans la
+   signature.
+
+2. **Sécurité et lisibilité des types :** le compilateur aide à contrôler
+   l'exactitude.
+
+3. **Meilleur choix pour la logique de domaine :** les paramètres de domaine
+   doivent être transmis directement.
+
+#### `context.Value` :
+
+1. **Canal de données de service implicite :** identifiant de trace, identifiant
+   de demande, revendications d'authentification, locataire, métadonnées de
+   corrélation.
+
+2. **Se propage à travers les couches sans gonfler les signatures :** utile pour
+   le middleware, la journalisation et l'observabilité.
+
+3. **Moins de transparence :** dépendance de valeur non évidente à partir de la
+   signature de fonction.
+
+#### Pourquoi vous ne devriez pas remplacer les arguments `context.Value` :
+
+1. La clarté de l'API diminue (des entrées "cachées" apparaissent).
+
+2. Augmente le risque d'erreurs d'exécution dues à l'assertion avec `any`.
+
+3. Les tests et la refactorisation sont compliqués.
+
+#### Règle générale :
+
+1. Dans `Context` se trouve uniquement ce qui appartient au cycle de vie de la
+   demande et est nécessaire aux couches d'infrastructure.
+
+2. Dans les paramètres de fonction - tout ce qui constitue l'essence de
+   l'opération commerciale.
+
+#### Conclusion :
+
+Les arguments forment un contrat de domaine explicite ; `context.Value`
+transporte les métadonnées de service de la demande. Le mélange de ces rôles
+dégrade l’architecture, c’est pourquoi le code Go professionnel maintient la
+frontière claire entre eux.
+
+</details>

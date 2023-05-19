@@ -3779,3 +3779,57 @@ dégrade l’architecture, c’est pourquoi le code Go professionnel maintient l
 frontière claire entre eux.
 
 </details>
+
+
+<details>
+<summary>63. Comment fonctionne l'allocation Stack vs Heap dans Go ?</summary>
+
+#### Go
+
+Dans Go, le placement des données dans la pile ou le tas est déterminé par le
+compilateur via une analyse d'échappement. Le développeur ne choisit pas cela
+directement manuellement, mais peut écrire du code pour réduire les allocations
+de tas inutiles.
+
+#### Allocation de pile :
+
+1. Data réside dans un appel de fonction (ou une pile goroutine gérée).
+
+2. L'allocation et la libération sont très bon marché.
+
+3. Ne charge pas directement le GC.
+
+#### Allocation du tas :
+
+1. Les données sont requises en dehors du cadre de pile actuel.
+
+2. La mémoire est gérée par le garbage collector.
+
+3. Gonne une surcharge plus élevée (allocation + garbage collection ultérieure).
+
+#### Qu'est-ce qui décide où va la valeur :
+
+1. **Analyse d'échappement du compilateur :** si la valeur "s'échappe" en dehors
+   de la fonction (le pointeur est renvoyé, stocké dans une structure à longue
+   durée de vie, la fermeture est capturée, etc.), elle entre dans le Heap.
+
+2. **Contexte d'utilisation :** même une variable locale peut se retrouver sur
+   le Heap si sa durée de vie est plus longue que la frame actuelle.
+
+#### Pourquoi c'est important :
+
+1. Plus d'allocations de tas = plus de travail pour le GC.
+
+2. Dans hot-path, cela affecte la latence et le débit.
+
+3. L'optimisation des allocations donne souvent une augmentation notable des
+   performances du service.
+
+#### Conclusion pratique :
+
+Dans Go, la clé n'est pas de "gérer manuellement la mémoire", mais de comprendre
+le comportement d'échappement. Une conception claire des données et la
+minimisation des fuites inutiles dans Heap aident à écrire un code de production
+rapide et stable.
+
+</details>

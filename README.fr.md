@@ -3833,3 +3833,64 @@ minimisation des fuites inutiles dans Heap aident à écrire un code de producti
 rapide et stable.
 
 </details>
+
+
+<details>
+<summary>64. Comment minimiser les allocations de tas avec `sync.Pool`?</summary>
+
+#### Go
+
+`sync.Pool` est un mécanisme de réutilisation d'objets temporaires qui vous
+permet de réduire la fréquence des allocations de tas dans les zones de code
+chaud. L’idée est simple : ne pas créer à chaque fois des objets éphémères, mais
+les sortir de la piscine et les restituer après usage.
+
+#### Schéma de base :
+
+1. Créez un pool de `New` qui initialise l'objet selon les besoins.
+
+2. A l'entrée de l'opération : `obj := pool.Get()`.
+
+3. Avant utilisation, mettez l'objet dans un état valide.
+
+4. Une fois terminé : videz les champs et `pool.Put(obj)`.
+
+#### Pourquoi cela réduit les allocations :
+
+1. Une partie des requêtes reçoit des objets déjà alloués.
+
+2. Moins de nouvelles allocations de tas.
+
+3. Moins de pression sur le GC avec une fréquence élevée d'opérations courtes.
+
+#### Où `sync.Pool` est particulièrement pertinent :
+
+1. Tampons (`[]byte`, `bytes.Buffer`) dans les gestionnaires de
+   sérialisation/réseau.
+
+2. Structures auxiliaires temporaires dans les chemins
+   d'analyse/encodage/décodage.
+
+3. Services HTTP/RPC hautement chargés avec opérations courtes et répétées.
+
+#### Avis importants :
+
+1. `sync.Pool` est un cache, pas un stockage à long terme ; les éléments peuvent
+   être nettoyés par GC.
+
+2. L'objet avant `Put` doit être amené à un état propre, sinon une fuite de
+   données entre les requêtes est possible.
+
+3. Pool n'est pas une panacée : sur les chemins froids, la complexité du code
+   peut ne pas s'avérer payante.
+
+4. L'optimisation doit être confirmée par le profilage et non par l'intuition.
+
+#### Conclusion :
+
+`sync.Pool` est efficace pour réutiliser des objets de courte durée dans des
+chemins chauds où les allocations critiques et la pause GC sont critiques. Sa
+force réside dans la réduction des turbulences d’allocation, mais elle doit être
+appliquée de manière sélective et profilée.
+
+</details>

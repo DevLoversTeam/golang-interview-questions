@@ -3894,3 +3894,77 @@ force réside dans la réduction des turbulences d’allocation, mais elle doit 
 appliquée de manière sélective et profilée.
 
 </details>
+
+
+<details>
+<summary>65. Que signifient les variables d'environnement `GOGC` et `GOMEMLIMIT` et comment affectent-elles le garbage collector ?</summary>
+
+#### Go
+
+`GOGC` et `GOMEMLIMIT` sont des paramètres clés pour contrôler le comportement
+du GC dans Go. Ils vous permettent d'équilibrer la consommation de mémoire, la
+fréquence du garbage collection et les performances du service.
+
+#### `GOGC` :
+
+1. Spécifie le taux de croissance du tas cible avant le prochain cycle GC (en
+   pourcentage).
+
+2. La valeur typique est `100` (permet au tas de doubler à peu près par rapport
+   aux données « en direct » après le GC précédent).
+
+3. Plus `GOGC` :
+
+- moins de cycles GC ;
+
+- plus de consommation de mémoire ;
+
+- réduit potentiellement la surcharge du processeur du GC.
+
+4. Moins de `GOGC` :
+
+- GC plus fréquents ;
+
+- tas plus petit ;
+
+- montage supérieur.
+
+#### `GOMEMLIMIT` :
+
+1. Définit une limite de mémoire supérieure souple dans laquelle le runtime
+   tente de maintenir le processus.
+
+2. Lorsque la mémoire approche de cette limite, le GC fonctionne de manière plus
+   agressive, même si `GOGC` une collecte moins fréquente le permettrait.
+
+3. Particulièrement utile dans les conteneurs/orchestrateurs avec des limites de
+   mémoire strictes.
+
+#### Comment ils travaillent ensemble :
+
+1. `GOGC` définit la « gourmandise » générale de la croissance du tas.
+
+2. `GOMEMLIMIT` agit comme un fusible qui limite la croissance excessive de la
+   mémoire.
+
+3. En production, c'est la combinaison des deux paramètres qui permet de mieux
+   contrôler les risques de latence et de MOO.
+
+#### Approche pratique :
+
+1. Commencez avec les valeurs par défaut.
+
+2. Mesurez `heap`, pause GC, CPU, latence de queue sous charge réelle.
+
+3. Ajustez les paramètres progressivement, en capturant l'impact sur le SLA.
+
+4. Pour les conteneurs, il est nécessaire de faire correspondre `GOMEMLIMIT`
+   avec la limite de mémoire de la plateforme.
+
+#### Conclusion :
+
+`GOGC` contrôle la fréquence GC via la cible de croissance du tas et
+`GOMEMLIMIT` limite la mémoire par le haut. Ensemble, ils forment un outil
+pratique pour affiner le comportement d’exécution des services Go.
+
+</details>

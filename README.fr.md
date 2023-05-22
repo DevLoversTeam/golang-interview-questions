@@ -3968,3 +3968,57 @@ fréquence du garbage collection et les performances du service.
 pratique pour affiner le comportement d’exécution des services Go.
 
 </details>
+
+
+<details>
+<summary>66. Qu'est-ce que `runtime.SetFinalizer` et est-il utilisé dans la bibliothèque standard ?</summary>
+
+#### Go
+
+`runtime.SetFinalizer` est un mécanisme permettant de lier une fonction de
+finaliseur à un objet qui peut être appelé par le GC avant que l'objet ne soit
+finalement libéré. Important : Le finaliseur ne fournit pas de garanties
+d'exécution strictes et ne constitue pas un remplacement fiable pour
+`Close`/`Dispose` explicite.
+
+#### Que fait `SetFinalizer` :
+
+1. Enregistre un rappel pour un objet de tas spécifique.
+
+2. Lorsqu'un objet devient inaccessible, le moteur d'exécution **peut** exécuter
+   un finaliseur.
+
+3. L'objet sera ensuite collecté dans l'un des prochains cycles GC.
+
+#### Principales limitations :
+
+1. **Il n'y a aucune garantie "quand" le finaliseur s'exécutera.**
+
+2. **Il n'y a aucune garantie qu'il s'exécutera avant la fin du processus.**
+
+3. Les finaliseurs compliquent le raisonnement sur le cycle de vie et peuvent
+   créer des coûts/retards cachés.
+
+#### Règle générale :
+
+1. Pour les ressources (fichiers, sockets, handles, connexions externes),
+   utilisez toujours une fermeture explicite (`defer obj.Close()`).
+
+2. Le finaliseur n'est autorisé qu'en tant que « filet de sécurité » contre les
+   erreurs d'utilisation, et non comme moyen principal de contrôler la
+   ressource.
+
+#### Si utilisé dans la bibliothèque standard :
+
+Oui, utilisé ponctuellement dans certains endroits de bas niveau comme mécanisme
+auxiliaire de sécurité/diagnostic, mais pas comme modèle de gestion des
+ressources sous-jacent. La philosophie générale de la bibliothèque standard est
+un cycle de vie explicite et une fermeture explicite.
+
+#### Conclusion :
+
+`runtime.SetFinalizer` est un outil spécialisé avec des garanties souples. En
+production-Go, il est utilisé avec précaution et rarement ; la gestion explicite
+des ressources reste la base d’un code fiable.
+
+</details>

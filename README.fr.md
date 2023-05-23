@@ -4022,3 +4022,69 @@ production-Go, il est utilisé avec précaution et rarement ; la gestion explici
 des ressources reste la base d’un code fiable.
 
 </details>
+
+
+<details>
+<summary>67. Comment trouver une fuite de mémoire avec `pprof`?</summary>
+
+#### Go
+
+La recherche de fuites de mémoire dans Passer par `pprof` est basée sur la
+comparaison des profils de tas au fil du temps : si les objets « vivants »
+grandissent régulièrement sans revenir au niveau de base, nous avons le signe
+d'une fuite ou d'une rétention de référence incontrôlée.
+
+#### Stratégie de diagnostic de base :
+
+1. Activer le profilage (`net/http/pprof`) dans le service.
+
+2. Supprimez plusieurs profils de tas :
+
+- au début ;
+
+- sous charge de travail ;
+
+- après une période de « silence ».
+
+3. Comparez les profils (`go tool pprof`, mode diff) pour trouver les
+   types/piles qui continuent de croître.
+
+#### Que regarder dans `pprof` :
+
+1. **`inuse_space` / `inuse_objects`** — qui reste vraiment en mémoire.
+
+2. **Principaux allocateurs** et leurs piles d'appels.
+
+3. **Le graphique d'appel (`web`)** est l'endroit où sont conservés les objets à
+   longue durée de vie.
+
+4. Dynamique après plusieurs cycles GC : la vraie fuite n'explose pas.
+
+#### Sources typiques de fuites :
+
+1. Carte/cache globale sans politique d'expulsion.
+
+2. Tampons/files d'attente/canaux non effacés.
+
+3. Routines sans fin qui contiennent des références à de grandes structures.
+
+4. Échec du projet de pools ou de collections de métriques/étiquettes « pour
+   toujours ».
+
+#### Techniques pratiques :
+
+1. Exécutez des profils sous une charge de travail représentative.
+
+2. Ajouter des instantanés de comparaison avant/après le correctif.
+
+3. Regardez le profil goroutine en parallèle (`goroutine`) — les fuites de
+   goroutines sont souvent en corrélation avec des fuites de mémoire.
+
+#### Conclusion :
+
+`pprof` vous permet de détecter une fuite de mémoire non pas « à l'œil nu »,
+mais de manière démontrable : en raison de la croissance des métriques `inuse`
+et des piles de rétention spécifiques. La clé du succès est la comparaison des
+profils temporels dans une charge stable et reproductible.
+
+</details>

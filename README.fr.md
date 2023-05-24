@@ -4088,3 +4088,72 @@ et des piles de rétention spécifiques. La clé du succès est la comparaison d
 profils temporels dans une charge stable et reproductible.
 
 </details>
+
+
+<details>
+<summary>68. Comment trouver des chemins chauds et mesurer le débit ?</summary>
+
+#### Go
+
+`Hot paths` sont les sections de code dans lesquelles le programme consacre le
+plus de temps ou de ressources. Pour les trouver correctement, vous n'avez pas
+besoin d'intuition, mais d'un profilage sous une charge réelle ou proche du
+réel.
+
+#### Comment trouver des chemins chauds :
+
+1. **Profilage du processeur (`pprof`) :** indique où le temps processeur est le
+   plus dépensé.
+
+2. **Heap/alloc-profiles :** aident à trouver les chemins d'allocation « chauds
+   » qui provoquent souvent une dégradation indirecte via GC.
+
+3. **Trace (`go tool trace`) :** donne une image du planificateur, des verrous,
+   des délais entre les goroutines et les E/S.
+
+4. **Graphique de flamme / haut / graphique d'appel :** visualisez quelles
+   fonctions constituent le coût principal.
+
+#### Comment mesurer le débit :
+
+1. Définir les métriques commerciales de bande passante :
+
+- req/s, msg/s, jobs/s, lignes/s, etc.
+
+2. Effectuer des tests de charge contrôlée :
+
+- entrée fixe ;
+
+- profil compétitif connu ;
+
+- environnement de démarrage stable.
+
+3. Supprimer les métriques simultanément :
+
+- débit ;
+
+- latence (p50/p95/p99) ;
+
+- CPU, mémoire, GC, conflit de verrouillage.
+
+4. Comparez les modifications « avant/après » dans les mêmes conditions (et de
+   préférence avec plusieurs exécutions).
+
+#### Principes pratiques :
+
+1. Optimisez uniquement ce qui est confirmé par le profileur.
+
+2. N'améliorez pas le débit au prix d'une croissance incontrôlée de la latence
+   de queue.
+
+3. Après l'optimisation, reprofilez pour vous assurer que le goulot
+   d'étranglement a effectivement disparu et n'est pas déplacé.
+
+#### Conclusion :
+
+Trouver des chemins chauds et mesurer le débit est un cycle unique : **profilage
+→ hypothèse → changement → répétition de la mesure**. Dans Go, cette approche
+est bien prise en charge par les outils standard et donne des résultats
+techniques solides.
+
+</details>

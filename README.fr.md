@@ -4157,3 +4157,74 @@ est bien prise en charge par les outils standard et donne des résultats
 techniques solides.
 
 </details>
+
+
+<details>
+<summary>69. Comment optimiser la gestion des chaînes avec `strings.Builder` ? Pourquoi ne pouvez-vous pas concaténer en boucle ?</summary>
+
+#### Go
+
+Les chaînes sont immuables dans Go. Cela signifie que chaque opération de
+concaténation crée une nouvelle chaîne. Par conséquent, la répétition de `s +=
+part` dans une boucle génère souvent une avalanche d'allocations et de copies.
+
+#### Pourquoi la concaténation dans une boucle est inefficace :
+
+1. Une nouvelle ligne est créée à chaque itération.
+
+2. L'ancien contenu est copié encore et encore.
+
+3. Le coût total peut croître quadratiquement pour les gros volumes.
+
+4. Pression croissante sur le GC en raison d'objets intermédiaires de courte
+   durée.
+
+#### Comment `strings.Builder` aide :
+
+1. `Builder` accumule les données dans un tampon interne.
+
+2. Les entrées  (`WriteString`, `WriteByte`, `WriteRune`) minimisent les copies
+   redondantes.
+
+3. La dernière ligne est générée une fois via `String()`.
+
+4. Peut être appelé `Grow(n)` si nécessaire pour pré-réserver la capacité et
+   réduire la réallocation.
+
+#### Avantages pratiques :
+
+1. Moins les allocations.
+
+2. Meilleur débit dans les chemins chauds de formatage/génération de texte.
+
+3. Comportement de latence plus stable sous charge.
+
+#### Lorsqu'il est particulièrement nécessaire d'utiliser :
+
+1. Génération de charges utiles volumineuses (lignes JSON/SQL/HTML/log).
+
+2. Construction de cordes en boucles.
+
+3. Toute opération dans laquelle une chaîne est formée de nombreux fragments.
+
+#### Conclusion :
+
+La concaténation dans une boucle est coûteuse en raison des allocations répétées
+et de la copie de lignes immuables. `strings.Builder` est un outil idiomatique
+et efficace pour construire des chaînes dans Go, en particulier dans les
+endroits sensibles aux performances.
+
+#### Exemple :
+
+```go
+var b strings.Builder
+b.Grow(1024)
+
+for _, part := range parts {
+	b.WriteString(part)
+}
+
+result := b.String()
+```
+
+</details>

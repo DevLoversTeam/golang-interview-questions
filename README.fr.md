@@ -4228,3 +4228,72 @@ result := b.String()
 ```
 
 </details>
+
+
+<details>
+<summary>70. Comment optimiser la sérialisation ?</summary>
+
+#### Go
+
+L'optimisation de la sérialisation dans Go consiste principalement à travailler
+sur les allocations, le format des données, la réutilisation des tampons et la
+réduction de la réflexion dans les chemins chauds. Seule une approche profilée
+donne le meilleur résultat, pas des micro-optimisations « aveugles ».
+
+#### Stratégies d'optimisation pratiques :
+
+1. **Sélection d'un format pour la tâche :**
+
+- JSON est pratique et polyvalent, mais plus lourd que le CPU ;
+
+- Protobuf/MessagePack sont souvent plus rapides et plus compacts pour le trafic
+  interservices.
+
+2. **Réduction des allocations :**
+
+- reuse `bytes.Buffer` / `[]byte` via `sync.Pool` ;
+
+- évitez les objets intermédiaires inutiles lors du marshal/unmarshal.
+
+3. **Sérialisation des threads :**
+
+- utilisez `Encoder/Decoder` pour les flux volumineux afin d'éviter de conserver
+  l'intégralité de la charge utile en mémoire en même temps.
+
+4. **Optimisation de la structure des données :**
+
+- supprimer les champs inutiles ;
+
+- utilisez les balises correctes (`omitempty`, touches courtes si nécessaire) ;
+
+- évitez les structures trop imbriquées, sauf si la logique métier l'exige.
+
+5. **Évitement des réflexions redondantes dans le hot-path :**
+
+- dans les endroits critiques, envisagez la génération de code ou la
+  (dé)sérialisation optimisée manuellement.
+
+6. **Contrôle de la taille de la charge utile :**
+
+- La compression n'est appropriée qu'après les mesures, car elle ajoute des
+  coûts CPU ;
+
+- parfois, il est préférable de transmettre moins de données que de « mieux »
+  compresser.
+
+#### Comment évaluer l'effet :
+
+1. Benchmarks (`go test -bench`) avant/après.
+
+2. Profils CPU/allocation (`pprof`).
+
+3. Métriques de production : débit, latence p95/p99, tas, GC.
+
+#### Conclusion :
+
+La sérialisation optimale est un équilibre entre le format, les allocations et
+la complexité du code. Dans Go, il est recommandé de créer un profil, de
+nettoyer les copies redondantes, de réutiliser les tampons et de choisir un
+format qui répond aux exigences d'un système particulier.
+
+</details>

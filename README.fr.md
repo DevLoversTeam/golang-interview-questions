@@ -4297,3 +4297,59 @@ nettoyer les copies redondantes, de réutiliser les tampons et de choisir un
 format qui répond aux exigences d'un système particulier.
 
 </details>
+
+
+<details>
+<summary>71. Comment optimiser le travail avec les fichiers ?</summary>
+
+#### Go
+
+L'optimisation des E/S de fichiers dans Go consiste à choisir le bon modèle de
+lecture/écriture, la taille de la mémoire tampon, le niveau de concurrence et la
+stratégie de disque. L'objectif principal est de réduire les appels système, les
+copies redondantes et les blocages.
+
+#### Pratiques clés :
+
+1. **E/S tamponnées (`bufio.Reader/Writer`) :** réduit le nombre de petits
+   `read/write` et augmente le débit.
+
+2. **Traitement par lots au lieu d'un accès octet par octet :** la
+   lecture/écriture par blocs est beaucoup plus efficace que les petites
+   opérations.
+
+3. **Threading de fichiers volumineux :** ne chargez pas l'intégralité du
+   fichier en mémoire s'il peut être traité en plusieurs parties.
+
+4. **Bonne gestion des poignées :** `defer file.Close()` immédiatement après
+   ouverture - hygiène de base pour éviter les fuites de FD.
+
+5. **Contrôle de la concurrence :** le parallélisme n'est utile que dans la
+   bande passante du disque/FS ; Des opérations d’E/S parallèles excessives
+   peuvent dégrader la latence.
+
+6. **Réduisez les copies redondantes :** utilisez `io.Copy` et réutilisez les
+   tampons le cas échéant.
+
+7. **Profilage de pré-optimisation :** mesurez si le goulot d'étranglement
+   concerne le disque, le processeur, la sérialisation ou la synchronisation.
+
+#### Conseils d'ingénierie supplémentaires :
+
+1. Pour les journaux/événements, tenez compte de la stratégie de vidage (vidages
+   fréquents = débit inférieur).
+
+2. Pour les pipelines volumineux, séparez la lecture, le traitement et
+   l'écriture en étapes gérables.
+
+3. Pour les scénarios critiques, vérifiez les paramètres du système de fichiers
+   et du conteneur/hôte (quota d'E/S, type de volume, stockage réseau).
+
+#### Conclusion :
+
+Travailler efficacement avec des fichiers dans Go est une discipline de mise en
+mémoire tampon, de streaming, de parallélisme contrôlé et de mesures.
+L'optimisation doit être basée sur le profil de charge réel et non sur des
+hypothèses générales.
+
+</details>

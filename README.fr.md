@@ -4353,3 +4353,79 @@ L'optimisation doit être basée sur le profil de charge réel et non sur des
 hypothèses générales.
 
 </details>
+
+
+<details>
+<summary>72. Comment fonctionne le traitement par lots et quand est-il approprié ?</summary>
+
+#### Go
+
+`Batching` est la combinaison de nombreuses petites opérations dans des packages
+plus grands (lot) pour réduire la surcharge de chaque opération individuelle.
+Dans les systèmes très chargés, il s’agit de l’un des moyens les plus efficaces
+d’augmenter le débit.
+
+#### Comment fonctionne le traitement par lots :
+
+1. Les événements/enregistrements s'accumulent dans la mémoire tampon.
+
+2. Le lot est envoyé selon l'un des déclencheurs :
+
+- taille atteinte `N` ;
+
+- délai d'expiration `T` ;
+
+- complete/flush reçu.
+
+3. L'opération est réalisée par un seul appel "batch" (DB, réseau, disque, file
+   d'attente).
+
+#### Pourquoi c'est efficace :
+
+1. **Moins d'appels système et d'allers-retours.**
+
+2. **Meilleur chargement du canal E/S** (réseau, disque, base de données).
+
+3. **Moins de surcharge de synchronisation** pour un grand nombre de petites
+   tâches.
+
+#### Lorsque le traitement par lots est approprié :
+
+1. Opérations de masse du même type (journalisation, télémétrie, insertion/mise
+   à jour en masse).
+
+2. Scénarios dans lesquels le débit est plus important que la latence unitaire
+   minimale possible.
+
+3. Intégrations où le système externe fonctionne bien avec les requêtes par
+   lots.
+
+#### Quand le batching peut être nocif :
+
+1. Exigences strictes pour le retard d'une seule opération.
+
+2. Échec de la configuration de la taille du lot/délai d'expiration, augmentant
+   la latence de queue.
+
+3. Risque élevé de perte d'un gros bloc de données sans logique de nouvelle
+   tentative/vidage appropriée.
+
+#### Règles pratiques :
+
+1. Définissez **à la fois la taille et l'heure** (`N` + `T`) en même temps.
+
+2. Avoir un vidage explicite à l'arrêt.
+
+3. Fournir une nouvelle tentative/une interruption en cas d'échec partiel ou
+   complet des demandes par lots.
+
+4. Mesurez le débit ↔ l'équilibre de latence sur une charge réelle.
+
+#### Conclusion :
+
+Le traitement par lots est un multiplicateur de performances architecturales
+pour les opérations en masse. Sa puissance se révèle là où la réduction des
+frais généraux par requête est plus importante que la réponse instantanée à
+chaque événement.
+
+</details>

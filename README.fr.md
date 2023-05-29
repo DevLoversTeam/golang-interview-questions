@@ -4429,3 +4429,59 @@ frais généraux par requête est plus importante que la réponse instantanée �
 chaque événement.
 
 </details>
+
+
+<details>
+<summary>73. Quand la génération de code (`go generate`) est-elle meilleure que la réflexion ?</summary>
+
+#### Go
+
+`Code generation` et `reflection` résolvent des problèmes de métaprogrammation
+similaires, mais ont des prix différents. Dans Go, la génération de code gagne
+souvent là où la vitesse, la sécurité du type et la prévisibilité sont
+nécessaires en production.
+
+#### Quand `go generate` vaut mieux que la réflexion :
+
+1. **Les performances du Hot-path sont essentielles :** le code généré s'exécute
+   sans réflexion à l'exécution, il est donc généralement plus rapide et avec
+   des allocations plus petites.
+
+2. **Sécurité de type renforcée requise :** les erreurs sont détectées au moment
+   de la compilation, pas au moment de l'exécution.
+
+3. **Exigences de latence/débit élevées :** sérialisation, mappage, codecs RPC,
+   validation dans les requêtes groupées.
+
+4. **Contrat de données stable :** lorsque les schémas sont connus à l'avance et
+   changent rarement.
+
+5. **Nécessite un débogage transparent :** les appels générés peuvent être
+   profilés et analysés comme du code Go classique.
+
+#### Quand la réflexion est justifiée :
+
+1. Le schéma est dynamique et défini uniquement au moment de l'exécution.
+
+2. Nécessite un prototypage rapide ou une flexibilité de bibliothèque
+   universelle.
+
+3. Faibles exigences de performances, où il est plus facile d'accepter la
+   surcharge d'exécution.
+
+#### Compromis `go generate` :
+
+1. Ajoute une étape dans la construction/le workflow.
+
+2. Doit prendre en charge les modèles/générateurs.
+
+3. Le code généré augmente la taille du référentiel.
+
+#### Conclusion pratique :
+
+Si le système est sensible aux performances et que le modèle par défaut est
+stable, `go generate` est généralement meilleur que la réflexion. La réflexion
+est appropriée lorsque la valeur principale est le dynamisme et non l'efficacité
+maximale de la performance.
+
+</details>

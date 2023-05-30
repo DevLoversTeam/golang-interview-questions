@@ -4485,3 +4485,68 @@ est appropriée lorsque la valeur principale est le dynamisme et non l'efficacit
 maximale de la performance.
 
 </details>
+
+
+<details>
+<summary>74. Qu'est-ce que Escape Analysis et comment le vérifier avec les indicateurs du compilateur ?</summary>
+
+#### Go
+
+`Escape Analysis` est une analyse du compilateur Go qui détermine si une valeur
+peut rester sur la pile ou doit être allouée sur le tas car elle "s'enfuit" du
+cadre de pile actuel.
+
+#### Pourquoi est-ce important :
+
+1. Les allocations de pile sont moins chères.
+
+2. Les allocations de tas augmentent la pression du GC.
+
+3. Comprendre le comportement d'échappement permet d'optimiser les chemins
+   chauds.
+
+#### Raisons typiques de fuite :
+
+1. Pointeur de retour vers la valeur locale.
+
+2. Préserver la valeur dans une structure durable.
+
+3. Capture de variable par fermeture.
+
+4. Transmission d'une valeur dans des contextes où le compilateur ne peut pas
+   garantir un cycle de vie local.
+
+#### Comment vérifier les indicateurs du compilateur :
+
+La méthode la plus utilisée :
+
+1. `go build -gcflags="-m" ./...`
+
+2. Pour une sortie plus détaillée : `go build -gcflags="-m -m" ./...`
+
+Les messages sont recherchés pour des expressions telles que :
+
+- `moved to heap`
+
+- `escapes to heap`
+
+Il s'agit d'un indicateur direct qu'aucune valeur n'a été laissée sur la pile.
+
+#### Processus pratique :
+
+1. Exécutez le benchmark/profil et recherchez le fragment chaud.
+
+2. Vérifiez la sortie d'échappement du compilateur pour cette section.
+
+3. Refactoriser localement (sans dégrader la lisibilité).
+
+4. Effet de remesure (`bench`, `pprof`, allocs/op).
+
+#### Conclusion :
+
+Escape Analysis est un "radar" du compilateur pour le comportement d'allocation.
+`-gcflags="-m"` vous permet de voir où les données s'infiltrent dans le tas et
+de prendre des décisions éclairées concernant l'optimisation de la mémoire et
+des performances.
+
+</details>

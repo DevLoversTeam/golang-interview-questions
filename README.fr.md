@@ -4550,3 +4550,58 @@ de prendre des décisions éclairées concernant l'optimisation de la mémoire e
 des performances.
 
 </details>
+
+
+<details>
+<summary>75. Pourquoi `panic` et `recover` ne remplacent-ils pas la gestion normale des erreurs ?</summary>
+
+#### Go
+
+Dans Go, `panic/recover` sont destinés aux situations d'urgence exceptionnelles,
+et non à la gestion normale des erreurs de logique métier. La manière normale de
+gérer les erreurs consiste à renvoyer explicitement `error` et à contrôler le
+flux d'exécution.
+
+#### Pourquoi `panic/recover` n'est pas remplacé par `error handling` :
+
+1. **Violation de la clarté du contrat :** avec `error`, la signature de
+   fonction montre explicitement ce qui peut mal se passer ; avec `panic`
+   l'erreur devient implicite.
+
+2. **Rend le contrôle de flux plus difficile :** la panique déroule la pile,
+   rendant le comportement moins prévisible pour l'appelant.
+
+3. **Test pire :** tester les scénarios de panique est plus difficile et moins
+   naturel que tester les erreurs renvoyées.
+
+4. **Détériorer la fiabilité des services :** une panique non détectée dans une
+   goroutine peut détruire un processus ou une boucle de traitement importante.
+
+5. **`recover` est de nature locale :** ne fonctionne que dans `defer` la même
+   goroutine, il ne s'agit donc pas d'un mécanisme d'erreur universel entre les
+   composants.
+
+#### Lorsque `panic` est justifié :
+
+1. Violation des invariants internes, ce qui signifie une erreur logicielle.
+
+2. États contractuellement impossibles (« cela ne devrait jamais arriver »).
+
+3. Les échecs d'initialisation critiques lorsque la poursuite est incorrecte.
+
+#### Lorsque `error` est nécessaire :
+
+1. Pannes attendues des systèmes externes (réseau, base de données, E/S).
+
+2. Erreurs de validation et de domaine.
+
+3. Toutes les situations dans lesquelles l'appelant a le choix de la manière de
+   répondre.
+
+#### Conclusion :
+
+Dans le code Go mature, `error` est le principal outil de gestion des erreurs.
+`panic/recover` est un mécanisme d'urgence pour les cas exceptionnels, et non
+une alternative quotidienne à la gestion standard des erreurs.
+
+</details>

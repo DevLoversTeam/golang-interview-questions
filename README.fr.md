@@ -4605,3 +4605,74 @@ Dans le code Go mature, `error` est le principal outil de gestion des erreurs.
 une alternative quotidienne à la gestion standard des erreurs.
 
 </details>
+
+
+<details>
+<summary>76. Comment `errors.Is` et `errors.As` fonctionnent-ils avec le traitement des erreurs dans Go et quelle est la différence entre eux ?</summary>
+
+#### Go
+
+Dans Go moderne, les erreurs sont souvent « encapsulées » en ajoutant du
+contexte via `fmt.Errorf("...: %w", err)`. `errors.Is` et `errors.As` vous
+permettent de travailler correctement avec une telle chaîne d'erreurs sans
+perdre la cause initiale.
+
+#### Comment fonctionne `errors.Is` :
+
+1. Vérifie si la chaîne d'erreurs contient une erreur cible spécifique.
+
+2. Utilisé principalement pour les erreurs sentinelles (`io.EOF`,
+   `context.Canceled`, etc.).
+
+3. Sémantique : **"est-ce (ou une version enveloppée) l'erreur exacte ?"**
+
+#### Comment fonctionne `errors.As` :
+
+1. Recherche dans la chaîne une erreur d'un type spécifique.
+
+2. S'il est trouvé, l'écrit sur la cible passée (pointeur).
+
+3. Sémantique : **"Une erreur de ce type peut-elle être supprimée de la chaîne
+   ?"**
+
+#### Différence clé :
+
+1. `errors.Is` — erreur **vérification d'identité/équivalence**.
+
+2. `errors.As` — Vérification du **type** et accès aux champs/méthodes
+   spécifiques au type.
+
+#### Mode d'utilisation pratique :
+
+1. Premier `errors.Is` pour les cas sentinelles connus.
+
+2. Puis `errors.As` si des détails de type personnalisé (code, métadonnées,
+   contexte) sont requis.
+
+3. Ne comparez pas les erreurs enveloppées via `==`, car de cette façon,
+   l'exactitude est perdue dans la chaîne d'emballage.
+
+#### Conclusion :
+
+`errors.Is` répond à la question « est-ce la même erreur ? » et `errors.As`
+répond « est-ce le même type d'erreur ? ». Ensemble, ils forment un modèle
+correct et fiable pour travailler avec le traitement des erreurs dans Go.
+
+#### Exemple :
+
+```go
+if err := repo.Save(ctx, x); err != nil {
+	return fmt.Errorf("save user: %w", err)
+}
+
+if errors.Is(err, sql.ErrNoRows) {
+	// перевірка sentinel-помилки
+}
+
+var ve *ValidationError
+if errors.As(err, &ve) {
+	// доступ до полів конкретного типу помилки
+}
+```
+
+</details>

@@ -4676,3 +4676,81 @@ if errors.As(err, &ve) {
 ```
 
 </details>
+
+
+<details>
+<summary>77. Quand devez-vous utiliser le type d’erreur personnalisé au lieu de l’erreur sentinelle et quelles sont les conséquences pratiques de ce choix pour l’architecture ?</summary>
+
+#### Go
+
+`Sentinel error` et `custom error type` sont des outils de modélisation
+d'erreurs différents. Sentinel convient à un signal binaire simple et à un type
+personnalisé - lorsque l'erreur comporte un contexte structuré et affecte le
+comportement de plusieurs couches du système.
+
+#### Quand l'erreur sentinelle suffit :
+
+1. Seul le fait de la catégorie d'erreur spécifique est requis.
+
+2. Pas besoin de transmettre des champs supplémentaires.
+
+3. Vérifier via `errors.Is` est suffisant.
+
+#### Quand est un type d'erreur personnalisé :
+
+1. Nécessite des **détails structurés** :
+
+- code d'erreur ;
+
+- Raison du domaine  ;
+
+- identifiant de la ressource ;
+
+- réessaiabilité ;
+
+- Mappage HTTP/gRPC.
+
+2. Différentes couches doivent prendre des décisions différentes en fonction de
+   ces champs.
+
+3. Exiger une évolution stable du contrat d'erreur sans vérifications chaotiques
+   des chaînes.
+
+#### Conséquences architecturales du choix :
+
+1. **Erreur Sentinelle**
+
+- un démarrage plus facile ;
+
+- sans code ;
+
+- mais expressivité plus faible et risque de « croissance » des règles de
+  traitement implicites.
+
+2. **Type d'erreur personnalisé**
+
+- contrat de domaine plus clair ;
+
+- meilleure intégration entre les couches transport/service/domaine ;
+
+- tests plus poussés des politiques de traitement ;
+
+- mais nécessite une discipline de conception et une approche de gestion des
+  versions.
+
+#### Pratique recommandée :
+
+1. Pour les signaux globaux simples – sentinelle.
+
+2. Pour les erreurs significatives au domaine : type personnalisé + `errors.As`.
+
+3. Encapsulez les erreurs inférieures via `%w` sans perdre le lien de causalité.
+
+#### Conclusion :
+
+Le choix entre type sentinelle et type personnalisé dépend du niveau
+d’expressivité de l’architecture d’erreur. Lorsqu'une erreur affecte le routage
+des décisions dans le système, un type d'erreur personnalisé fournit un contrat
+beaucoup plus robuste et évolutif.
+
+</details>

@@ -4754,3 +4754,63 @@ des décisions dans le système, un type d'erreur personnalisé fournit un contr
 beaucoup plus robuste et évolutif.
 
 </details>
+
+
+<details>
+<summary>78. Comment `defer` se comporte-t-il à l'intérieur d'une boucle et quelles pourraient être les implications en termes de mémoire et de performances ?</summary>
+
+#### Go
+
+`defer` in Go n'est pas exécuté à la fin de l'itération de boucle, mais au
+moment de la sortie de la fonction environnante. Par conséquent, `defer` à
+l’intérieur de la boucle s’accumule et n’est déclenché qu’après l’achèvement de
+l’ensemble de la fonction.
+
+#### Comment ça marche :
+
+1. Chaque itération ajoute un nouvel appel différé à la pile différée.
+
+2. Ces appels ne sont exécutés qu'à la fin de la fonction.
+
+3. Ils sont exécutés dans l'ordre inverse (LIFO) à la sortie.
+
+#### Conséquences potentielles :
+
+1. **Libération retardée des ressources :** les fichiers, sockets, transactions
+   et verrous peuvent rester ouverts plus longtemps que nécessaire.
+
+2. **Augmentation de la consommation de mémoire :** de nombreuses entrées
+   différées dans une longue boucle augmentent la surcharge.
+
+3. **Dégradation des performances :** dans les boucles chaudes, des reports
+   excessifs ajoutent une surcharge d'exécution.
+
+4. **Risque de manque de ressources :** par exemple "trop ​​de fichiers ouverts"
+   si `defer file.Close()` est dans un cycle de lecture long.
+
+#### Quand c'est sûr :
+
+1. Petit nombre d'itérations.
+
+2. Cycle de vie des fonctions court.
+
+3. Les ressources ne sont pas rares.
+
+#### Bonne pratique pour les boucles :
+
+1. Placez le corps de l'itération dans une fonction distincte et placez-y
+   `defer`.
+
+2. Ou fermez/libérez explicitement la ressource à la fin de chaque itération.
+
+3. Pour les serrures, il est particulièrement important de contrôler le temps de
+   maintien de la section critique.
+
+#### Conclusion :
+
+`defer` in a loop est un outil qui demande de la discipline : il simplifie le
+code, mais peut accumuler furtivement des ressources et des frais généraux. S'il
+y a de nombreuses itérations, il est préférable de s'assurer que les ressources
+sont libérées à chaque étape.
+
+</details>

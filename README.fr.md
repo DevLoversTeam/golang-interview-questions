@@ -4814,3 +4814,69 @@ y a de nombreuses itérations, il est préférable de s'assurer que les ressourc
 sont libérées à chaque étape.
 
 </details>
+
+
+<details>
+<summary>79. Comment fonctionne la fonction `init` et pouvez-vous vous fier à l'ordre de son exécution ?</summary>
+
+#### Go
+
+`init` dans Go est une fonction de package spéciale qui est exécutée
+automatiquement lors de l'initialisation du programme (avant `main`). Il est
+utilisé pour la configuration initiale, qui doit avoir lieu une fois avant de
+démarrer la logique principale.
+
+#### Comment fonctionne l'initialisation :
+
+1. Les dépendances importées sont initialisées en premier.
+
+2. Les variables du package sont ensuite initialisées.
+
+3. Après cela, les fonctions `init` du package sont appelées.
+
+4. Ce n'est qu'une fois l'ensemble de l'arborescence d'initialisation terminée
+   que `main` s'exécute.
+
+#### Pouvez-vous vous fier à la commande :
+
+1. **Entre packages** : oui, au sein des dépendances, l'ordre est défini -
+   d'abord les dépendances, puis le package consommateur.
+
+2. **Dans un seul colis** :
+
+- l'ordre d'initialisation des variables est déterminé par les dépendances entre
+  elles ;
+
+- pour plusieurs `init` fichiers différents dans le même package, s'appuyer sur
+  un ordre "aléatoire" des fichiers texte est une mauvaise idée de conception.
+
+3. Conclusion : il existe des garanties de base, mais sur le plan architectural,
+   il est préférable de ne pas construire de logique métier critique sur des
+   chaînes `init` implicites complexes.
+
+#### Risques de surutilisation `init` :
+
+1. Effets secondaires implicites.
+
+2. Débogage et tests plus lourds.
+
+3. Contrôle des commandes plus complexe dans les grandes bases de code.
+
+#### Recommandation pratique :
+
+1. Gardez `init` minimal et prévisible.
+
+2. Utilisez des constructeurs explicites/`Setup`-fonctions pour les
+   initialisations importantes.
+
+3. Les dépendances et l'ordre de lancement doivent être corrigés explicitement
+   dans la couche de composition.
+
+#### Conclusion :
+
+`init` en Go s'effectue automatiquement et dispose de garanties de commande
+formelles au niveau du graphique d'import. Cependant, pour une architecture
+lisible et testable, il est préférable de rendre explicites les initialisations
+critiques plutôt que de s'appuyer sur des effets `init` cachés.
+
+</details>

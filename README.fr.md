@@ -4880,3 +4880,59 @@ lisible et testable, il est préférable de rendre explicites les initialisation
 critiques plutôt que de s'appuyer sur des effets `init` cachés.
 
 </details>
+
+
+<details>
+<summary>80. Pourquoi devriez-vous éviter les variables globales et les fonctions `init` dans les bibliothèques ?</summary>
+
+#### Go
+
+Dans le code de bibliothèque, les variables globales et les fonctions `init` «
+lourdes » créent souvent un comportement implicite qui rend difficile
+l'intégration, le test et la prédiction de l'application. Ceci est
+particulièrement critique pour les emballages réutilisables.
+
+#### Pourquoi les variables globales sont mauvaises dans les bibliothèques :
+
+1. **État mutable partagé caché :** Un consommateur de la bibliothèque peut ne
+   pas savoir qu'il existe quelque part un état global qui affecte le
+   comportement.
+
+2. **Problèmes de compétitivité :** les mondiaux deviennent facilement une
+   source de race/contestation.
+
+3. **Tests complexes :** les tests commencent à dépendre de l'ordre d'exécution
+   et des effets secondaires des cas précédents.
+
+4. **Mauvaise composabilité :** il est difficile d'avoir plusieurs instances de
+   bibliothèque indépendantes avec des paramètres différents.
+
+#### Pourquoi "lourd" `init` n'est pas souhaitable :
+
+1. **Effets secondaires implicites de l'importation :** juste `import` et le
+   code est déjà exécuté.
+
+2. **Aucun contrôle explicite du temps d'initialisation :** Il est difficile de
+   contrôler l'ordre/les conditions de démarrage dans une application
+   volumineuse.
+
+3. **Observabilité/débogabilité dégradées :** les erreurs de démarrage et les
+   effets secondaires sont plus difficiles à localiser.
+
+#### Quoi de mieux à la place :
+
+1. Constructeurs explicites (`New(...)`) et structures de configuration.
+
+2. Conception orientée instance sans état mutable global.
+
+3. Cycle de vie `Setup/Start/Close` explicite si nécessaire.
+
+4. Minimum `init` uniquement pour les actions sans effets secondaires.
+
+#### Conclusion :
+
+La bibliothèque doit être prévisible et axée sur l'utilisateur. Éviter l’état
+global et les `init` excessifs est un investissement dans la testabilité,
+l’évolutivité et la pureté architecturale du code Go.
+
+</details>

@@ -4936,3 +4936,59 @@ global et les `init` excessifs est un investissement dans la testabilité,
 l’évolutivité et la pureté architecturale du code Go.
 
 </details>
+
+
+<details>
+<summary>81. Que se passe-t-il si vous sérialisez en JSON une structure dont les champs commencent par une lettre minuscule ?</summary>
+
+#### Go
+
+Dans Go, les champs de structure commençant par une lettre minuscule ne sont pas
+exportables (`unexported`). Le package `encoding/json` n'y a pas d'accès
+réfléchi en tant que champs publics, ils sont donc ignorés lors de la
+sérialisation.
+
+#### Que se passe-t-il avec `json.Marshal` :
+
+1. Seuls les champs exportés (en majuscules) seront inclus dans JSON.
+
+2. Les champs minuscules seront ignorés.
+
+3. Les balises `json:"..."` sur les champs non exportés ne « forcent » pas leur
+   sérialisation.
+
+#### Conséquences en pratique :
+
+1. JSON « vide » ou incomplet de manière inattendue.
+
+2. Perte de données importantes dans les réponses API.
+
+3. Difficile de déboguer les erreurs si le développeur n'a pas pris en compte la
+   règle d'export.
+
+#### Qu'en est-il de la désérialisation (`json.Unmarshal`) :
+
+1. De même, `encoding/json` n'écrira pas directement les données dans les champs
+   non exportés.
+
+2. Le contrôle des processus nécessite des `MarshalJSON` / `UnmarshalJSON`
+   personnalisés, des DTO distincts ou d'autres mécanismes de transformation
+   explicites.
+
+#### Règle générale :
+
+1. Pour que les champs soient au format JSON, utilisez les noms exportés.
+
+2. Conservez délibérément les données internes sensibles au domaine non
+   exportées.
+
+3. Séparez les modèles internes et les DTO de transport lorsqu'un contrôle
+   précis des marchés publics est requis.
+
+#### Conclusion :
+
+Dans Go, la sérialisation JSON ne fonctionne qu'avec les champs de structure
+exportés. Les champs minuscules de la norme `encoding/json` ne sont pas
+sérialisés, même s'ils sont balisés.
+
+</details>

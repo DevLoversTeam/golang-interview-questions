@@ -4992,3 +4992,70 @@ exportés. Les champs minuscules de la norme `encoding/json` ne sont pas
 sérialisés, même s'ils sont balisés.
 
 </details>
+
+
+<details>
+<summary>82. Comment obtenir des données JSON dans Go ?</summary>
+
+#### Go
+
+Il n'existe pas une seule « bonne » façon de travailler avec JSON dans Go :
+l'approche est choisie en fonction de la stabilité du schéma, des exigences de
+performances et du niveau de sécurité des types.
+
+#### Principales méthodes :
+
+1. **Décodage en structure (`struct`)**
+
+- l'option la plus typique et la plus fiable pour un système connu ;
+
+- offre une sécurité de type, des contrats clairs et une meilleure
+  maintenabilité.
+
+2. **Décodage en `map[string]any`**
+
+- est pratique pour les charges utiles partiellement dynamiques ;
+
+- flexible, mais moins sécurisé : nécessite des assertions et des vérifications
+  de type.
+
+3. **Lecture de flux via `json.Decoder`**
+
+- convient aux JSON ou flux volumineux (corps HTTP, fichiers) ;
+
+- vous permet de travailler sans charger l'intégralité du document en mémoire.
+
+4. **`json.RawMessage` pour l'analyse différée/partielle**
+
+- utile lorsqu'une partie du schéma dépend du champ « discriminateur » ;
+
+- donne le contrôle des étapes de décodage.
+
+5. **Personnalisé `UnmarshalJSON` / `MarshalJSON`**
+
+- pour les formats non standards, la validation ou la sémantique métier
+  particulière.
+
+6. **Bibliothèques tierces / codegen**
+
+- est approprié pour les exigences de hautes performances ou de compatibilité
+  spécifiques.
+
+#### Choix pratique :
+
+1. Contrat API stable → `struct`.
+
+2. JSON dynamique ou partiellement inconnu → `map` + `RawMessage`.
+
+3. Grands volumes de données → `Decoder` (streaming).
+
+4. Performance critique/JSON pathologique → profilage + codegen/alternatives.
+
+#### Conclusion :
+
+La manière optimale de « récupérer » les données JSON dans Go dépend de la
+nature du schéma. Dans la plupart des cas de production, les structures typées
+constituent le choix de base, et les mécanismes dynamiques (`map`, `RawMessage`,
+unmarshal personnalisé) — pour les scénarios plus complexes.
+
+</details>

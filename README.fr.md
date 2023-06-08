@@ -5059,3 +5059,71 @@ constituent le choix de base, et les mécanismes dynamiques (`map`, `RawMessage`
 unmarshal personnalisé) — pour les scénarios plus complexes.
 
 </details>
+
+
+<details>
+<summary>83. Quelle est la différence entre `json.Marshal` et `json.Encoder` ?</summary>
+
+#### Go
+
+`json.Marshal` et `json.Encoder` effectuent une tâche de sérialisation
+similaire, mais ont une mémoire et un modèle d'E/S différents. Le choix dépend
+si vous souhaitez un `[]byte` prêt à l'emploi ou un streaming directement sur
+`io.Writer`.
+
+#### `json.Marshal` :
+
+1. Renvoie le JSON sérialisé sous le nom `[]byte`.
+
+2. Pratique lorsque vous avez besoin de :
+
+- obtenir un tableau d'octets pour un traitement ultérieur ;
+
+- enregistrer/signer/compresser la charge utile avant l'envoi ;
+
+- fonctionne avec JSON en mémoire.
+
+3. Moins : pour les objets volumineux, cela peut nécessiter plus de mémoire, car
+   le résultat est d'abord complètement formé dans le tampon.
+
+#### `json.Encoder` :
+
+1. Écrit JSON immédiatement dans `io.Writer` (`http.ResponseWriter`, fichier,
+   socket).
+
+2. Convient pour le streaming de scripts et les réponses volumineuses.
+
+3. Souvent plus pratique dans les gestionnaires HTTP, car cela réduit les
+   tampons intermédiaires.
+
+4. `Encode` ajoute un caractère de nouvelle ligne à la fin (c'est important à
+   noter).
+
+#### Règle pratique de choix :
+
+1. Exiger JSON comme valeur dans le code → `json.Marshal`.
+
+2. Doit écrire au flux/réponse → `json.NewEncoder(w).Encode(...)` immédiatement.
+
+#### Conclusion :
+
+`Marshal` — "former JSON en mémoire", `Encoder` — "écrire JSON dans le flux".
+Fonctionnellement, ils sont proches, mais du point de vue des ressources et de
+l'architecture E/S, la différence est fondamentale.
+
+#### Exemple :
+
+```go
+// Marshal: отримуємо JSON у []byte
+payload, err := json.Marshal(resp)
+if err != nil { return err }
+_ = payload
+
+// Encoder: пишемо JSON одразу у HTTP-відповідь
+w.Header().Set("Content-Type", "application/json")
+if err := json.NewEncoder(w).Encode(resp); err != nil {
+	return err
+}
+```
+
+</details>

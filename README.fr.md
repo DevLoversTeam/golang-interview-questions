@@ -5127,3 +5127,54 @@ if err := json.NewEncoder(w).Encode(resp); err != nil {
 ```
 
 </details>
+
+
+<details>
+<summary>84. Qu'est-ce que `json.RawMessage` et quand est-il utile ?</summary>
+
+#### Go
+
+`json.RawMessage` est un type (essentiellement `[]byte`) du package
+`encoding/json` qui vous permet d'enregistrer un fragment JSON "tel quel" sans
+l'analyser immédiatement dans une structure spécifique.
+
+#### Ce qu'il fait :
+
+1. **Analyse différée :** seul le "wrapper" du message peut être analysé en
+   premier, et le champ complexe plus tard lorsque le type requis est connu.
+
+2. **Décodage partiel :** nous analysons uniquement les parties de la charge
+   utile qui sont réellement nécessaires à cette étape.
+
+3. **Retransmission transparente :** Un fragment JSON peut être retransmis sans
+   perdre la représentation originale.
+
+#### Quand c'est particulièrement utile :
+
+1. **Charges utiles polymorphes :** lorsque le type de champ dépend du
+   discriminateur `type/kind/version`.
+
+2. **Systèmes basés sur les événements :** le wrapper d'événement est stable et
+   le corps de l'événement a des schémas différents.
+
+3. **Passerelles d'intégration :** doivent lire les métadonnées de routage et
+   transmettre le "corps" presque inchangé.
+
+4. **Optimisation des performances :** évitant un désassemblage complet inutile
+   pour les objets volumineux ou partiellement inutiles.
+
+#### Ce qu'il faut considérer :
+
+1. `RawMessage` ne valide pas automatiquement la sémantique — la validation est
+   laissée à votre logique lorsque `Unmarshal` suit.
+
+2. L'analyse différée complique le code si elle est appliquée inutilement.
+
+#### Conclusion :
+
+`json.RawMessage` est un outil de gestion de la « liaison tardive » des données
+JSON. Il est particulièrement utile dans les protocoles polymorphes et
+multiformats, où le type de charge utile interne est déterminé uniquement au
+moment de l'exécution.
+
+</details>

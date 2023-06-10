@@ -5178,3 +5178,61 @@ multiformats, où le type de charge utile interne est déterminé uniquement au
 moment de l'exécution.
 
 </details>
+
+
+<details>
+<summary>85. Comment implémenter un marshaleur personnalisé pour JSON ?</summary>
+
+#### Go
+
+Un marshaleur personnalisé dans Go est implémenté via la méthode `MarshalJSON()
+([]byte, error)` sur votre type. Cela permet un contrôle total sur la façon dont
+un objet est sérialisé en JSON : format des champs, validation, valeurs
+calculées, masquage, etc.
+
+#### Approche de base :
+
+1. Ajouter une méthode : `func (t MyType) MarshalJSON() ([]byte, error)`.
+
+2. Créez en interne une représentation intermédiaire (souvent une structure
+   alias/DTO).
+
+3. Appelez `json.Marshal` pour cette vue.
+
+4. Renvoyer des octets ou une erreur.
+
+#### Pourquoi font-ils ça :
+
+1. **Format de sortie non standard :** par exemple, conversion de l'heure,
+   énumération, décimal, champs de masque.
+
+2. **Compatibilité des contrats externes :** lorsqu'une API nécessite un schéma
+   ou une convention de dénomination spécifique.
+
+3. **Masquage des données géré :** n'affiche pas de champs sensibles et ne
+   génère pas de version expurgée.
+
+4. **Champs calculés/dérivés :** incluent des valeurs en JSON qui ne sont pas
+   présentes en tant que champs de structure « bruts ».
+
+#### Une technique typique sans récursion :
+
+Pour éviter un appel infini à `MarshalJSON`, utilisez le type d'alias (`type
+alias MyType`) et rassemblez l'alias ou un DTO distinct.
+
+#### Conseils importants :
+
+1. Gardez la logique de regroupement déterministe et simple.
+
+2. Écrire des tests sur les cas extrêmes et la rétrocompatibilité du contrat
+   JSON.
+
+3. Si la symétrie est requise, implémentez également `UnmarshalJSON`.
+
+#### Conclusion :
+
+Custom `MarshalJSON` est un outil permettant d'affiner l'exposition publique. En
+production, il est utilisé lorsque les balises standards ne suffisent pas pour
+la sémantique du contrat, de la sécurité ou du domaine.
+
+</details>

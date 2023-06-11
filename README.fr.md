@@ -5236,3 +5236,67 @@ production, il est utilisé lorsque les balises standards ne suffisent pas pour
 la sémantique du contrat, de la sécurité ou du domaine.
 
 </details>
+
+
+<details>
+<summary>86. Comment analyser le JSON multi-typé si les données d'entrée ou l'un des champs peuvent être soit un tableau `[...]`, soit un objet `{...}` ?</summary>
+
+#### Go
+
+Lorsqu'un champ JSON a une forme "flottante" (parfois un tableau, parfois un
+objet), l'approche la plus fiable dans Go est le décodage différé via
+`json.RawMessage` ou personnalisé `UnmarshalJSON` avec reconnaissance de type
+réelle.
+
+#### Stratégie canonique :
+
+1. Décoder le champ problématique dans `json.RawMessage`.
+
+2. Regardez le premier octet significatif :
+
+- `[` → ceci est un tableau ;
+
+- `{` → ceci est un objet.
+
+3. Selon le formulaire, engagez `json.Unmarshal` sur le type de cible approprié.
+
+4. Normaliser le résultat dans un modèle unique interne (afin que le code ne
+   dépende pas du schéma "fluide" externe).
+
+#### Alternative : Personnalisée `UnmarshalJSON` :
+
+1. Implémentez une méthode sur votre propre type.
+
+2. Dans la méthode, essayez d'analyser dans `[]T`, et si cela ne rentre pas -
+   dans `T` (ou vice versa).
+
+3. Enregistrer dans une représentation unifiée, par exemple toujours sous `[]T`.
+
+#### Pourquoi c'est important :
+
+1. Les API externes sont souvent incohérentes entre les versions/points de
+   terminaison.
+
+2. Direct `Unmarshal` dans une structure matérielle donne des erreurs comme
+   `cannot unmarshal object into Go value of type []...`.
+
+3. La normalisation des entrées simplifie considérablement le reste de la
+   logique métier.
+
+#### Conseils pratiques :
+
+1. Documentez clairement les formes acceptables d'entrée JSON.
+
+2. Enregistrez les charges utiles anormales pour diagnostiquer les échecs de
+   contrat.
+
+3. Couvrir avec des tests les deux formulaires (`{}` et `[]`) + cas extrêmes
+   (valeurs nulles, vides, type incorrect).
+
+#### Conclusion :
+
+Pour le JSON multi-typé, le modèle « RawMessage → détection de forme → cible
+Unmarshal → normalisation » fonctionne mieux dans Go. Cela donne un traitement
+stable même avec un contrat externe instable.
+
+</details>

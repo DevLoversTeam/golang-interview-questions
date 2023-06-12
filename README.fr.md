@@ -5300,3 +5300,65 @@ Unmarshal → normalisation » fonctionne mieux dans Go. Cela donne un traiteme
 stable même avec un contrat externe instable.
 
 </details>
+
+
+<details>
+<summary>87. Comment tester la sérialisation (XML/JSON) dans Go lorsque l'ordre des clés dans la map n'est pas déterministe ?</summary>
+
+#### Go
+
+Lorsque l'ordre des clés dans `map` n'est pas déterministe, les tests ne peuvent
+pas être construits sur une comparaison littérale de chaînes de sérialisation «
+brutes ». La bonne approche consiste à comparer le contenu et non l’ordre
+aléatoire de présentation.
+
+#### Stratégies robustes pour JSON :
+
+1. **Comparaison de structure aller-retour :**
+
+- sérialiser ;
+
+- désérialiser en type/modèle normalisé ;
+
+- comparez les données en tant que structure.
+
+2. **Canonisation avant comparaison :**
+
+- analyser JSON dans un modèle intermédiaire ;
+
+- trier les clés/collections ;
+
+- comparez la vue canonique.
+
+3. **Affirmations sémantiques au lieu de l'égalité des chaînes :**
+
+- vérifiez les champs et invariants spécifiques.
+
+#### Pour XML :
+
+1. Principe similaire : comparer l'arborescence des éléments/attributs, pas la
+   chaîne brute.
+
+2. Normaliser les espaces, le formatage, l'ordre des attributs (si le contrat le
+   permet).
+
+3. Vérifiez l'équivalence sémantique des structures analysées.
+
+#### Quand vous avez besoin d'un fichier doré :
+
+1. Formulaire **sortie déterministe** :
+
+- trier les clés avant la sérialisation ;
+
+- ou sérialisez non pas `map` mais une liste structurée/ordonnée de paires.
+
+2. Le test Golden ne devrait échouer que sur les modifications sémantiques du
+   contrat, et non sur l'ordre aléatoire des clés.
+
+#### Conclusion pratique :
+
+Les tests de sérialisation pour `map` ne comparent pas le « texte un à un »,
+mais l'équivalence des données. Le déterminisme doit soit être introduit
+explicitement (tri), soit appliquer des contrôles au niveau sémantique.
+
+</details>

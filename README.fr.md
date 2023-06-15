@@ -5481,3 +5481,63 @@ client pour chaque demande est une anti-pratique typique des systèmes de
 production.
 
 </details>
+
+
+<details>
+<summary>90. Pourquoi devez-vous fermer `resp.Body` après une requête HTTP ?</summary>
+
+#### Go
+
+`resp.Body` dans Go est une ressource de streaming associée à une connexion
+réseau. S'il n'est pas fermé, le client ne pourra pas rétablir correctement la
+connexion au pool ni libérer les ressources système, ce qui entraînera une
+dégradation du service.
+
+#### Pourquoi c'est essentiel :
+
+1. **Fuite de ressources :** les corps non fermés contiennent des poignées et
+   des prises.
+
+2. **Détérioration de la réutilisation des connexions :** le keep-alive
+   fonctionne moins bien, le nombre de nouvelles connexions augmente.
+
+3. **Latence croissante et erreurs sous charge :** épuisement possible du pool
+   de connexions et des limites du système.
+
+4. **Comportement instable du client :** "blocages", délais d'attente, échecs
+   inattendus dans les appels à haute fréquence.
+
+#### Modèle correct :
+
+1. Après avoir vérifié l'erreur de `Do`, faites immédiatement : `defer
+   resp.Body.Close()`.
+
+2. Si vous avez besoin d'un maximum de connexions de réutilisation :
+
+- lire le corps jusqu'à la fin (ou limiter correctement la lecture),
+
+- puis fermez.
+
+#### Conclusion pratique :
+
+La fermeture `resp.Body` n'est pas une formalité, mais un prérequis au bon
+fonctionnement du client HTTP dans Go. Cela affecte directement les
+performances, la stabilité et l'efficacité des ressources du service.
+
+#### Exemple :
+
+```go
+resp, err := client.Do(req)
+if err != nil {
+	return err
+}
+defer resp.Body.Close()
+
+body, err := io.ReadAll(resp.Body)
+if err != nil {
+	return err
+}
+_ = body
+```
+
+</details>

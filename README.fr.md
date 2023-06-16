@@ -5541,3 +5541,54 @@ _ = body
 ```
 
 </details>
+
+
+<details>
+<summary>91. En quoi `http.DefaultServeMux` est-il différent du `ServeMux` personnalisé ?</summary>
+
+#### Go
+
+`http.DefaultServeMux` est le routeur global « par défaut ». Un `ServeMux`
+personnalisé est une instance de routeur distincte créée explicitement que vous
+gérez localement au sein d'un serveur spécifique.
+
+#### `http.DefaultServeMux` :
+
+1. **État global du package `net/http` :** l'enregistrement via `http.Handle` /
+   `http.HandleFunc` écrit exactement là.
+
+2. **Démarrage rapide :** idéal pour les exemples simples et les petits
+   utilitaires.
+
+3. **Risques dans les projets plus importants :** enregistrements implicites de
+   différents packages, contrôle plus complexe des dépendances et des tests.
+
+#### Personnalisé `ServeMux` :
+
+1. **Composition explicite :** `mux := http.NewServeMux()` et en la transmettant
+   à `http.Server{Handler: mux}`.
+
+2. **Isolement de route :** chaque serveur/test/instance peut avoir sa propre
+   table de gestionnaires.
+
+3. **Meilleures testabilité et maintenabilité :** moins d'effets secondaires
+   globaux, plus facile à réaliser des tests d'intégration indépendants.
+
+4. **Architecture plus sûre pour les monolithes et les microservices :** le
+   routage devient une partie du code d'amorçage explicite.
+
+#### Choix pratique :
+
+1. Pour le code de production, la `ServeMux` personnalisée est presque toujours
+   meilleure.
+
+2. `DefaultServeMux` est principalement approprié pour des scénarios ou des
+   didacticiels très simples.
+
+#### Conclusion :
+
+La différence entre eux réside dans le niveau de transparence et de contrôle.
+`DefaultServeMux` pratique mais global ; le `ServeMux` personnalisé offre un
+routage isolé, contrôlé et architecturalement plus propre.
+
+</details>

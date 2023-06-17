@@ -5592,3 +5592,75 @@ La différence entre eux réside dans le niveau de transparence et de contrôle.
 routage isolé, contrôlé et architecturalement plus propre.
 
 </details>
+
+
+<details>
+<summary>92. Comment implémenter correctement l'arrêt progressif du serveur HTTP et du travailleur en arrière-plan dans Go ?</summary>
+
+#### Go
+
+`Graceful shutdown` in Go est une terminaison de service contrôlée sans perte de
+requêtes et sans goroutines "orphelines". L'idée est simple : arrêter de
+recevoir un nouveau chargement, laisser le travail actif se terminer, arrêter
+correctement l'arrière-plan et fermer les ressources dans une séquence
+prévisible.
+
+#### Séquence canonique :
+
+1. Intercepter les signaux de fin (`SIGTERM`, `SIGINT`).
+
+2. Créez `context` avec délai d'attente pour la phase d'arrêt.
+
+3. Appelez `server.Shutdown(ctx)` :
+
+- les nouvelles connexions ne sont plus acceptées ;
+
+- Les demandes actives ont le temps de se terminer.
+
+4. Annuler le contexte/signaler aux travailleurs en arrière-plan d'arrêter.
+
+5. Attendez la fin des travailleurs (`WaitGroup`/`errgroup`).
+
+6. Fermer les ressources externes (DB, files d'attente, producteurs, fichiers).
+
+#### Comment arrêter un travailleur en arrière-plan :
+
+1. Worker s'exécute en boucle avec `select` où se trouve une branche `case
+   <-ctx.Done(): return`.
+
+2. À l'arrêt, le processus principal appelle la fonction d'annulation.
+
+3. Le travailleur termine l'étape protégée en cours, effectue un rinçage/un
+   nettoyage et quitte.
+
+#### Pratiques critiques :
+
+1. **Des délais d'attente sont requis :** une attente gracieuse ne doit pas se
+   transformer en une attente éternelle.
+
+2. **Arrêt idempotent :** des signaux répétés n'interrompent pas la logique
+   d'arrêt.
+
+3. **Observabilité :** enregistre les étapes d'arrêt et les mesures de durée.
+
+4. **Ordre clair :** arrêtez d'abord l'admission, puis vidangez en vol, puis
+   nettoyez.
+
+#### Erreurs typiques :
+
+1. Arrêtez le processus "dur" sans `Shutdown`.
+
+2. Ne transmettez pas `ctx` aux travailleurs/appels externes.
+
+3. N'attendez pas la fin des goroutines.
+
+4. Oubliez le vidage des tampons/files d'attente avant de quitter.
+
+#### Conclusion :
+
+Un arrêt progressif approprié dans Go est orchestré via un signal, `context`,
+`server.Shutdown` et en attente explicite de toutes les tâches en arrière-plan.
+Cette approche garantit l’intégrité des demandes, un résultat prévisible et la
+fiabilité du fonctionnement.
+
+</details>

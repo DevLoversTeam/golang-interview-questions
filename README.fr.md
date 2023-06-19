@@ -5710,3 +5710,94 @@ ce qui est habituellement prévu lors de la vérification de l'équivalence de
 moment.
 
 </details>
+
+
+<details>
+<summary>94. Comment fonctionnent les index ? Comment choisir les index des tables ?</summary>
+
+#### Go
+
+Un index dans un SGBD est une structure de données auxiliaire (le plus souvent
+de type B-tree), qui accélère la recherche de lignes par certains champs sans
+analyse complète de la table. En fait, un index stocke une représentation
+ordonnée des clés et des références aux lignes.
+
+#### Comment fonctionnent les index :
+
+1. Une requête avec `WHERE/JOIN/ORDER BY` peut utiliser un index pour trouver
+   rapidement une plage de clés pertinente.
+
+2. Au lieu de `Seq Scan` (lecture complète du tableau), l'optimiseur choisit
+   `Index Scan/Bitmap Scan` si cela est bénéfique.
+
+3. Les index peuvent également prendre en charge l'unicité (`UNIQUE`).
+
+#### Prix indice :
+
+1. Chaque index occupe de l'espace disque.
+
+2. `INSERT/UPDATE/DELETE` devient plus cher car vous devez mettre à jour les
+   index.
+
+3. Les index redondants ralentissent les écritures et rendent la maintenance
+   difficile.
+
+#### Comment choisir correctement les index :
+
+1. **Repoussez les vraies demandes**, pas "juste au cas où".
+
+2. Champs d'index qui se trouvent souvent dans :
+
+- `WHERE`
+
+- `JOIN ON`
+
+- `ORDER BY`
+
+- `GROUP BY` (si nécessaire)
+
+3. Pour les index composites, prendre en compte l'ordre des colonnes (règle du
+   préfixe le plus à gauche) :
+
+- les conditions les plus sélectives/fréquentes se trouvent au début.
+
+4. Regardez `EXPLAIN (ANALYZE, BUFFERS)` et confirmez que l'index est réellement
+   utilisé et rentable.
+
+5. Examinez régulièrement les index inefficaces/inutilisés.
+
+#### Approche pratique :
+
+1. Définissez les requêtes les plus lentes.
+
+2. Ajouter les index minimum requis.
+
+3. Vérifier le plan avant/après.
+
+4. Mesurez l'impact sur l'équilibre lecture/écriture sous charge réelle.
+
+#### Conclusion :
+
+Un index est un outil permettant d’accélérer la lecture au prix d’une écriture
+plus coûteuse. La sélection correcte des index est toujours basée sur des
+requêtes : uniquement pour des modèles d'accès spécifiques et uniquement après
+validation du plan et des performances.
+
+#### Exemple :
+
+```sql
+-- Перевіряємо план до індексу
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM orders
+WHERE tenant_id = 42
+  AND created_at >= now() - interval '7 days'
+ORDER BY created_at DESC
+LIMIT 100;
+
+-- Додаємо індекс під реальний патерн запиту
+CREATE INDEX CONCURRENTLY idx_orders_tenant_created_at
+  ON orders (tenant_id, created_at DESC);
+```
+
+</details>

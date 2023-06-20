@@ -5801,3 +5801,75 @@ CREATE INDEX CONCURRENTLY idx_orders_tenant_created_at
 ```
 
 </details>
+
+
+<details>
+<summary>95. Qu'est-ce qu'une vue matérialisée et en quoi est-elle différente d'une vue classique ?</summary>
+
+#### Go
+
+`View` et `Materialized View` représentent tous deux une requête stockée, mais
+diffèrent fondamentalement par la manière dont le résultat est stocké et le coût
+de lecture.
+
+#### Normal `View` :
+
+1. Il s'agit d'une "table virtuelle" logique basée sur une requête SQL.
+
+2. Les données ne sont pas physiquement stockées séparément.
+
+3. Chaque requête adressée à la vue réexécute en fait le SQL sous-jacent.
+
+#### `Materialized View` :
+
+1. Il s'agit d'un résultat de requête stocké physiquement.
+
+2. La lecture est généralement beaucoup plus rapide car vous n'avez pas besoin
+   de recalculer une jointure/un agrégat complexe à chaque fois.
+
+3. Les données peuvent être obsolètes d'ici `REFRESH`.
+
+#### Différence clé :
+
+1. `View` = données toujours à jour, mais coût de calcul plus élevé.
+
+2. `Materialized View` = lecture rapide, mais compromis sur la fraîcheur des
+   données.
+
+#### Quand choisir `Materialized View` :
+
+1. Requêtes analytiques et agrégations lourdes.
+
+2. Lisez fréquemment les rapports avec des mises à jour moins fréquentes.
+
+3. Scénarios dans lesquels un délai de pertinence contrôlé est acceptable.
+
+#### Quand le `View` habituel suffit :
+
+1. Les données en temps réel les plus récentes sont requises.
+
+2. La demande n'est pas trop chère.
+
+3. `View` est utilisé comme abstraction d'accès logique, et non comme cache.
+
+#### Conclusion pratique :
+
+`Materialized View` est essentiellement un cache de résultats SQL géré avec une
+mise à jour explicite ; plain `View` est une pure projection logique sans
+stockage de données. Le choix entre eux est un équilibre entre fraîcheur et
+rapidité.
+
+#### Exemple :
+
+```sql
+CREATE MATERIALIZED VIEW mv_daily_sales AS
+SELECT date_trunc('day', created_at) AS day,
+       sum(amount) AS total
+FROM payments
+GROUP BY 1;
+
+-- Оновлення знімка даних
+REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
+```
+
+</details>

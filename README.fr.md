@@ -5873,3 +5873,84 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
 ```
 
 </details>
+
+
+<details>
+<summary>96. Qu’est-ce que l’ACIDE ? Commentez la façon dont ACID est implémenté dans PostgreSQL.</summary>
+
+#### Go
+
+`ACID` sont quatre propriétés de base des systèmes transactionnels qui
+garantissent l'exactitude des données même en cas de pannes, de concurrence et
+de charge élevée : Atomicité, Cohérence, Isolation, Durabilité.
+
+#### Décryptage ACID :
+
+1. **Atomicité :** une transaction est soit entièrement exécutée, soit pas
+   exécutée du tout.
+
+2. **Cohérence :** après la validation, les données restent valides par rapport
+   aux règles et restrictions définies.
+
+3. **Isolement :** les transactions parallèles ne doivent pas s'influencer de
+   manière inappropriée.
+
+4. **Durabilité :** Les modifications validées persistent même après une panne
+   de processus/système.
+
+#### Comment PostgreSQL implémente ACID :
+
+1. **Atomicité :**
+
+- journal des transactions des modifications + mécanismes de restauration ;
+
+- en cas d'erreur, toutes les modifications de la transaction seront annulées
+  dans leur ensemble.
+
+2. **Cohérence :**
+
+- contraintes (`PRIMARY KEY`, `UNIQUE`, `CHECK`, `FOREIGN KEY`) et
+  déclencheurs ;
+
+- commit n'est possible que si les invariants ne sont pas violés.
+
+3. **Isolement :**
+
+- MVCC (Multi-Version Concurrency Control) : les lecteurs voient des versions
+  cohérentes des lignes sans blocage grossier des lectures ;
+
+- prise en charge des niveaux d'isolement (`Read Committed`, `Repeatable Read`,
+  `Serializable`) avec un équilibre différent entre performances et rigueur.
+
+4. **Durabilité :**
+
+- WAL (Write-Ahead Logging) : avant la validation, les modifications sont
+  d'abord enregistrées dans le journal ;
+
+- après un échec, la récupération s'effectue selon WAL, qui préserve l'état
+  validé.
+
+#### Conclusion pratique :
+
+Dans PostgreSQL, ACID n'est pas fourni par "un seul bouton", mais par une
+combinaison de MVCC, WAL, gestionnaire de transactions, verrous et mécanismes de
+contraintes. C'est ce qui fait de PostgreSQL un SGBD fiable pour les systèmes
+transactionnels critiques.
+
+#### Exemple :
+
+```sql
+BEGIN;
+
+UPDATE accounts
+SET balance = balance - 100
+WHERE id = 1;
+
+UPDATE accounts
+SET balance = balance + 100
+WHERE id = 2;
+
+COMMIT; -- або ROLLBACK при помилці
+```
+
+</details>

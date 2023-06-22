@@ -5954,3 +5954,61 @@ COMMIT; -- або ROLLBACK при помилці
 ```
 
 </details>
+
+
+<details>
+<summary>97. Quelle est la différence entre BASE et ACID ?</summary>
+
+#### Go
+
+`ACID` et `BASE` sont deux philosophies différentes de cohérence et de fiabilité
+dans les systèmes distribués/transactionnels. Ils reflètent différentes
+priorités architecturales : rigueur et cohérence instantanée versus
+disponibilité et évolutivité.
+
+#### ACIDE :
+
+1. **Atomicité, cohérence, isolement, durabilité**.
+
+2. Axé sur des garanties transactionnelles strictes.
+
+3. Benefit — exactitude prévisible des données après chaque validation.
+
+4. Généralement utilisé dans des scénarios financiers, comptables et critiques
+   cohérents.
+
+#### BASE :
+
+1. **Basiquement disponible, état logiciel, cohérence éventuelle**.
+
+2. Axé sur la haute disponibilité et l'évolutivité horizontale.
+
+3. Autorise une incohérence temporaire entre les nœuds.
+
+4. La cohérence s'obtient « au fil du temps », pas nécessairement
+   instantanément.
+
+#### Différence clé :
+
+1. **ACID** : "mieux vaut attendre mais garder des garanties strictes".
+
+2. **BASE** : "mieux vaut réagir rapidement et être disponible, même si la
+   cohérence n'est pas instantanée."
+
+#### Implications pratiques pour l'architecture :
+
+1. ACID simplifie le raisonnement sur les invariants, mais peut coûter plus cher
+   en termes de latence/mise à l'échelle dans un environnement distribué.
+
+2. BASE offre stabilité et disponibilité à grande échelle, mais nécessite des
+   mécanismes de compensation, une idempotence et une conception de domaine
+   réfléchie.
+
+#### Conclusion :
+
+ACID et BASE ne sont pas des "bons/mauvais" mais des compromis différents. Le
+choix dépend de ce qui est le plus critique pour le système : la rigueur
+immédiate des invariants ou la disponibilité et l'évolutivité au prix d'une
+cohérence éventuelle.
+
+</details>

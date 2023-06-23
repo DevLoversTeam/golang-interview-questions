@@ -6012,3 +6012,67 @@ immédiate des invariants ou la disponibilité et l'évolutivité au prix d'une
 cohérence éventuelle.
 
 </details>
+
+
+<details>
+<summary>98. Nommez les niveaux d'isolement des transactions.</summary>
+
+#### Go
+
+Les niveaux d'isolement déterminent dans quelle mesure les modifications des
+transactions parallèles sont « visibles » les unes par rapport aux autres. Plus
+le niveau d’isolement est élevé, moins il y a d’anomalies, mais généralement à
+un coût plus élevé en termes de performances et de compétitivité.
+
+#### Niveaux d'isolement classiques (SQL) :
+
+1. **Lire non validé**
+
+- niveau le plus bas ;
+
+- permet de lire les modifications non corrigées (lecture sale).
+
+2. **Lecture validée**
+
+- seules les données validées sont lues ;
+
+- la lecture sale est interdite ;
+
+- la lecture non répétable et la lecture fantôme sont possibles.
+
+3. **Lecture répétable**
+
+- la lecture répétée des mêmes lignes au sein d'une transaction donne le même
+  résultat ;
+
+- réduit certaines anomalies, mais selon le SGBD, des scénarios fantômes peuvent
+  persister.
+
+4. **Sérialisable**
+
+- le niveau le plus strict ;
+
+- garantit un résultat équivalent à une exécution séquentielle des
+  transactions ;
+
+- protection maximale contre les anomalies, mais plus chère que la concurrence.
+
+#### Conclusion pratique :
+
+Le choix du niveau d'isolement est un équilibre entre justesse et performance.
+En production, il est déterminé à partir des invariants de domaine : où `Read
+Committed` est suffisant, et où `Repeatable Read` ou `Serializable` est requis.
+
+#### Exemple :
+
+```sql
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+SELECT balance FROM accounts WHERE id = 1;
+-- ... інші операції в межах тієї ж транзакції
+
+COMMIT;
+```
+
+</details>

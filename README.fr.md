@@ -6076,3 +6076,68 @@ COMMIT;
 ```
 
 </details>
+
+
+<details>
+<summary>99. À quoi servent les bases de données graphiques ?</summary>
+
+#### Go
+
+Des bases de données graphiques sont nécessaires lorsque la valeur principale
+n'est pas des enregistrements individuels, mais les connexions entre eux et le
+contournement rapide des relations à plusieurs étapes.
+
+#### Qu'est-ce qu'une base de données graphique modélise :
+
+1. **Les nœuds** sont des entités.
+
+2. **Edges** — relations entre les entités.
+
+3. **Les propriétés** des nœuds et des bords sont des attributs du modèle de
+   domaine.
+
+#### Pour quelles tâches sont-ils particulièrement utiles :
+
+1. **Graphiques sociaux :** amis, abonnements, recommandations.
+
+2. **Détection de fraude :** chaînes de transactions non triviales et connexions
+   suspectes.
+
+3. **Graphique de connaissances / recherche sémantique :** représentation
+   connectée des connaissances.
+
+4. **Topologie réseau/informatique :** dépendances des services, itinéraires,
+   impact des incidents.
+
+5. **Modèles de rôle/autorisation :** politiques d'accès complexes avec héritage
+   de rôle.
+
+#### Pourquoi une base de données relationnelle n'est pas toujours suffisante :
+
+1. Dans les scénarios de jointure en plusieurs étapes, les requêtes peuvent
+   devenir lourdes et fastidieuses.
+
+2. Le moteur graphique est optimisé spécifiquement pour les requêtes de chemin
+   de traversée.
+
+3. Le modèle de la « relation en tant qu'entité de premier ordre » rend les cas
+   de relations complexes plus naturels.
+
+#### Lorsqu'une base de données graphique est facultative :
+
+1. Si les connexions sont simples et sont rarement interrogées en profondeur.
+
+2. Si les scénarios CRUD/OLTP classiques sans parcours complexe dominent.
+
+3. Si l'équipe et l'infrastructure fonctionnent déjà efficacement avec la pile
+   relationnelle.
+
+#### Conclusion :
+
+Les bases de données graphiques sont nécessaires lorsque la valeur commerciale
+réside dans la structure des connexions et la navigation en plusieurs étapes à
+travers celles-ci. Il s'agit d'un outil spécialisé pour les domaines centrés sur
+les relations où une approche orientée jointure devient inefficace ou trop
+complexe.
+
+</details>

@@ -6141,3 +6141,58 @@ les relations où une approche orientée jointure devient inefficace ou trop
 complexe.
 
 </details>
+
+
+<details>
+<summary>100. Si les données sont limitées dans le temps, quelles bases de données dois-je utiliser ?</summary>
+
+#### Go
+
+Si les données ont une nature temporelle précise (métriques, logs, événements,
+télémétrie), il convient de choisir un SGBD en fonction du profil de charge :
+fréquence d'enregistrement, type de requêtes, durée de stockage, exigences
+d'agrégations et de latence.
+
+#### Options typiques :
+
+1. **Base de données de séries chronologiques (TSDB)**
+
+- exemples : Prometheus (pour les métriques), VictoriaMetrics, InfluxDB,
+  TimescaleDB ;
+
+- points forts : vitesse d'ingestion élevée, demandes de fenêtres horaires,
+  politiques de sous-échantillonnage/rétention.
+
+2. **PostgreSQL + approche orientée temps**
+
+- lorsque vous avez besoin de transactionnalité, de l'écosystème SQL et de
+  requêtes de jointure complexes avec des données temporelles ;
+
+- est souvent associé à un partitionnement temporel.
+
+3. **Stockage OLAP en colonnes**
+
+- pour l'analyse de grands volumes d'événements historiques (ClickHouse, etc.) ;
+
+- fort dans les agrégats et l'analyse de longues plages de temps.
+
+#### Critères de sélection :
+
+1. **Télémétrie lourde en écriture** → TSDB.
+
+2. **Transactions opérationnelles + temps** → PostgreSQL (avec
+   partitionnement/index).
+
+3. **Analyse historique à grande échelle** → approche en colonnes/OLAP.
+
+4. **Modèle de rétention et de coût** : données chaudes dans la couche rapide,
+   données froides dans le stockage le moins cher.
+
+#### Conclusion pratique :
+
+Il n'existe pas de base de données « universelle » pour les données temporelles
+: une combinaison d'outils pour une charge de travail spécifique est optimale.
+Dans la plupart des systèmes, une stratégie de couche TSDB/OLTP chaude + une
+couche analytique séparée pour un long historique fonctionne.
+
+</details>

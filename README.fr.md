@@ -6196,3 +6196,71 @@ Dans la plupart des systèmes, une stratégie de couche TSDB/OLTP chaude + une
 couche analytique séparée pour un long historique fonctionne.
 
 </details>
+
+
+<details>
+<summary>101. Comment fonctionne la réplication maître-esclave ?</summary>
+
+#### Go
+
+La réplication maître-esclave (réplique principale) est un modèle dans lequel un
+nœud accepte les écritures et un ou plusieurs nœuds de réplique répliquent ces
+modifications pour une mise à l'échelle en lecture, une redondance et une
+tolérance aux pannes accrue.
+
+#### Principe de base :
+
+1. **Maître (primaire)** gère `INSERT/UPDATE/DELETE`.
+
+2. Les modifications sont enregistrées dans le journal des transactions
+   (WAL/binlog selon le SGBD).
+
+3. **Esclave (réplique)** lit le journal et applique les modifications à sa
+   copie des données.
+
+4. Les lectures sont souvent distribuées aux réplicas, les écritures sont
+   laissées sur le réplica principal.
+
+#### Modes de réplication :
+
+1. **Asynchrone**
+
+- primary n'attend pas la confirmation du réplica avant de valider ;
+
+- latence d'enregistrement inférieure ;
+
+- retard de réplication possible et incohérence temporelle.
+
+2. **Synchrone/quasi-synchrone**
+
+- primary attend partiellement ou totalement la confirmation des réplicas ;
+
+- cohérence supérieure ;
+
+- latence d'écriture potentiellement plus élevée.
+
+#### Ce qu'il fait :
+
+1. Mise à l'échelle de la charge de lecture.
+
+2. Copies de sauvegarde des données pour le basculement.
+
+3. Séparation des enregistrements OLTP et des scénarios de lecture intensive.
+
+#### Risques typiques :
+
+1. **Retard de réplication** (le lecteur peut voir les "anciennes") données.
+
+2. Complexité des rôles de basculement/restauration et de nœud.
+
+3. Risque de division du cerveau dans des scénarios de commutation mal
+   organisés.
+
+#### Conclusion pratique :
+
+La réplication maître-esclave est un équilibre entre disponibilité, évolutivité
+et cohérence. Il est efficace pour la mise à l'échelle de la lecture, mais
+nécessite la discipline d'une surveillance des décalages, un basculement
+réfléchi et une politique claire de routage des requêtes.
+
+</details>

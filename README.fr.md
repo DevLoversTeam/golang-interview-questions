@@ -6264,3 +6264,88 @@ nécessite la discipline d'une surveillance des décalages, un basculement
 réfléchi et une politique claire de routage des requêtes.
 
 </details>
+
+
+<details>
+<summary>102. Qu'est-ce que le partitionnement et quels sont ses types ?</summary>
+
+#### Go
+
+Le partage est la division horizontale des données en plusieurs nœuds
+indépendants (fragments) pour faire évoluer le système au-delà d'un seul serveur
+en termes de volume de données, de charge et de bande passante.
+
+#### Pourquoi le partitionnement est-il utilisé :
+
+1. Libérer la restriction d'un nœud unique (CPU/RAM/disque/E/S).
+
+2. Augmentez le débit d'écriture/lecture grâce au fonctionnement parallèle des
+   fragments.
+
+3. Localisez les ensembles de données chauds et réduisez la concurrence pour les
+   ressources.
+
+#### Les principaux types de sharding :
+
+1. **Partagement basé sur la plage**
+
+- data est partitionné par plages de clés (par exemple, par date ou par
+  intervalle d'ID) ;
+
+- simple pour les scénarios de séries chronologiques ;
+
+- risque de plages « chaudes ».
+
+2. **Partagement basé sur le hachage**
+
+- shard est déterminé par le hachage de la clé ;
+
+- distribue la charge plus uniformément ;
+
+- il est plus difficile d'effectuer des requêtes de plage.
+
+3. **Partagement basé sur un répertoire/une recherche**
+
+- une clé de mappage de table/service distincte → fragment ;
+
+- routage et migrations flexibles ;
+
+- complexité supplémentaire et dépendance à l'égard de la couche de recherche.
+
+4. **Partagement basé sur la géolocalisation/le locataire**
+
+- Les données  sont partagées par région ou client (locataire) ;
+
+- bon pour l'isolation, la conformité et les architectures multi-locataires ;
+
+- déséquilibre possible entre les fragments.
+
+#### Défis architecturaux du sharding :
+
+1. Rééquilibrage des données pendant la croissance.
+
+2. Demandes, jointures et transactions entre fragments.
+
+3. Complications de sauvegarde/restauration et de basculement.
+
+4. Complexité accrue de l'observabilité et du support opérationnel.
+
+#### Conclusion :
+
+Le partage est un outil de mise à l'échelle qui offre des gains de performances
+significatifs, mais au prix d'une complexité architecturale. Le choix du type de
+partitionnement doit être basé sur le modèle d'accès aux données, le modèle de
+domaine et le plan d'évolution du système.
+
+#### Exemple :
+
+```go
+func shardForUser(userID int64, shards int) int {
+	if shards <= 0 {
+		return 0
+	}
+	return int(userID % int64(shards)) // hash/range-логіку змінюють під домен
+}
+```
+
+</details>

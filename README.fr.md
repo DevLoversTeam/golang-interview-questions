@@ -6349,3 +6349,82 @@ func shardForUser(userID int64, shards int) int {
 ```
 
 </details>
+
+
+<details>
+<summary>103. Parlez-nous de votre expérience en matière d'optimisation de bases de données. Quels outils avez-vous utilisés ?</summary>
+
+#### Go
+
+Pour un entretien, cette question attend généralement une **histoire de cas
+structurée** : contexte → problème → actions → outils → métriques avant/après.
+Vous trouverez ci-dessous un exemple de réponse forte que vous pouvez adapter à
+votre propre expérience du monde réel.
+
+#### Exemple :
+
+1. **Contexte**
+
+- dans un service avec une charge de lecture/écriture élevée, une dégradation de
+  la latence p95/p99 a été observée pendant les heures de pointe.
+
+2. **Symptômes**
+
+- requêtes lentes ;
+
+- Croissance du processeur sur le nœud de base de données ;
+
+- augmentation des files d'attente de verrouillage et de demandes.
+
+3. **Qu'avez-vous fait**
+
+- a collecté les requêtes les plus lentes ;
+
+- avoir analysé les plans d'exécution ;
+
+- index ajoutés/reconstruits au réel `WHERE/JOIN/ORDER BY` ;
+
+- supprimé N+1 et transféré certaines opérations lourdes en batch ;
+
+- ajout de la mise en cache pour les cas de lecture chauds ;
+
+- optimisation du schéma (types de champs, partitionnement par temps, archivage
+  des anciennes données).
+
+4. **Outils**
+
+- `EXPLAIN (ANALYZE, BUFFERS)` / `EXPLAIN ANALYZE` ;
+
+- demander des statistiques (`pg_stat_statements` ou similaire) ;
+
+- profilage d'application (`pprof`) pour séparer le goulot d'étranglement de la
+  base de données de la couche d'application ;
+
+- métriques et tableaux de bord (Prometheus/Grafana) ;
+
+- charger les tests avant/après les modifications.
+
+5. **Résultat (exemple de formulation)**
+
+- p95 a été réduit sous condition de 40 à 60 % ;
+
+- débit augmenté sans nœuds de base de données supplémentaires ;
+
+- périodes de pointe stabilisées et réduction des conflits de verrouillage.
+
+#### Comment répondre de la manière la plus convaincante :
+
+1. Parlez le langage des mesures, pas des phrases générales.
+
+2. Expliquez le compromis : ce qui a été accéléré et à quel prix.
+
+3. Mettez l'accent sur un processus reproductible : "d'abord mesuré, puis
+   modifié, puis testé".
+
+#### Conclusion :
+
+Une solution solide d'optimisation de base de données est un cas d'ingénierie de
+validation de principe avec des métriques et des outils. C'est cette structure
+qui démontre la maturité et la compétence pratique.
+
+</details>

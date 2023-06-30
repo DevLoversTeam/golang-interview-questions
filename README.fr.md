@@ -6497,3 +6497,96 @@ performances. `lib/pq` est historiquement important, mais pour la plupart des
 nouveaux systèmes Go/PostgreSQL, `pgx` est le choix préféré.
 
 </details>
+
+
+<details>
+<summary>105. Comment écrire des tests unitaires dans Go ?</summary>
+
+#### Go
+
+Un test unitaire dans Go teste une petite unité de comportement isolée
+(fonction/méthode) avec une entrée claire et un résultat attendu. La force de la
+démarche réside dans le déterminisme, la rapidité et la transparence des raisons
+de la chute.
+
+#### Principes de base d'un test unitaire qualité :
+
+1. **Un comportement est une intention de test.**
+
+2. **Isolement des systèmes externes** (DB, réseau, heure, système de fichiers).
+
+3. **Déterminisme** : les mêmes conditions doivent produire le même résultat.
+
+4. **Lisibilité et diagnostic** des messages d'erreur.
+
+#### Structure idiomatique en Go :
+
+1. Dossier `*_test.go`.
+
+2. Afficher les fonctions `func TestXxx(t *testing.T)`.
+
+3. Arrange → Act → Affirmer le modèle.
+
+4. Pour plusieurs cas – tests basés sur des tables.
+
+#### Ce qui doit être couvert :
+
+1. Scénarios positifs (chemin heureux).
+
+2. Scripts négatifs et bugs.
+
+3. Cas limites (données vides, zéros, valeurs élevées, saisie incorrecte).
+
+4. Invariants qui ne doivent en aucun cas être violés.
+
+#### Outils pratiques :
+
+1. Package standard `testing`.
+
+2. `go test ./...` pour une course régulière.
+
+3. `-race` pour les sites concurrents.
+
+4. Si nécessaire - `testify` (affirmer/exiger), mais sans magie excessive.
+
+#### Erreurs typiques :
+
+1. Tests dépendants de l'heure/du réseau/de l'ordre d'exécution.
+
+2. Vérification uniquement "sans panique", sans affirmations de fond.
+
+3. Scripts d'intégration trop volumineux déguisés en tests unitaires.
+
+#### Conclusion :
+
+Écrire des tests unitaires en Go signifie concevoir un comportement vérifiable :
+un volume minimal, un contrat clair, un isolement du monde extérieur et des
+assertions fiables. Cette approche offre une protection contre la régression
+rapide et stable.
+
+#### Exemple :
+
+```go
+func TestSum(t *testing.T) {
+	tests := []struct {
+		name string
+		a, b int
+		want int
+	}{
+		{"pos", 2, 3, 5},
+		{"zero", 0, 7, 7},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			got := Sum(tc.a, tc.b)
+			if got != tc.want {
+				t.Fatalf("got %d, want %d", got, tc.want)
+			}
+		})
+	}
+}
+```
+
+</details>

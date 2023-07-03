@@ -6681,3 +6681,62 @@ diagnostic. Un bon test combine généralement les deux : `require` pour les
 "conditions d'arrêt", `assert` pour un contrôle plus approfondi du contenu.
 
 </details>
+
+
+<details>
+<summary>108. Comment `t.Run` vous permet-il d'exécuter des sous-tests et de les filtrer ?</summary>
+
+#### Go
+
+`t.Run` vous permet de structurer un seul test en un ensemble de sous-tests
+nommés. Chaque sous-cas est exécuté comme une unité logique distincte, ce qui
+simplifie les tests de table, les diagnostics et le démarrage sélectif.
+
+#### Comment fonctionne `t.Run` :
+
+1. Dans le test principal, `t.Run(name, func(t *testing.T) { ... })` est appelé.
+
+2. Chaque appel crée un sous-test distinct avec son propre `t`.
+
+3. Les sous-tests peuvent avoir différentes entrées, assertions et paramètres.
+
+#### Pourquoi c'est pratique :
+
+1. **Meilleure lisibilité des tests basés sur des tables.**
+
+2. **Diagnostic précis :** vous pouvez voir exactement quel cas est tombé.
+
+3. **Hiérarchie des tests :** peut être imbriquée `t.Run` pour regrouper des
+   scénarios.
+
+4. **Contrôle de concurrence :** des sous-cas individuels peuvent être exécutés
+   via `t.Parallel()`.
+
+#### Comment fonctionne le filtrage :
+
+1. `go test -run <pattern>` exécute des tests dont les noms correspondent au
+   modèle.
+
+2. Le chemin Name est pris en compte pour les sous-tests (par exemple
+   `TestXxx/case_name`).
+
+3. Cela vous permet d'exécuter un seul cas problématique sans un ensemble
+   complet.
+
+#### Un exemple pratique de réflexion :
+
+1. `TestParser` contient des dizaines de cas jusqu'à `t.Run`.
+
+2. Un seul est exécuté pendant le débogage : `go test -run
+   'TestParser/invalid_header'`.
+
+3. Obtenez une boucle de rétroaction plus rapide et un cycle de correction plus
+   propre.
+
+#### Conclusion :
+
+`t.Run` transforme les tests monolithiques en un système géré de sous-tests avec
+déclenchement et filtrage granulaires. Il s’agit de l’un des outils clés de
+conception de tests pris en charge dans Go.
+
+</details>

@@ -6740,3 +6740,84 @@ déclenchement et filtrage granulaires. Il s’agit de l’un des outils clés d
 conception de tests pris en charge dans Go.
 
 </details>
+
+
+<details>
+<summary>109. Comment tester les gestionnaires HTTP ?</summary>
+
+#### Go
+
+Les gestionnaires HTTP dans Go sont testés de manière isolée, sans véritable
+socket réseau, en utilisant `httptest`. L'objectif est de tester le contrat de
+la couche HTTP : statut, en-têtes, corps de réponse, gestion des erreurs et
+scénarios de périphérie.
+
+#### Approche canonique :
+
+1. Créer une demande via `httptest.NewRequest(...)`.
+
+2. Créez un enregistreur via `httptest.NewRecorder()`.
+
+3. Gestionnaire d'appel : `handler.ServeHTTP(rec, req)`.
+
+4. Vérifiez :
+
+- `rec.Code` (code de statut) ;
+
+- en-têtes ;
+
+- body (JSON/schéma/message).
+
+#### Ce qui doit être couvert :
+
+1. **Happy path** (demande correcte, réponse attendue).
+
+2. **Erreurs de validation** (charge utile incomplète/incorrecte, paramètres de
+   requête).
+
+3. **Méthodes HTTP** (GET/POST/PUT/DELETE + 405 si méthode non autorisée).
+
+4. **Erreurs de dépendance** (le service/référentiel renvoie une erreur).
+
+5. **Scripts contextuels** (délai d'attente/annulation si la logique le prend en
+   charge).
+
+#### Conseils architecturaux :
+
+1. Exportez la logique métier du gestionnaire vers la couche de service.
+
+2. Dans les tests du gestionnaire, dépendances de service simulées/fausses.
+
+3. Testez le contrat HTTP lui-même, pas l'implémentation interne.
+
+#### Vérifications minimales pratiques :
+
+1. Corriger `Content-Type`.
+
+2. La structure de la réponse JSON.
+
+3. Correspondance des codes d'état aux erreurs de domaine.
+
+4. Aucune fuite d'informations sensibles dans le corps de l'erreur.
+
+#### Conclusion :
+
+Le test du gestionnaire HTTP dans Go est un test du comportement du point de
+terminaison sous la forme d'une boîte noire : requête entrante → sortie HTTP
+claire. `httptest` fournit un outil rapide, déterministe et raisonnablement
+précis pour de tels tests contractuels.
+
+#### Exemple :
+
+```go
+req := httptest.NewRequest(http.MethodGet, "/health", nil)
+rec := httptest.NewRecorder()
+
+handler.ServeHTTP(rec, req)
+
+if rec.Code != http.StatusOK {
+	t.Fatalf("status=%d", rec.Code)
+}
+```
+
+</details>

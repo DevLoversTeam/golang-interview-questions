@@ -6821,3 +6821,64 @@ if rec.Code != http.StatusOK {
 ```
 
 </details>
+
+
+<details>
+<summary>110. Comment tester les erreurs ?</summary>
+
+#### Go
+
+Les tests d'erreur dans Go doivent vérifier non seulement le fait qu'une erreur
+existe, mais également sa sémantique : type, catégorie, chaîne d'encapsulage et
+réponse attendue du système.
+
+#### Que vérifier exactement :
+
+1. **Présence/absence d'une erreur** dans un scénario spécifique.
+
+2. **Catégorie d'erreur** due à `errors.Is` (erreurs sentinelles).
+
+3. **Type d'erreur** via `errors.As` (type d'erreur personnalisé avec champs).
+
+4. **Contexte du wrapper** (si la cause première est perdue avec `%w`).
+
+5. **Effet comportemental** : code d'état correct, réessai/non-réessai,
+   restauration, etc.
+
+#### Pratiques recommandées :
+
+1. Évitez les vérifications fragiles du texte intégral `err.Error()`.
+
+2. Pour les contrats stables, utilisez `errors.Is/As`, et non `==` pour les
+   erreurs encapsulées.
+
+3. Dans les tests basés sur des tables, spécifiez explicitement la classe
+   d'erreur attendue et ses conséquences.
+
+#### Que tester dans les scénarios négatifs :
+
+1. Erreurs de validation d'entrée.
+
+2. Erreurs de dépendances externes (DB, HTTP, files d'attente).
+
+3. Délais d'attente/abandons via `context`.
+
+4. États limites (valeurs vides, formats incorrects, limites dépassées).
+
+#### Accent architectural :
+
+1. Error doit faire partie du contrat API de la fonction.
+
+2. Les tests doivent prouver que la gestion des erreurs est déterministe et
+   prévisible.
+
+3. Si le système mappe les erreurs de domaine à la couche de transport, testez
+   ce mappage séparément.
+
+#### Conclusion :
+
+Les tests d'erreur qualitatifs dans Go consistent à vérifier la sémantique, pas
+la chaîne du message. Ce type de vérification rend le code résistant à la
+refactorisation et fiable en production.
+
+</details>

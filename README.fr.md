@@ -6882,3 +6882,68 @@ la chaîne du message. Ce type de vérification rend le code résistant à la
 refactorisation et fiable en production.
 
 </details>
+
+
+<details>
+<summary>111. Comment mouiller les dépendances externes sans utiliser de frameworks tiers ?</summary>
+
+#### Go
+
+Dans Go, les dépendances externes sont simulées de manière plus propre via des
+interfaces et leurs propres implémentations de test double (stub/fake/spy), sans
+avoir besoin de frameworks de moquerie lourds. C'est une approche idiomatique
+qui s'adapte bien et reste transparente.
+
+#### Schéma de base :
+
+1. Mettez en surbrillance l'interface de dépendance minimale dans la couche
+   consommateur.
+
+2. L'implémentation de la production fonctionne avec une vraie base de
+   données/HTTP/file d'attente.
+
+3. Dans le test, remplacez votre propre structure qui implémente la même
+   interface.
+
+#### Testez les types doubles sans bibliothèques tierces :
+
+1. **Stub** — renvoie des données prédéfinies.
+
+2. **Fake** - une implémentation « fonctionnelle » simplifiée (par exemple, un
+   dépôt en mémoire).
+
+3. **Spy** — capture les appels (arguments, numéro, ordre).
+
+4. **Maquette manuelle** - Script guidé avec réponses/erreurs personnalisables.
+
+#### Avantages de cette approche :
+
+1. Sécurité de type complète du compilateur.
+
+2. Zéro magie d'exécution.
+
+3. Meilleure lisibilité des tests et évolution prévisible du code.
+
+4. Aucune dépendance externe dans la pile de test.
+
+#### Recommandations pratiques :
+
+1. Rendre les interfaces petites (par comportement, pas "sur toutes les
+   méthodes").
+
+2. Mot sur la limite du module, pas à l'intérieur de la logique de domaine.
+
+3. Pour les scénarios compétitifs, protégez le test d'état double (`mutex`,
+   atomique).
+
+4. Ne dupliquez pas excessivement la logique de production en faux - sinon les
+   tests deviennent fragiles.
+
+#### Conclusion :
+
+Se moquer sans frameworks dans Go concerne avant tout une bonne conception des
+dépendances : petite interface + test-double manuel. Cette approche est simple,
+fiable et architecturalement solide pour un accompagnement de projet à long
+terme.
+
+</details>

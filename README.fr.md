@@ -6947,3 +6947,72 @@ fiable et architecturalement solide pour un accompagnement de projet à long
 terme.
 
 </details>
+
+
+<details>
+<summary>112. Comment utiliser `TestMain` pour configurer un environnement de test ?</summary>
+
+#### Go
+
+`TestMain(m *testing.M)` est le point d'entrée pour l'ensemble de la suite de
+tests. Il permet une initialisation globale avant les tests et un nettoyage
+garanti après ceux-ci.
+
+#### Lorsque `TestMain` est approprié :
+
+1. Doit activer l'environnement de test partagé une fois :
+
+- test base de données/conteneur ;
+
+- annuaires temporaires ;
+
+- configurations/secrets globaux ;
+
+- Dépendances du service d'arrière-plan .
+
+2. Nécessite un démontage centralisé une fois tous les tests du package
+   terminés.
+
+#### Cycle de vie de base :
+
+1. L'installation est en cours (initialisation des ressources).
+
+2. Tests exécutés jusqu'à `code := m.Run()`.
+
+3. Le nettoyage est en cours.
+
+4. Le processus se termine via `os.Exit(code)`.
+
+#### Règles importantes :
+
+1. `m.Run()` doit être appelé exactement une fois.
+
+2. Le code renvoyé doit être transmis à `os.Exit`, sinon le statut des tests
+   sera perdu.
+
+3. Le nettoyage doit être effectué même en cas d'erreurs de configuration (dans
+   la mesure du possible).
+
+4. N'effectuez pas de logique supplémentaire dans `TestMain` qui n'est pas liée
+   à l'environnement.
+
+#### Conseils pratiques :
+
+1. Ne comptez pas uniquement sur `TestMain` pour isoler les tests dans un
+   package - une configuration/démontage local dans des tests spécifiques est
+   souvent encore nécessaire.
+
+2. Si possible, privilégier les mécanismes plus légers (`t.Cleanup`) au niveau
+   test ; `TestMain` à utiliser pour un véritable contexte de lot.
+
+3. Dans les tests parallèles, surveillez attentivement l'état partagé initialisé
+   dans `TestMain`.
+
+#### Conclusion :
+
+`TestMain` — outil d'orchestration par lots de l'environnement de test : une
+configuration, une exécution de tous les tests, un nettoyage. Cela convient
+lorsque vous devez contrôler le cycle de vie des ressources partagées pour
+l’ensemble du package.
+
+</details>

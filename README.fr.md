@@ -7016,3 +7016,71 @@ lorsque vous devez contrôler le cycle de vie des ressources partagées pour
 l’ensemble du package.
 
 </details>
+
+
+<details>
+<summary>113. Comment utiliser les fichiers dorés ?</summary>
+
+#### Go
+
+`Golden files` sont des fichiers de référence avec la sortie attendue avec
+laquelle le test compare la sortie réelle. L'approche est particulièrement utile
+pour le formateur, les générateurs de code, la sérialisation et toute sortie de
+texte/structure.
+
+#### Flux de travail de base :
+
+1. Générer le résultat avec la fonction testée.
+
+2. Lisez le fichier `.golden` correspondant.
+
+3. Comparez la sortie réelle avec la norme.
+
+4. S'il y a une différence, le test échoue avec la différence.
+
+#### Structure typique :
+
+1. Entrée de test (`testdata/input/...`).
+
+2. Normes (`testdata/golden/...`).
+
+3. Tests basés sur des tables, où chaque cas possède son propre fichier d'or.
+
+#### Pratique très utile — mode mise à jour :
+
+1. Ajoutez un indicateur comme `-update`.
+
+2. S'il est activé, le test écrase les fichiers Golden avec le nouveau résultat.
+
+3. Cela accélère la prise en charge des tests de performances avec des
+   changements de comportement légitimes.
+
+#### À quoi faire attention :
+
+1. **Sortie du déterminisme :** avant la comparaison, normalisez l'ordre des
+   données, les horodatages et les valeurs aléatoires.
+
+2. **Différence qualitative :** lors du crash du test, il devrait être clair ce
+   qui a exactement changé.
+
+3. **N'abusez pas :** les fichiers Golden pour les grandes "boîtes noires" sans
+   contrôles sémantiques peuvent rendre les diagnostics difficiles.
+
+#### Quand les fichiers dorés sont les plus appropriés :
+
+1. Rendu/génération de texte.
+
+2. Transformation JSON/XML/config.
+
+3. Sortie CLI.
+
+4. Compilateurs, analyseurs, générateurs de code.
+
+#### Conclusion :
+
+Golden files est un outil pratique pour les tests de sortie des contrats. Dotés
+d'un déterminisme et d'un processus de mise à jour pratique, ils offrent une
+protection rapide et claire contre les régressions indésirables dans le format
+des résultats.
+
+</details>

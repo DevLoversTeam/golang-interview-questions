@@ -7084,3 +7084,62 @@ protection rapide et claire contre les régressions indésirables dans le format
 des résultats.
 
 </details>
+
+
+<details>
+<summary>114. Comment tester correctement le code Go qui utilise `time.Now()` pour que les tests soient déterministes ?</summary>
+
+#### Go
+
+`time.Now()` rend les tests non déterministes car il renvoie l'heure actuelle
+réelle. Pour que les tests soient stables, l'heure doit être injectée et non lue
+directement dans la logique métier.
+
+#### Approche canonique :
+
+1. Exporter la source de temps vers la dépendance :
+
+- fonction `now func() time.Time` ;
+
+- interface `Clock` avec la méthode `Now()`.
+
+2. En production, transférer l'horloge réelle (`time.Now`).
+
+3. Transmettre une heure fixe (fausse horloge) dans le test.
+
+#### Pourquoi ça marche :
+
+1. Le résultat ne dépend pas du moment où le test est démarré.
+
+2. Fini les scénarios flous « parfois des plantages, parfois pas ».
+
+3. Vérifiez facilement les cas extrêmes : délais, durée de vie, dates de
+   transition, fuseaux horaires.
+
+#### Pratiques supplémentaires :
+
+1. Ne comparez pas les valeurs de temps avec une précision « dure » à la
+   milliseconde, sauf si le domaine l'exige.
+
+2. Pour les tests avec minuteries/retards, utilisez une horloge contrôlée ou des
+   tampons de temps suffisants.
+
+3. Corrigez `Location/UTC` explicitement pour éviter les dépendances de
+   l'environnement.
+
+#### Ce qu'il ne faut pas faire :
+
+1. Laisser `time.Now()` dans la profondeur de la logique du domaine sans
+   possibilité de substitution.
+
+2. Le sauvetage des `time.Sleep` lors des tests ralentit et ne garantit pas la
+   stabilité.
+
+#### Conclusion :
+
+Les tests de timing déterministes dans Go reposent sur l'inversion des
+dépendances : le timing est une entrée, pas un effet secondaire global.
+L’injection de source d’horloge rend les tests rapides, reproductibles et
+architecturalement propres.
+
+</details>

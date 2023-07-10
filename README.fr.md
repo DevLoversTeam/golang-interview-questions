@@ -7143,3 +7143,63 @@ L’injection de source d’horloge rend les tests rapides, reproductibles et
 architecturalement propres.
 
 </details>
+
+
+<details>
+<summary>115. Comment `t.Parallel()` accélère-t-il la suite de tests et où peut-il les interrompre ?</summary>
+
+#### Go
+
+`t.Parallel()` permet aux tests (ou sous-tests) de s'exécuter simultanément, ce
+qui réduit généralement le temps d'exécution global sur les environnements
+multicœurs. Mais la concurrence sans isolation transforme facilement les tests
+stables en tests instables.
+
+#### Comment cela accélère les courses :
+
+1. Les tests indépendants s'exécutent simultanément.
+
+2. Meilleure utilisation du processeur et des attentes d'E/S.
+
+3. Un grand ensemble de petits tests s'exécute beaucoup plus rapidement dans CI.
+
+#### Où `t.Parallel()` peut interrompre les tests :
+
+1. **État mutable partagé :** variables globales, caches en mémoire partagés,
+   configurations statiques sans synchronisation.
+
+2. **Ressources partagées externes :** un schéma/table de base de données, un
+   port, un fichier, un répertoire de données temporaire.
+
+3. **Dépendance de l'ordre d'exécution :** si un test s'attend implicitement à
+   ce qu'un autre soit déjà exécuté.
+
+4. **Effets secondaires sur l'environnement :** modifications des variables
+   d'environnement, du fuseau horaire et du répertoire de travail sans
+   isolation.
+
+5. **Bogues dans les sous-tests basés sur des tables :** capture de variables en
+   boucle sans copie locale en fermeture.
+
+#### Comment utiliser en toute sécurité :
+
+1. Tests parallèles uniquement entièrement isolés.
+
+2. Évitez l'état mutable global ou protégez-le avec la synchronisation.
+
+3. Utiliser des ressources temporaires uniques (`t.TempDir`, luminaires
+   individuels).
+
+4. Pour les tests de base de données : isolation transactionnelle ou espace de
+   noms/schéma distinct par test.
+
+5. Exécutez l'ensemble avec `-race` pour une détection précoce des problèmes de
+   concurrence.
+
+#### Conclusion :
+
+`t.Parallel()` est un puissant accélérateur de tests, mais uniquement sous
+isolement strict des cas. Si les tests ont un état partagé ou des dépendances
+cachées, la concurrence exposera ces défauts et rendra l'exécution instable.
+
+</details>

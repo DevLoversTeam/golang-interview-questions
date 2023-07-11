@@ -7203,3 +7203,57 @@ isolement strict des cas. Si les tests ont un état partagé ou des dépendances
 cachées, la concurrence exposera ces défauts et rendra l'exécution instable.
 
 </details>
+
+
+<details>
+<summary>116. Comment mesurer la couverture du code ?</summary>
+
+#### Go
+
+Dans Go, la couverture du code est mesurée par les outils intégrés `go test` via
+une instrumentation d'exécution de tests. Cela fournit des métriques qui
+montrent quelle fraction de lignes/blocs de code a été exécutée pendant
+l’exécution du test.
+
+#### Commandes de base :
+
+1. Couverture totale par forfait : `go test -cover ./...`
+
+2. Collection de profils de couverture : `go test -coverprofile=coverage.out
+   ./...`
+
+3. Afficher les statistiques récapitulatives : `go tool cover
+   -func=coverage.out`
+
+4. Rapport HTML en surbrillance : `go tool cover -html=coverage.out`
+
+#### Ce qu'il est important de comprendre :
+
+1. Coverage montre le fait que des contrôles invariants sont effectués et non
+   complets.
+
+2. Un pourcentage élevé ne garantit pas l'absence de bugs.
+
+3. Un faible pourcentage est un signal de zones de tests aveugles.
+
+#### Conseils pratiques :
+
+1. Analysez la couverture ainsi que la criticité du code, sans rechercher
+   « 100 % ».
+
+2. Couvrez séparément les scénarios négatifs et extrêmes.
+
+3. Utilisez la couverture comme un indicateur d’écart et non comme une fin en
+   soi.
+
+4. Dans CI, enregistrez le profil et suivez la dynamique de couverture entre les
+   PR.
+
+#### Conclusion :
+
+La couverture du code dans Go est mesurée par les outils standard (`go test` +
+`go tool cover`) et constitue une mesure utile de la qualité de l'examen des
+tests. Il offre la plus grande valeur en combinaison avec des contrôles
+sémantiques et une conception de tests significative.
+
+</details>

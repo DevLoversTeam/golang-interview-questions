@@ -7257,3 +7257,74 @@ tests. Il offre la plus grande valeur en combinaison avec des contrôles
 sémantiques et une conception de tests significative.
 
 </details>
+
+
+<details>
+<summary>117. Qu’est-ce que le benchmarking et comment le réaliser ? Comment `testing.B` implémente-t-il le test de référence et que réinitialise `b.ResetTimer` ?</summary>
+
+#### Go
+
+`Benchmarking` in Go est une mesure des performances du code (temps,
+allocations, débit) dans des conditions contrôlées pour comparer les
+implémentations et valider l'effet des optimisations.
+
+#### Comment exécuter le benchmark :
+
+1. Les fonctions ont la forme : `func BenchmarkXxx(b *testing.B)`.
+
+2. Lancement de la base : `go test -bench=.`
+
+3. Uniquement benchmark spécifique : `go test -bench=BenchmarkParse`
+
+4. Mesure d'attribution : `go test -bench=. -benchmem`
+
+#### Comment fonctionne `testing.B` :
+
+1. Runner lui-même choisit `b.N` (nombre d'itérations) pour obtenir une
+   dimension stable.
+
+2. Votre code dans la fonction de test est exécuté dans une boucle `for i := 0;
+   i < b.N; i++`.
+
+3. En conséquence, le test classe les performances en `ns/op`, et avec
+   `-benchmem` également `B/op`, `allocs/op`.
+
+#### Que fait `b.ResetTimer` :
+
+1. Réinitialisez le chronomètre de mesure accumulé.
+
+2. Ne compte pas le code de préparation exécuté avant d'appeler `ResetTimer`
+   dans le temps final.
+
+3. Utilisé après la phase de configuration pour mesurer uniquement la partie
+   active "propre".
+
+#### Méthodes utiles associées :
+
+1. `b.StopTimer()` / `b.StartTimer()` — désactiver/activer temporairement le
+   chronométrage.
+
+2. `b.ReportAllocs()` — statistiques d'allocation des forces.
+
+#### Conclusion pratique :
+
+Benchmark in Go n'est pas une exécution ponctuelle, mais un outil de comparaison
+dans les mêmes conditions. `testing.B` met automatiquement à l'échelle les
+itérations et `b.ResetTimer` sépare la formation de la mesure réelle des
+performances.
+
+#### Exemple :
+
+```go
+func BenchmarkParse(b *testing.B) {
+	input := []byte(`{"x":1}`)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		var v map[string]int
+		_ = json.Unmarshal(input, &v)
+	}
+}
+```
+
+</details>

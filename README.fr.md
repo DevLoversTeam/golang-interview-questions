@@ -7328,3 +7328,68 @@ func BenchmarkParse(b *testing.B) {
 ```
 
 </details>
+
+
+<details>
+<summary>118. Comment exécuter des benchmarks avec contrôle du temps et du nombre d'itérations ?</summary>
+
+#### Go
+
+Dans Go, les benchmarks peuvent être exécutés avec contrôle de la durée de
+mesure et d'un nombre fixe d'itérations via les paramètres `go test`. Ceci est
+important pour la reproductibilité et la comparaison correcte des résultats.
+
+#### Principaux drapeaux :
+
+1. **`-benchtime`**
+
+- définit la durée de l'exécution du benchmark (par exemple, `-benchtime=5s`) ;
+
+- runner lui-même choisit `b.N` pour parcourir cette fenêtre horaire.
+
+2. **`-benchtime=Nx`**
+
+- fixe le nombre exact d'itérations (par exemple, `-benchtime=100000x`) ;
+
+- pratique pour des comparaisons A/B reproductibles sur le même `N`.
+
+3. **`-count`**
+
+- nombre de rediffusions (par exemple `-count=10`);
+
+- aide à évaluer la stabilité et la dispersion des résultats.
+
+4. **`-bench`**
+
+- sélection de fonctions de référence spécifiques par modèle.
+
+5. **`-benchmem`**
+
+- génère en outre des allocations (`B/op`, `allocs/op`).
+
+#### Exemples pratiques de scénarios :
+
+1. Exécution stable plus longue : `go test -bench=. -benchtime=5s -benchmem`
+
+2. Corrigé `N` : `go test -bench=BenchmarkFoo -benchtime=200000x -benchmem`
+
+3. Rediffusions multiples pour les statistiques : `go test -bench=BenchmarkFoo
+   -benchtime=2s -count=10`
+
+#### Pourquoi est-ce nécessaire :
+
+1. Réduit le bruit des courts trajets.
+
+2. Comparez les optimisations dans les mêmes conditions.
+
+3. Recevez des données statistiquement significatives pour l'analyse
+   `benchstat`.
+
+#### Conclusion :
+
+Le contrôle du temps et des itérations dans les benchmarks Go est une condition
+préalable à une analyse des performances de haute qualité. `-benchtime` et
+`-count` assurent la stabilité des mesures, et le mode `Nx` permet un contrôle
+strict du nombre d'exécutions.
+
+</details>

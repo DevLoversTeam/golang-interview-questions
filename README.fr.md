@@ -7393,3 +7393,65 @@ préalable à une analyse des performances de haute qualité. `-benchtime` et
 strict du nombre d'exécutions.
 
 </details>
+
+
+<details>
+<summary>119. Comment l'outil `benchstat` compare-t-il deux ensembles de résultats de référence et comment détermine-t-il l'importance des changements ?</summary>
+
+#### Go
+
+`benchstat` compare deux (ou plus) ensembles de résultats de référence et montre
+si les changements dans les métriques (`ns/op`, `B/op`, `allocs/op`) sont
+statistiquement significatifs et non du bruit aléatoire.
+
+#### Comment fonctionne la comparaison :
+
+1. Collectez plusieurs exécutions « avant » et « après » (généralement via
+   `-count`).
+
+2. `benchstat` regroupe les résultats selon les mêmes noms de référence.
+
+3. Calcule les valeurs centrales (généralement des estimations
+   médianes/robustes) et la différence en pourcentage.
+
+4. Effectue un test statistique et génère `p-value`.
+
+#### Comment la signification est déterminée :
+
+1. Si `p-value` est inférieur à un seuil (généralement 0,05), le changement est
+   considéré comme statistiquement significatif.
+
+2. Si `p-value` est supérieur au seuil, la différence peut être due au bruit
+   ambiant.
+
+3. C'est pourquoi il est important d'examiner **à la fois le delta et la valeur
+   p** en même temps.
+
+#### Ce qui est nécessaire pour une analyse correcte :
+
+1. Mêmes conditions de lancement (machine, charge, configuration).
+
+2. Nombre de répétitions suffisant (`-count`) sinon les conclusions sont
+   fragiles.
+
+3. Aucun bruit parasite (processus de fond, limitation thermique, environnement
+   CI instable).
+
+#### Règle générale :
+
+1. Ne faites pas confiance aux `go test -bench` jetables.
+
+2. Collectez des séries de résultats avant/après.
+
+3. Analysez via `benchstat`, puis vérifiez si le changement est important pour
+   les métriques commerciales (latence/débit/SLA) et pas seulement « joli » dans
+   un tableau.
+
+#### Conclusion :
+
+`benchstat` convertit les chiffres de référence bruts en une comparaison
+statistiquement valable. Cela permet de distinguer un effet réel sur les
+performances d'une dispersion aléatoire et de prendre des décisions techniques
+basées sur des données.
+
+</details>

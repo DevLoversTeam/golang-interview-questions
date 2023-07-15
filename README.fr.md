@@ -7455,3 +7455,64 @@ performances d'une dispersion aléatoire et de prendre des décisions techniques
 basées sur des données.
 
 </details>
+
+
+<details>
+<summary>120. Qu'est-ce que le test de fuzz ?</summary>
+
+#### Go
+
+`Fuzz testing` est une méthode de test automatisée dans laquelle le système
+reçoit une grande quantité de données d'entrée semi-aléatoires ou mutées pour
+détecter les plantages, les paniques, la gestion incorrecte des cas limites et
+les violations invariantes.
+
+#### Comment ça marche dans Go :
+
+1. Définissez la fonction fuzz (`func FuzzXxx(f *testing.F)`).
+
+2. Ajouter des entrées de départ (exemples initiaux).
+
+3. Le fuzzer mute ces entrées et génère de nouvelles combinaisons.
+
+4. S'il détecte un crash ou une violation de contrôle, conservez le cas jouable
+   "minimum".
+
+#### Ce que les tests de fuzz trouvent le mieux :
+
+1. Cas extrêmes inattendus des analyseurs/décodeurs.
+
+2. Panique sur des données d'entrée incorrectes ou "cassées".
+
+3. Défauts logiques dans le traitement des lignes, octets, formats, protocoles.
+
+#### Pourquoi c'est précieux :
+
+1. Couvre l'espace d'entrée beaucoup plus large que les boîtiers d'unités
+   manuelles.
+
+2. Bon pour détecter les failles de sécurité dans le code de type analyseur.
+
+3. Ajoute une résistance API aux charges utiles « toxiques » du monde extérieur.
+
+#### Recommandations pratiques :
+
+1. Formuler des invariants explicites (qui doivent être vrais pour toute
+   entrée).
+
+2. Commencez par les surfaces critiques : analyse, désérialisation,
+   normalisation.
+
+3. Après avoir trouvé un cas, ajoutez-le comme test de régression.
+
+4. Combinez le fuzzing avec `-race` et des tests unitaires/d'intégration
+   réguliers.
+
+#### Conclusion :
+
+Les tests Fuzz dans Go sont un moyen systématique de « casser » le code avec les
+données d'entrée pour trouver des défauts presque impossibles à prédire
+manuellement. C'est l'un des outils les plus puissants pour accroître la
+fiabilité et la sécurité du traitement des données.
+
+</details>

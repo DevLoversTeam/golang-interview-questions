@@ -7645,3 +7645,71 @@ fiabilité du code en complétant le compilateur et les tests, en particulier da
 les bases de code Go des grandes équipes.
 
 </details>
+
+
+<details>
+<summary>123. Comment profiler une application Go (`pprof`) ?</summary>
+
+#### Go
+
+`pprof` est un outil de profilage Go standard qui indique où vont le processeur,
+la mémoire, les allocations, les verrous et les délais d'attente. Il s'agit d'un
+moyen simple de détecter les véritables goulots d'étranglement avant les
+optimisations.
+
+#### Ce qui peut être profilé :
+
+1. **Profil CPU** : où le temps CPU est dépensé.
+
+2. **Heap / allocs** — qui alloue la mémoire et ce qui reste « vivant ».
+
+3. **Profil Goroutine** — état et nombre de goroutines.
+
+4. **Profil de blocage/mutex** — contention, blocage, délais de synchronisation.
+
+#### Comment se connecter au service :
+
+1. Import `net/http/pprof` (généralement via l'importation d'effets
+   secondaires).
+
+2. Ouvrir le point de terminaison de débogage (souvent un port distinct ou une
+   route protégée).
+
+3. Supprimer le profil sous charge réelle/représentative.
+
+#### Flux de travail d'analyse typique :
+
+1. Collectez le profil CPU/tas.
+
+2. Ouvrir via `go tool pprof` (haut/liste/web).
+
+3. Trouver des chemins chauds/nœuds d'allocation.
+
+4. Faites un changement de point.
+
+5. Répétez le profilage et comparez avant/après.
+
+#### Equipes pratiques (idée générale) :
+
+1. Collection de profils à partir du point de terminaison.
+
+2. Analyse locale : `go tool pprof <profile>`
+
+3. Visualisation graphique/flamme via le mode Web.
+
+#### Principes importants :
+
+1. N'optimisez pas "au ressenti" - uniquement en fonction des données de profil.
+
+2. Profilé dans des conditions proches de la production.
+
+3. Vérifiez si l'optimisation n'a pas dégradé d'autres métriques (latence
+   finale, mémoire).
+
+#### Conclusion :
+
+`pprof` est le principal outil d'optimisation de preuve de concept des
+applications Go : il montre l'image réelle des coûts et vous permet de prendre
+des décisions d'ingénierie basées sur des mesures et non sur l'intuition.
+
+</details>

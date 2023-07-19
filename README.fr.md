@@ -7713,3 +7713,65 @@ applications Go : il montre l'image réelle des coûts et vous permet de prendr
 des décisions d'ingénierie basées sur des mesures et non sur l'intuition.
 
 </details>
+
+
+<details>
+<summary>124. Comment fonctionnent `go build` et la compilation croisée ?</summary>
+
+#### Go
+
+`go build` compile les packages/programmes Go dans un binaire (ou vérifie
+l'assembly) à l'aide des dépendances de module, du cache de construction et des
+paramètres actuels de la plate-forme cible.
+
+#### Comment fonctionne `go build` :
+
+1. Lit `go.mod` et résout les dépendances.
+
+2. Compile les packages requis (en tenant compte des balises de build et des
+   fichiers conditionnels).
+
+3. Utilise le cache de build pour accélérer les reconstructions.
+
+4. Lien vers l'exécutable final pour le système d'exploitation/l'architecture
+   cible.
+
+#### Qu'est-ce que la compilation croisée :
+
+La compilation croisée consiste à créer un binaire pour une plate-forme
+différente de celle sur laquelle vous exécutez le compilateur.
+
+#### Paramètres principaux :
+
+1. `GOOS` est le système d'exploitation cible (par exemple `linux`, `darwin`,
+   `windows`).
+
+2. `GOARCH` est l'architecture cible (`amd64`, `arm64`, etc.).
+
+#### Exemple :
+
+1. Fonctionne sur macOS.
+
+2. Vous voulez le binaire Linux/amd64.
+
+3. Compilé avec le `GOOS/GOARCH` correspondant, vous obtenez un artefact pour le
+   déploiement Linux.
+
+#### Nuances pratiques :
+
+1. Pour le code pure-Go, la compilation croisée est généralement simple.
+
+2. Les dépendances `cgo` nécessitent une chaîne d'outils multi-outils compatible
+   (compilateur C pour la plateforme cible).
+
+3. CI réalise souvent une construction matricielle pour l'ensemble
+   `GOOS/GOARCH`.
+
+#### Conclusion :
+
+`go build` est une version standardisée avec mise en cache et résolution
+modulaire. La compilation croisée dans Go est nativement prise en charge via
+`GOOS/GOARCH`, ce qui rend le langage très pratique pour les versions
+multiplateformes.
+
+</details>

@@ -7775,3 +7775,75 @@ modulaire. La compilation croisée dans Go est nativement prise en charge via
 multiplateformes.
 
 </details>
+
+
+<details>
+<summary>125. Comment conteneuriser une application Go dans Docker ?</summary>
+
+#### Go
+
+Conteneuriser une application Go consiste à créer un binaire et à le
+conditionner dans une image Docker pour un lancement prévisible dans n'importe
+quel environnement (sur site, CI, Kubernetes, cloud).
+
+#### Approche canonique :
+
+1. Utilisez un Dockerfile à plusieurs étapes :
+
+- stage build : Passer à la compilation binaire ;
+
+- stage runtime : image minimale à exécuter.
+
+2. Au stade de la construction :
+
+- copy `go.mod/go.sum`, charger les dépendances ;
+
+- copier le code ;
+
+- compilez le binaire (`go build`).
+
+3. Au stade de l'exécution :
+
+- mettre uniquement le binaire final et les fichiers d'exécution nécessaires ;
+
+- set `ENTRYPOINT/CMD`.
+
+#### Pourquoi c'est vrai :
+
+1. Taille de l'image finale plus petite.
+
+2. Meilleure sécurité (moins de packages redondants au moment de l'exécution).
+
+3. Builds reproductibles en CI/CD.
+
+4. Déploiement plus rapide et démarrage à froid.
+
+#### Recommandations pratiques :
+
+1. Ajoutez `.dockerignore` pour éviter d'extraire des fichiers supplémentaires
+   dans le contexte de construction.
+
+2. Exécutez le processus en tant qu'utilisateur non root dans l'image
+   d'exécution.
+
+3. Définissez explicitement `EXPOSE`, le contrôle de santé (si nécessaire) et
+   les variables d'environnement.
+
+4. Utilisez l'image/la balise de base épinglée pour plus de prévisibilité.
+
+#### Cycle de vie typique :
+
+1. `docker build` → reçu une image.
+
+2. `docker run` → vérifié localement.
+
+3. Push vers le registre → déployer sur l'environnement cible.
+
+#### Conclusion :
+
+La conteneurisation d'une application Go dans Docker fonctionne mieux grâce à
+une approche en plusieurs étapes : compiler séparément, exécuter séparément.
+Cela donne une image de production compacte, sûre et pratique sur le plan
+opérationnel.
+
+</details>

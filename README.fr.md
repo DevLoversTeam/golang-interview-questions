@@ -7847,3 +7847,73 @@ Cela donne une image de production compacte, sûre et pratique sur le plan
 opérationnel.
 
 </details>
+
+
+<details>
+<summary>126. Comment réduire la taille d'une image Docker pour une application Go (build en plusieurs étapes) ?</summary>
+
+#### Go
+
+Le moyen le plus efficace de réduire l'image d'une application Go est la
+construction en plusieurs étapes : compiler dans une image de construction
+"lourde" et exécuter dans l'image d'exécution la plus minimale avec uniquement
+le binaire final.
+
+#### Étapes d'optimisation clés :
+
+1. **Fichier Docker à plusieurs étapes**
+
+- étape 1 : `golang` pour l'assemblage ;
+
+- étape 2 : durée d'exécution réduite (`distroless`/`scratch`/base minimale).
+
+2. **Seulement nécessaire pour copier au moment de l'exécution**
+
+- binaire ;
+
+- si nécessaire Certificats CA / données de fuseau horaire / configuration.
+
+3. **Binaire statique (le cas échéant)**
+
+- réduit les dépendances d'exécution ;
+
+- est bon pour les looks minimalistes.
+
+4. **Optimiser le binaire lui-même**
+
+- indicateurs de liaison (`-ldflags="-s -w"`) pour réduire les informations de
+  service.
+
+5. **Alphabétiser `.dockerignore`**
+
+- supprimer les tests, `.git`, les artefacts et les caches locaux du contexte de
+  construction.
+
+6. **Mise en cache des dépendances lors de la phase de construction**
+
+- copier `go.mod/go.sum` séparément avant de copier l'intégralité du code.
+
+#### Pratiques supplémentaires :
+
+1. Images de base en mousse par digest/tag pour la reproductibilité.
+
+2. Travailler sous un utilisateur non root.
+
+3. Vérifiez régulièrement la taille de l'image et les vulnérabilités dans CI.
+
+#### Ce qu'il faut éviter :
+
+1. L'exécution de  sur une image `golang` complète n'est pas nécessaire.
+
+2. Copie du code source vers la couche finale.
+
+3. Outils de débogage redondants dans l'image de production.
+
+#### Conclusion :
+
+Une image Go compacte est le résultat d’une séparation appropriée des couches de
+construction/d’exécution. Plusieurs étapes + durée d'exécution minimale +
+contexte de construction propre offrent le meilleur équilibre entre taille,
+sécurité et vitesse de déploiement.
+
+</details>

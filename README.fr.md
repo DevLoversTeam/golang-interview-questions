@@ -7917,3 +7917,77 @@ contexte de construction propre offrent le meilleur équilibre entre taille,
 sécurité et vitesse de déploiement.
 
 </details>
+
+
+<details>
+<summary>127. Quels outils sont couramment utilisés pour collecter des métriques et des journaux ? Comment fonctionne Prometheus ?</summary>
+
+#### Go
+
+Les systèmes modernes combinent généralement plusieurs classes d'outils :
+métriques, journaux, traçage, visualisation et alertes. Cela donne une image
+complète du comportement du service et accélère le diagnostic des incidents.
+
+#### Pile d'outils typique :
+
+1. **Mesures**
+
+- Prometheus, VictoriaMetrics, Graphite (moins courant dans les systèmes plus
+  récents).
+
+2. **Visualisation**
+
+- Grafana (tableaux de bord, SLO, corrélation de métriques).
+
+3. **Journaux**
+
+- Loki, Elasticsearch/OpenSearch + Kibana, Fluent Bit/Fluentd, Vector.
+
+4. **Traçage**
+
+- OpenTelemetry + Jaeger/Tempo/Zipkin.
+
+5. **Alerte**
+
+- Alertmanager (souvent associé à Prometheus).
+
+#### Comment fonctionne Prometheus :
+
+1. **Modèle de collecte Pull :** Prometheus « gratte » périodiquement les points
+   de terminaison HTTP des services (généralement `/metrics`) et prend les
+   valeurs actuelles des métriques.
+
+2. **Stockage de séries chronologiques :** chaque métrique avec un ensemble
+   d'étiquettes est stockée sous forme de série chronologique.
+
+3. **Requêtes PromQL :** agrégation, fonctions de taux, analyses de type
+   centile, corrélations.
+
+4. **Moteur de règles :**
+
+- règles d'enregistrement pour les calculs préliminaires ;
+
+- règles d'alerte pour générer des alertes.
+
+5. **Intégration avec Alertmanager :** déduplication, routage, regroupement et
+   notifications (Slack, email, PagerDuty).
+
+#### Pourquoi Prometheus est populaire :
+
+1. Modèle opérationnel simple (pull + fichiers de configuration).
+
+2. PromQL puissant.
+
+3. Un vaste écosystème d'exportateurs.
+
+4. Bonne intégration avec Kubernetes et l'environnement cloud natif.
+
+#### Conclusion :
+
+Pour les métriques et les journaux, la production utilise généralement une pile
+combinée : Prometheus + Grafana pour les métriques, une plate-forme de
+journalisation distincte pour les journaux et le traçage pour les diagnostics
+interservices. Prometheus dans cette pile agit comme un noyau de surveillance et
+d'alerte de séries chronologiques.
+
+</details>

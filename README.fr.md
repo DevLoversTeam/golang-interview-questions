@@ -7991,3 +7991,71 @@ interservices. Prometheus dans cette pile agit comme un noyau de surveillance et
 d'alerte de séries chronologiques.
 
 </details>
+
+
+<details>
+<summary>128. Quelle est la différence entre les microservices et un monolithe ? Quels sont les avantages et les inconvénients ?</summary>
+
+#### Go
+
+Les monolithes et les microservices ne sont pas une « mode », mais des
+stratégies différentes de décomposition du système. Le choix entre eux est
+déterminé par la taille de l’équipe, la complexité du domaine, les exigences
+d’autonomie des versions et la maturité opérationnelle.
+
+#### Monolithe :
+
+**Gist :** une application, une base de code (ou un runtime étroitement couplé),
+généralement un point de déploiement.
+
+**Avantages :**
+
+1. Démarrage facile et complexité opérationnelle réduite.
+
+2. Débogage local plus facile et intégrité transactionnelle en cours.
+
+3. Développement plus rapide pour les petites équipes/produits en phase de
+   démarrage.
+
+**Inconvénients :**
+
+1. Il est plus difficile de mettre à l'échelle des modules « chauds »
+   individuels de manière indépendante.
+
+2. À mesure que le code se développe, la connectivité et le risque de versions
+   lentes augmentent également.
+
+3. Un déploiement à grande échelle rend difficiles les changements indépendants
+   fréquents.
+
+#### Microservices :
+
+**Gist :** le système est divisé en services autonomes avec leurs propres
+limites de responsabilité, contrats API et cycle de vie indépendant.
+
+**Avantages :**
+
+1. Libérations indépendantes d'équipes et de services.
+
+2. Mise à l'échelle des points des composants individuels.
+
+3. Flexibilité technologique au niveau du service (avec gouvernance).
+
+**Inconvénients :**
+
+1. Haute complexité opérationnelle (réseau, découverte, observabilité,
+   sécurité).
+
+2. Cohérence distribuée et transactions interservices complexes.
+
+3. Plus coûteux à déboguer en raison de l'interaction réseau et du plus grand
+   nombre de pièces mobiles.
+
+#### Conclusion pratique :
+
+Un monolithe constitue souvent le meilleur début et peut être très efficace
+pendant longtemps. Les microservices sont justifiés lorsque l'échelle du domaine
+et de l'organisation nécessite réellement l'autonomie des équipes, une mise à
+l'échelle indépendante et une décomposition claire des services.
+
+</details>

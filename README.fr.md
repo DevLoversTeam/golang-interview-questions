@@ -8059,3 +8059,92 @@ et de l'organisation nécessite réellement l'autonomie des équipes, une mise �
 l'échelle indépendante et une décomposition claire des services.
 
 </details>
+
+
+<details>
+<summary>129. Comment implémenter l'authentification dans une architecture de microservices ?</summary>
+
+#### Go
+
+Dans les microservices, l'authentification est généralement construite autour
+d'un fournisseur d'identité (IdP) centralisé et d'un modèle orienté jeton (le
+plus souvent OAuth2/OIDC + JWT). Cela vous permet d'adapter l'accès sans
+dupliquer la logique de connexion dans chaque service.
+
+#### Diagramme canonique :
+
+1. Le client se connecte à l'IdP (ou au service d'authentification).
+
+2. Reçoit un jeton d'accès (et, si nécessaire, un jeton d'actualisation).
+
+3. Transmet le jeton d'accès dans les requêtes vers API Gateway/services.
+
+4. Services valide le token (signature, durée de validité, émetteur, audience,
+   scopes).
+
+#### Où vérifier :
+
+1. **Sur API Gateway**
+
+- validation initiale du jeton et blocage du trafic non autorisé.
+
+2. **Dans chaque service (défense en profondeur)**
+
+- re-vérification des réclamations/droits d'accès critiques ;
+
+- ne comptez pas uniquement sur le périmètre.
+
+#### Que doit contenir le jeton :
+
+1. ID utilisateur/sujet (`sub`).
+
+2. Rôles/portées/droits (minimum requis).
+
+3. `iss`, `aud`, `exp`, `iat` pour une validation de contexte sécurisée.
+
+#### Principales pratiques de sécurité :
+
+1. TTL court pour le jeton d'accès.
+
+2. Rotation régulière des clés de signature (JWKS).
+
+3. TLS partout (trafic nord-sud et est-ouest).
+
+4. Principe du moindre privilège pour les étendues/rôles.
+
+5. Séparation claire entre l'authentification (qui vous êtes) et l'autorisation
+   (ce que vous pouvez faire).
+
+#### Pour le service à service :
+
+1. Utilisez des informations d'identification de machine distinctes
+   (informations d'identification client, mTLS, identité de service).
+
+2. Ne jetez pas inutilement les jetons utilisateur profondément dans le système.
+
+#### Conclusion :
+
+Une authentification fiable dans les microservices est un IdP centralisé, des
+jetons avec une validation correcte à toutes les limites critiques et une
+discipline de sécurité (TTL, rotation des clés, moindre privilège, TLS, défense
+en profondeur).
+
+#### Exemple :
+
+```go
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tok := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+		claims, err := verifyJWT(tok)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), userClaimsKey{}, claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+```
+
+</details>

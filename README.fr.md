@@ -8148,3 +8148,92 @@ func AuthMiddleware(next http.Handler) http.Handler {
 ```
 
 </details>
+
+
+<details>
+<summary>130. Comment concevoir et implémenter une passerelle API dans une architecture de microservices et quelles tâches doit-elle résoudre ?</summary>
+
+#### Go
+
+API Gateway est le point d'entrée externe unique au système de microservices. Sa
+mission est d'uniformiser le périmètre : sécurité, routage, politiques de
+trafic, observabilité et orchestration partielle des requêtes.
+
+#### Quelles tâches Gateway doit-il résoudre :
+
+1. **Routage** vers les services requis (règles chemin/hôte/méthode).
+
+2. **Authentification et autorisation de base** au périmètre.
+
+3. **Limitation de débit/étranglement** et protection contre les surcharges.
+
+4. **Terminaison TLS**, CORS, en-têtes de sécurité de base.
+
+5. **Transformations de demande/réponse** (si nécessaire) et versionnage de
+   l'API.
+
+6. **Observabilité** : journaux centralisés, métriques, contexte de traçage.
+
+7. **Politiques de résilience** : délai d'attente, nouvelle tentative
+   (attention), disjoncteur.
+
+#### Principes de conception clés :
+
+1. **Thin Gateway :** n'y transférez pas de logique métier lourde.
+
+2. **Propriété explicite des contrats :** qui est responsable des points de
+   terminaison et des politiques.
+
+3. **Sécurité par défaut :** refus par défaut, moindre privilège.
+
+4. **Idempotence et contrôle des nouvelles tentatives :** pour éviter les effets
+   secondaires en double.
+
+5. **Plan de dégradation :** les replis/erreurs doivent être prévisibles pour le
+   client.
+
+#### Modèle de mise en œuvre :
+
+1. Choisissez une technologie (produit de passerelle d'entrée/API ou propre
+   service Edge).
+
+2. Définissez la stratégie en tant que code (limites de débit, règles
+   d'authentification, tables de routage).
+
+3. Configurez l'intégration avec la découverte de services et les certificats.
+
+4. Implémentez le traçage de bout en bout (ID de corrélation).
+
+5. Ajouter des SLO/alertes au niveau de la passerelle (latence, taux d'erreur,
+   saturation).
+
+#### Erreurs typiques :
+
+1. Passerelle « épaisse » comme nouveau monolithe.
+
+2. Absence de modèle d'erreur cohérent.
+
+3. Transformations excessives sur le périmètre, rendant le débogage difficile.
+
+4. Point de défaillance unique sans configuration HA.
+
+#### Conclusion :
+
+Une passerelle API solide n'est pas un « endroit pour tout » mais une couche de
+périmètre disciplinée : sécurité, politiques de trafic, observabilité et routage
+géré. Dans le même temps, la logique métier doit rester dans les services de
+domaine.
+
+#### Exemple :
+
+```yaml
+routes:
+  - path: /api/orders/*
+    upstream: orders-service
+    auth: required
+    rateLimit:
+      requestsPerMinute: 600
+    timeoutMs: 2000
+```
+
+</details>

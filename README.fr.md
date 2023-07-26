@@ -8237,3 +8237,80 @@ routes:
 ```
 
 </details>
+
+
+<details>
+<summary>131. Comment fonctionne la découverte de services dans une architecture de microservices et comment les services se trouvent-ils sans adresses IP/hôtes statiques ?</summary>
+
+#### Go
+
+`Service discovery` est un mécanisme de recherche dynamique des instances de
+service disponibles dans des conditions où les IP/pods changent constamment
+(mise à l'échelle automatique, mise à jour continue, redémarrages).
+
+#### Principe de base :
+
+1. L'instance de service est enregistrée dans le registre de découverte (ou
+   automatiquement publiée par l'orchestrateur).
+
+2. Le client ou le proxy intermédiaire demande les points de terminaison de
+   service actuels.
+
+3. La requête est acheminée vers l'instance active conformément aux règles
+   d'équilibrage.
+
+#### Comment les services se « trouvent » :
+
+1. **Découverte basée sur DNS**
+
+- service fait référence à un nom stable (`service-name.namespace`) et DNS
+  renvoie les adresses IP actuelles.
+
+2. **Découverte basée sur le registre**
+
+- un registre de services distinct (ou API de plateforme) fournit une liste
+  d'instances saines.
+
+3. **Maille de service / side-car**
+
+- L'application  est accessible localement et le side-car gère la découverte,
+  les nouvelles tentatives, l'équilibrage de charge et TLS.
+
+#### Découverte côté client ou côté serveur :
+
+1. **Côté client**
+
+- le client reçoit lui-même la liste des instances et choisit la cible.
+
+2. **Côté serveur**
+
+- le client accède au point de terminaison stable (LB/proxy) et la sélection de
+  l'instance est effectuée par la couche d'infrastructure.
+
+#### Éléments critiques de fiabilité :
+
+1. Contrôles de santé et exclusion rapide des instances "mortes".
+
+2. TTL/mise en cache avec contrôle de vieillissement des enregistrements.
+
+3. Observabilité de la couche de découverte (latence, taux d'échec, churn).
+
+#### Conclusion :
+
+La découverte de services élimine le besoin d'adresses IP/hôtes statiques en
+fournissant un adressage de service dynamique via le registre, le DNS ou le
+maillage. Il s’agit d’une condition fondamentale pour l’évolutivité et
+l’élasticité d’un système de microservices.
+
+#### Exemple :
+
+```go
+// У Kubernetes сервіс звертається за DNS-іменем, а не за статичним IP.
+resp, err := http.Get("http://orders-service.default.svc.cluster.local/health")
+if err != nil {
+	return err
+}
+defer resp.Body.Close()
+```
+
+</details>

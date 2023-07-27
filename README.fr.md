@@ -8314,3 +8314,75 @@ defer resp.Body.Close()
 ```
 
 </details>
+
+
+<details>
+<summary>132. Comment éviter un couplage étroit dans l'architecture des microservices afin que le système reste évolutif et facile à modifier ?</summary>
+
+#### Go
+
+`Tight coupling` dans les microservices se produit lorsque la modification d'un
+service oblige les autres à changer. Des contrats clairs, des limites de domaine
+autonomes et un contrôle des dépendances sont nécessaires pour que le système
+reste évolutif et évolutif.
+
+#### Principales pratiques de découplage :
+
+1. **Contextes limités et propriété claire des services**
+
+- chaque service est responsable de son domaine et de ses données ;
+
+- éviter un socle « commun » comme canal d'intégration.
+
+2. **Interaction orientée contrat**
+
+- API/schémas versionnés  ;
+
+- compatibilité ascendante en tant que politique obligatoire.
+
+3. **Intégration d'événements si possible**
+
+- publish/subscribe réduit la dépendance requête-réponse synchrone.
+
+4. **Couche anti-corruption**
+
+- adaptateurs entre domaines afin que les modèles d'autres personnes ne « fuient
+  » pas dans votre service.
+
+5. **Interfaces stables, implémentation instable**
+
+- Les modifications du service interne  ne doivent pas briser les consommateurs.
+
+6. **Idempotence et rétrorésistance**
+
+- pour les scripts asynchrones est la clé d'une liaison plus lâche.
+
+#### Sauvegardes organisationnelles et techniques :
+
+1. Tests contractuels axés sur le consommateur.
+
+2. Gouvernance API (règles d'évolution des contrats).
+
+3. Observabilité claire entre les services (identifiant de trace, métriques de
+   dépendance).
+
+4. Restrictions sur la sortance et la profondeur des chaînes synchrones.
+
+#### Ce qu'il faut éviter :
+
+1. Tables/schémas partagés entre les équipes.
+
+2. Passerelle API « intelligente » qui encapsule la logique métier de nombreux
+   services.
+
+3. Contrats non définis et dépendances implicites via les champs de charge utile
+   internes.
+
+#### Conclusion :
+
+Éviter les couplages étroits est une discipline de limites, de contrats et
+d’évolution. Les services doivent être autonomes en termes de données et de
+versions, s'intégrer via des contrats stables et résister aux changements
+voisins sans pannes en cascade.
+
+</details>

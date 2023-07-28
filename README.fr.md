@@ -8386,3 +8386,63 @@ versions, s'intégrer via des contrats stables et résister aux changements
 voisins sans pannes en cascade.
 
 </details>
+
+
+<details>
+<summary>133. Comment organiser la rétrocompatibilité ?</summary>
+
+#### Go
+
+`Backward compatibility` signifie que la nouvelle version du service/API ne
+rompt pas les clients existants. Dans les systèmes distribués, cela est
+essentiel car les consommateurs ne sont pas mis à jour simultanément.
+
+#### Principes de base de compatibilité :
+
+1. **Ne rompez jamais brusquement un contrat existant.**
+
+2. **Modifications additives par rapport aux modifications avec rupture :**
+   ajoutez de nouveaux champs/points de terminaison sans supprimer les anciens.
+
+3. **Sémantique stable des champs existants :** ne modifie pas la valeur/le type
+   d'un champ portant le même nom.
+
+4. **Politique de gestion des versions explicite :** URL/en-tête de
+   version/version du schéma.
+
+#### Techniques pratiques :
+
+1. Les champs supplémentaires doivent être rendus facultatifs avec des valeurs
+   par défaut sûres.
+
+2. Utilisez la période de dépréciation pour supprimer l'ancienne fonctionnalité.
+
+3. Maintenir en parallèle les anciens et les nouveaux contrats pendant la
+   migration.
+
+4. Utilisez les indicateurs de fonctionnalités pour un déploiement contrôlé.
+
+#### Pour les événements et les programmes :
+
+1. Les programmes doivent évoluer de manière additive.
+
+2. Les consommateurs doivent ignorer les champs inconnus.
+
+3. Interdire la réutilisation des "anciens" identifiants de champ (pertinent
+   pour les protocoles basés sur un schéma).
+
+#### Contrôle qualité de compatibilité :
+
+1. Tests contractuels axés sur le consommateur.
+
+2. Vérifications de compatibilité des schémas dans CI.
+
+3. Publications Canary et surveillance des erreurs client.
+
+#### Conclusion :
+
+L'organisation de la rétrocompatibilité est une combinaison de règles techniques
+et de discipline de publication : évolution additive des contrats, dépréciation
+gérée, contrôles de compatibilité automatiques et déploiement progressif.
+
+</details>

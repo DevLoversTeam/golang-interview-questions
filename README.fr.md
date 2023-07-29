@@ -8446,3 +8446,85 @@ et de discipline de publication : évolution additive des contrats, dépréciati
 gérée, contrôles de compatibilité automatiques et déploiement progressif.
 
 </details>
+
+
+<details>
+<summary>134. Comment les applications Go implémentent-elles les mises à jour de configuration « à la volée » sans redémarrer le service ?</summary>
+
+#### Go
+
+Les mises à jour de configuration de rechargement à chaud dans Go sont
+généralement conçues comme un processus contrôlé : détecter un changement de
+source, valider un nouveau chargement de configuration, basculer atomiquement
+l'instantané actif et le propager en toute sécurité aux composants fonctionnels.
+
+#### Schéma architectural typique :
+
+1. **Source de configuration**
+
+- file (observateur), fournisseur d'environnement, service de configuration,
+  magasin KV.
+
+2. **Chargeur + validateur**
+
+- lit la nouvelle version ;
+
+- vérifie le schéma, les limites de valeurs et les invariants de paramètres
+  croisés.
+
+3. **Publication atomique**
+
+- new instantané de configuration est publié via `atomic.Value` ou un autre
+  mécanisme thread-safe.
+
+4. **Consommateurs de configuration**
+
+- lit l'instantané actuel sans bloquer les courses.
+
+#### Exigences techniques clés :
+
+1. **Basculer l'atomicité**
+
+- soit toute nouvelle configuration, soit ancienne ; sans « demi-États ».
+
+2. **Validité avant utilisation**
+
+- La version incorrecte ne peut pas être activée.
+
+3. **Prêt pour la restauration**
+
+- en cas d'erreur d'application, le service doit rester dans la configuration de
+  travail précédente.
+
+4. **Observabilité**
+
+- reload journal des événements, version de configuration, mesures des mises à
+  jour réussies/échouées.
+
+#### Ce qui peut généralement être modifié "à la volée" :
+
+1. Limites, délais d'attente, indicateurs de fonctionnalité, paramètres de
+   nouvelle tentative/d'attente.
+
+2. Niveaux de journalisation.
+
+3. Politiques de routage non critiques.
+
+#### Ce qui ne doit PAS être modifié souvent sans redémarrer :
+
+1. Paramètres de liaison réseau de base.
+
+2. Dépendances d'initialisation critiques qui ne prennent pas en charge la
+   reconfiguration en direct.
+
+3. Paramètres dont la modification brise les invariants de l'état actuel.
+
+#### Conclusion :
+
+Le rechargement à chaud dans Go n'est pas de la "magie de l'observateur", mais
+la discipline de publication de configuration sécurisée : valider → échanger
+atomiquement → observer → revenir en arrière en cas d'échec. Cette approche
+permet de modifier le comportement du service sans temps d'arrêt et sans perte
+de contrôlabilité.
+
+</details>

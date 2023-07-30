@@ -8528,3 +8528,85 @@ permet de modifier le comportement du service sans temps d'arrêt et sans perte
 de contrôlabilité.
 
 </details>
+
+
+<details>
+<summary>135. Comment implémenter la limitation (limitation de la fréquence des requêtes) dans le service Go pour protéger le système contre les surcharges ?</summary>
+
+#### Go
+
+Le service `Throttling` in Go est une limite d'intensité de requête gérée pour
+protéger le processeur, la base de données, les API externes et les ressources
+critiques contre la surcharge et la dégradation en cascade.
+
+#### Principaux modèles de limitation :
+
+1. **Seau à jetons / Seau qui fuit**
+
+- permet de courtes rafales dans les limites de sa capacité ;
+
+- stabilise le tarif moyen.
+
+2. **Fenêtre fixe / coulissante**
+
+- limites pour les fenêtres horaires (par seconde/minute).
+
+3. **Limite de simultanéité**
+
+- limitation du nombre de requêtes traitées simultanément (pool
+  sémaphore/worker).
+
+#### Où postuler :
+
+1. Sur le périmètre (passerelle/entrée) — protection globale.
+
+2. À l'intérieur du service — protection des manutentionnaires/opérations
+   coûteuses.
+
+3. Sur les appels de dépendance - limite locale pour les bases de données/API
+   externes.
+
+#### Sections limitatives :
+
+1. Globalement par service.
+
+2. Par route/par point de terminaison.
+
+3. Par client / par clé API / par locataire / par utilisateur.
+
+#### Solutions pratiques en Go :
+
+1. Middleware avec un limiteur (souvent un compartiment à jetons).
+
+2. Pour un environnement multi-instance : une limite centralisée ou distribuée
+   (par exemple, via Redis).
+
+3. Une réponse claire au client :
+
+- HTTP `429 Too Many Requests` ;
+
+- `Retry-After` et une charge utile d'erreur claire.
+
+#### Nuances importantes :
+
+1. La limite doit être cohérente avec les capacités réelles du backend.
+
+2. Mesures requises :
+
+- pourcentage de demandes rejetées ;
+
+- profondeur de la file d'attente ;
+
+- latence avant/après limitation.
+
+3. Il vaut la peine d'avoir une politique pour le trafic prioritaire (par
+   exemple, les clients système).
+
+#### Conclusion :
+
+La limitation dans Go n'est pas seulement un commutateur 429, mais fait partie
+d'une stratégie de résilience : limites de vitesse et de contention, politiques
+de basculement transparentes et métriques pour adapter les paramètres à la
+charge réelle.
+
+</details>

@@ -8610,3 +8610,71 @@ de basculement transparentes et métriques pour adapter les paramètres à la
 charge réelle.
 
 </details>
+
+
+<details>
+<summary>136. Comment fonctionne la couche de mise en cache dans Go et quel problème `singleflight.Group` résout-il avec les requêtes simultanées ?</summary>
+
+#### Go
+
+`Caching layer` dans Go est une couche intermédiaire entre la logique métier et
+la source de données "coûteuse" (DB, API externe, calcul), qui renvoie un
+résultat pré-stocké pour les requêtes répétées et réduit la charge sur le
+backend.
+
+#### Fonctionnement d'un flux de cache typique :
+
+1. Demande reçue avec la clé `K`.
+
+2. Vérifier le cache :
+
+- **cache hit** → nous renvoyons la valeur rapidement ;
+
+- **cache miss** → lire à partir de la source, mettre en cache, renvoyer le
+  résultat.
+
+3. TTL/invalidation contrôle la fraîcheur des données.
+
+#### Quel problème se pose avec la concurrence :
+
+Pendant `cache miss`, la clé populaire peut recevoir plusieurs demandes en même
+temps. Sans contrôle supplémentaire, ils iront tous vers le backend en parallèle
+— c'est `cache stampede` (troupeau tonitruant).
+
+#### Que fait `singleflight.Group` :
+
+1. Duplique les requêtes identiques simultanées par clé.
+
+2. Seule la première requête remplit la fonction "coûteuse".
+
+3. D'autres demandes concurrentes sont en attente et reçoivent le même résultat.
+
+#### Quel problème cela résout-il :
+
+1. Réduit considérablement les demandes en double adressées à la base de
+   données/API en cas d'échec.
+
+2. Stabilise la latence en cas de charge de pointe.
+
+3. Protège le backend des pics lors d'accès simultanés massifs.
+
+#### Pratiques importantes :
+
+1. Utilisez `singleflight` avec le cache, et non à la place du cache.
+
+2. Limiter le délai d'attente via `context`/timeout.
+
+3. Travailler avec soin avec les erreurs (afin de ne pas reproduire une
+   défaillance transitoire).
+
+4. Ajoutez de la gigue au TTL pour éviter que plusieurs touches ne clignotent de
+   manière synchrone.
+
+#### Conclusion :
+
+La couche de mise en cache accélère la lecture et réduit la pression sur les
+sources de données, et `singleflight.Group` élimine l'effet de bousculade sous
+les `cache miss` concurrents. Ensemble, ils offrent un comportement de service
+beaucoup plus stable et efficace.
+
+</details>

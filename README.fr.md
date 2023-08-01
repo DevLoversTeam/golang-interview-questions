@@ -8678,3 +8678,84 @@ les `cache miss` concurrents. Ensemble, ils offrent un comportement de service
 beaucoup plus stable et efficace.
 
 </details>
+
+
+<details>
+<summary>137. Comment concevoir une architecture multi-tenant avec isolation des données entre clients dans le service Go ?</summary>
+
+#### Go
+
+L'architecture multi-tenant signifie qu'une seule plateforme dessert de nombreux
+clients (tenants), mais garantit l'isolation de leurs données, accès et
+ressources. La clé du succès est de faire du contexte du locataire un élément
+obligatoire de l’ensemble du chemin de requête.
+
+#### Modèles d'isolation des données de base :
+
+1. **Base de données partagée, schéma partagé + tenant_id**
+
+- début le moins cher ;
+
+- filtres durs obligatoires par demande.
+
+2. **Base de données partagée, schéma distinct par locataire**
+
+- isolement logique plus fort ;
+
+- un soutien opérationnel plus complexe.
+
+3. **Base de données par locataire**
+
+- isolement et conformité maximum ;
+
+- valeur d'infrastructure la plus élevée.
+
+#### Ce que vous devez mettre dans le service Go :
+
+1. **Contexte du locataire**
+
+- extraire le locataire du jeton d'authentification/de l'en-tête ;
+
+- passe par `context.Context` vers toutes les couches.
+
+2. **Application par défaut**
+
+- La couche de référentiel  ne doit pas exécuter de requêtes sans filtre de
+  locataire ;
+
+- "pas de locataire, pas de requête" comme invariant.
+
+3. **Autorisation**
+
+- vérifiez que l'utilisateur/la clé a droit à un locataire spécifique.
+
+4. **Isolement du cache**
+
+- Les clés de cache  doivent inclure l'identifiant du locataire.
+
+5. **Isolement des files d'attente/événements**
+
+- balises de locataire dans les événements, filtrage des consommateurs, contrôle
+  du routage.
+
+#### Aspects opérationnels :
+
+1. Quotas et limites de tarifs par locataire.
+
+2. Métriques/journaux/traces avec attribut de locataire.
+
+3. Stratégie de sauvegarde/restauration prenant en compte les limites des
+   locataires.
+
+4. Mécanismes de migration entre les modèles d'isolation pendant la croissance
+   (par exemple, de partagé à dédié aux clients d'entreprise).
+
+#### Conclusion pratique :
+
+Le multi-tenant dans Go n'est pas seulement un schéma de base de données, mais
+une discipline de bout en bout : identité du locataire, politiques d'accès,
+isolation du cache/des événements et contrôle opérationnel. Plus cela est
+intégré tôt dans l’architecture, plus il est facile de faire évoluer le produit
+sans fuites entre les clients.
+
+</details>

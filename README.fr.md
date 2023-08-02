@@ -8759,3 +8759,95 @@ intégré tôt dans l’architecture, plus il est facile de faire évoluer le pr
 sans fuites entre les clients.
 
 </details>
+
+
+<details>
+<summary>138. Comment organiser correctement le traitement des tâches longues (tâches longues) pour ne pas bloquer les requêtes HTTP ?</summary>
+
+#### Go
+
+Les tâches à long terme ne doivent pas être effectuées de manière synchrone dans
+le gestionnaire HTTP, car cela augmente la latence, réduit le débit et augmente
+le risque d'expiration/interruption du client. L'approche correcte est
+l'exécution asynchrone via une file d'attente/des travailleurs.
+
+#### Architecture canonique :
+
+1. Le point de terminaison HTTP accepte la demande et valide la charge utile.
+
+2. Crée un travail (avec `job_id`, statut, métadonnées).
+
+3. Place le travail dans la file d'attente (table courtier/tâche).
+
+4. Renvoie une réponse rapide (`202 Accepted` + `job_id`) au client.
+
+5. Les travailleurs en arrière-plan traitent la tâche en dehors du contexte
+   HTTP.
+
+#### Ce qui est nécessaire pour la fiabilité de la production :
+
+1. **Idempotence**
+
+- La relivraison de la tâche  ne doit pas rompre l'état.
+
+2. **Règle de nouvelle tentative**
+
+- backoff, tentatives maximales, classification des erreurs récupérables/non
+  récupérables.
+
+3. **États des tâches**
+
+- `queued`, `running`, `succeeded`, `failed`, `canceled`.
+
+4. **Observabilité**
+
+- métriques de file d'attente, temps d'exécution, taux d'erreur, décalage des
+  travailleurs.
+
+5. **Annulation / délai d'attente**
+
+- contrôle des délais d'exécution et annulation correcte.
+
+6. **Contre-pression**
+
+- restriction de la concurrence des travailleurs pour éviter de surcharger la
+  base de données/dépendances.
+
+#### Comment le client obtient le résultat :
+
+1. Point de terminaison d'interrogation pour `job_id`.
+
+2. Webhook/rappel.
+
+3. Canal push (SSE/WebSocket) — UX en temps quasi réel si nécessaire.
+
+#### Erreurs typiques :
+
+1. Effectuez une opération commerciale lourde directement dans le gestionnaire.
+
+2. N'a pas de statut de travail persistant.
+
+3. Absence de script de nouvelle tentative et de lettre morte.
+
+4. Aucune limite de travailleurs et aucun contrôle de file d'attente.
+
+#### Conclusion :
+
+Afin de ne pas bloquer les requêtes HTTP, les tâches de longue durée doivent
+être décomposées dans le modèle `accept -> enqueue -> async process -> observe
+result`. Cela donne une API stable, un débit gérable et des performances
+prévisibles sous charge.
+
+#### Exemple :
+
+```go
+func (h *Handler) StartReport(w http.ResponseWriter, r *http.Request) {
+	jobID := uuid.NewString()
+	_ = h.queue.Publish(r.Context(), Job{ID: jobID, Type: "build_report"})
+
+	w.WriteHeader(http.StatusAccepted)
+	_ = json.NewEncoder(w).Encode(map[string]string{"job_id": jobID})
+}
+```
+
+</details>

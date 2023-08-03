@@ -8851,3 +8851,86 @@ func (h *Handler) StartReport(w http.ResponseWriter, r *http.Request) {
 ```
 
 </details>
+
+
+<details>
+<summary>139. Comment construire une transaction interservices ?</summary>
+
+#### Go
+
+Dans les microservices, une transaction ACID classique entre plusieurs bases de
+données/services est généralement peu pratique. Par conséquent, une
+« transaction » interservices se construit à travers une procédure commerciale
+convenue avec des compensations et une cohérence éventuelle.
+
+#### Principales approches :
+
+1. **Saga (la plus courante)**
+
+- séquence de transactions locales de services ;
+
+- en cas de panne, des actions compensatoires sont déclenchées.
+
+2. **Saga de l'Orchestration**
+
+- central orchestrator gère les étapes et les restaurations.
+
+3. **Saga chorégraphique**
+
+- Les services  répondent aux événements des autres sans chef central.
+
+4. **2PC/XA**
+
+- est théoriquement possible, mais généralement évité dans les microservices en
+  raison de la complexité et de la dégradation de la disponibilité.
+
+#### Conception canonique d'une transaction interservices :
+
+1. Divisez le processus en étapes atomiques locales.
+
+2. Pour chaque étape, définissez la compensation.
+
+3. Assurer l'idempotence des commandes et des événements.
+
+4. Mettez en œuvre une livraison fiable via des modèles de boîte d'envoi/boîte
+   de réception.
+
+5. Ajoutez une corrélation `transaction/saga id` pour le traçage.
+
+#### Exigences critiques :
+
+1. **Idempotence** sur toutes les frontières.
+
+2. **Réessai/interruption** en cas d'échecs temporaires.
+
+3. **Déduplication** des événements restitués.
+
+4. **Politique de délai d'attente et de lettre morte** pour les étapes
+   « suspendues ».
+
+5. **Observabilité** : statuts de la saga, métriques, audit.
+
+#### Conclusion :
+
+La transaction interservices dans les microservices n'est pas un ACID global,
+mais un processus de cohérence géré : transactions locales + événements +
+compensations. Le modèle le plus pratique pour cela est Saga, avec des
+invariants clairs et une gestion robuste des pannes.
+
+#### Exemple :
+
+```go
+// Спрощений оркестратор Saga
+func (s *Saga) Run(ctx context.Context, cmd CreateOrder) error {
+	if err := s.reserveInventory(ctx, cmd); err != nil {
+		return err
+	}
+	if err := s.chargePayment(ctx, cmd); err != nil {
+		_ = s.compensateInventory(ctx, cmd)
+		return err
+	}
+	return s.confirmOrder(ctx, cmd)
+}
+```
+
+</details>

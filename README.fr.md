@@ -8934,3 +8934,63 @@ func (s *Saga) Run(ctx context.Context, cmd CreateOrder) error {
 ```
 
 </details>
+
+
+<details>
+<summary>140. Quels problèmes le modèle Saga résout-il ?</summary>
+
+#### Go
+
+Le modèle `Saga` résout le problème d'une opération commerciale cohérente
+couvrant plusieurs microservices avec des bases de données distinctes où il
+n'est pas possible ou pratique d'appliquer une seule transaction ACID globale.
+
+#### Quels sont les problèmes couverts par Saga :
+
+1. **Manque d'ACID distribué entre les services**
+
+- remplace la transaction globale par une séquence de transactions locales.
+
+2. **Exigence d'indemnisation en cas de défaillance partielle**
+
+- si l'une des étapes échoue, des actions compensatoires sont effectuées.
+
+3. **Gestion de la cohérence éventuelle**
+
+- permet d'atteindre l'état commercial convenu de manière asynchrone.
+
+4. **Diminution de la connectivité entre les services**
+
+- Les steps peuvent interagir via des événements/commandes sans 2PC dur.
+
+5. **Résistance aux pannes temporaires**
+
+- retry/backoff et idempotence rendent le processus plus fiable.
+
+#### What Saga ne "guérit" pas automatiquement :
+
+1. Ne supprime pas la nécessité d'une modélisation de domaine explicite des
+   compensations.
+
+2. N'élimine pas la complexité de l'observabilité et de la surveillance de
+   l'état des processus.
+
+3. Ne garantit pas une cohérence instantanée - seulement une cohérence gérée
+   dans le temps.
+
+#### Où Saga est particulièrement pertinent :
+
+1. Workflow de paiement/commande (réserve de produits, paiement, livraison).
+
+2. Réservez/annulez des ressources dans plusieurs systèmes.
+
+3. Tout processus métier en plusieurs étapes ayant des effets interservices.
+
+#### Conclusion :
+
+Saga résout le problème central de la cohérence des microservices : comment
+effectuer une opération interservices complexe sans coordinateur de verrouillage
+global, avec une récupération contrôlée via des compensations et une résilience
+opérationnelle acceptable.
+
+</details>

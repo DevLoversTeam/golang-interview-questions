@@ -8994,3 +8994,73 @@ global, avec une récupération contrôlée via des compensations et une résili
 opérationnelle acceptable.
 
 </details>
+
+
+<details>
+<summary>141. Qu'est-ce que le sourcing d'événements ?</summary>
+
+#### Go
+
+`Event Sourcing` est une approche dans laquelle le système enregistre non pas «
+l'état actuel » de l'entité, mais la séquence d'événements qui ont modifié cet
+état. L'état actuel est reproduit en rejouant les événements.
+
+#### Idée clé :
+
+1. La source de vérité est un journal des événements de domaine immuable.
+
+2. L'état de l'agrégat est le résultat dérivé de la réduction de ces événements
+   dans l'ordre chronologique.
+
+3. Le changement d'état se produit par l'ajout d'un nouvel événement, et non par
+   un "écrasement".
+
+#### Ce que propose Event Sourcing :
+
+1. **Piste d'audit complète** : vous pouvez voir qui/quand/pourquoi a modifié le
+   statut du domaine.
+
+2. **Déclarer la reproductibilité** à tout moment.
+
+3. **Projections flexibles** (modèles de lecture) pour différents scénarios de
+   lecture.
+
+4. **Intégration naturelle avec une architecture basée sur les événements**.
+
+#### Composants typiques :
+
+1. Magasin d'événements (ajout uniquement).
+
+2. Agréger avec les règles de validation des commandes.
+
+3. Constructeurs de modèles de projection/lecture.
+
+4. Mécanismes de gestion des versions d'événements et upcasters.
+
+#### Défis importants :
+
+1. La complexité de l'évolution des modèles d'événements.
+
+2. Besoin d'instantanés pour une restauration rapide des longs flux.
+
+3. Complexité opérationnelle de cohérence entre modèles d'écriture/lecture
+   (souvent CQRS).
+
+#### Le cas échéant :
+
+1. Domaines avec des exigences élevées en matière d'audit et d'historique des
+   modifications.
+
+2. Processus commerciaux complexes où la transparence des causes et des effets
+   est importante.
+
+3. Systèmes où les événements constituent un contrat d'intégration naturel.
+
+#### Conclusion :
+
+Event Sourcing est un modèle « stocker les faits sur les événements, pas l'état
+final ». Il offre une forte transparence historique et une flexibilité
+architecturale, mais nécessite une discipline mature en matière de modélisation
+d'événements, de gestion des versions et de support opérationnel.
+
+</details>

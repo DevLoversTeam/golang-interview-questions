@@ -9064,3 +9064,45 @@ architecturale, mais nécessite une discipline mature en matière de modélisati
 d'événements, de gestion des versions et de support opérationnel.
 
 </details>
+
+
+<details>
+<summary>142. Formuler le théorème CAP.</summary>
+
+#### Go
+
+Le théorème CAP stipule : dans un système distribué lors de la séparation du
+réseau (`Partition`), il est impossible de garantir simultanément à la fois une
+forte cohérence (`Consistency`) et une disponibilité totale (`Availability`)
+pour toutes les demandes.
+
+#### Trois propriétés du CAP :
+
+1. **Cohérence (C)** tous les nœuds voient le même état actuel des données après
+   une opération d'écriture.
+
+2. **Disponibilité (A)** chaque requête obtient une réponse (succès/échec sans
+   attente infinie).
+
+3. Le système **Partition tolérance (P)** continue de fonctionner même en cas de
+   pannes de réseau ou de retards de communication entre les nœuds.
+
+#### Principales priorités pratiques :
+
+1. Dans les systèmes distribués réels, `P` est presque toujours requis (le
+   réseau n'est pas fiable par nature).
+
+2. Par conséquent, au moment du partage, vous devez choisir une priorité :
+
+- **CP** : préserver la cohérence en sacrifiant une certaine disponibilité ;
+
+- **AP** : Préservez la disponibilité en acceptant une inadéquation temporaire.
+
+#### Conclusion :
+
+CAP ne dit pas « choisissez seulement deux propriétés pour toujours ». Elle
+dit : **quand une partition se produit, les maximums C et A sont simultanément
+inaccessibles** ; l'architecte doit consciemment déterminer ce que le système
+sacrifie en mode d'urgence.
+
+</details>

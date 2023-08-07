@@ -9106,3 +9106,74 @@ inaccessibles** ; l'architecte doit consciemment déterminer ce que le système
 sacrifie en mode d'urgence.
 
 </details>
+
+
+<details>
+<summary>143. Parlez-nous de l'algorithme de consensus Raft.</summary>
+
+#### Go
+
+Raft est un algorithme de consensus pour un journal répliqué (journal répliqué),
+qui permet à un groupe de nœuds de stocker de manière cohérente la même séquence
+de commandes, même en cas de pannes partielles du réseau ou des nœuds.
+
+#### L'idée principale de Raft :
+
+1. Le cluster compte **un leader** et plusieurs suiveurs.
+
+2. Les dossiers des clients sont acceptés par le leader.
+
+3. Leader réplique les entrées de journal aux abonnés.
+
+4. Le dossier est considéré comme engagé après confirmation par la majorité
+   (quorum).
+
+5. Tous les nœuds appliquent les enregistrements validés dans le même ordre.
+
+#### Rôles des nœuds :
+
+1. **Leader** - Gère la réplication et gère les commandes client.
+
+2. **Follower** — accepte passivement la réplication du leader.
+
+3. **Candidat** — un rôle lors de l'élection d'un nouveau chef.
+
+#### Élections des dirigeants :
+
+1. Le temps est divisé en termes (`term`).
+
+2. Si le suiveur ne reçoit pas de battement de cœur, il devient candidat et
+   lance une élection.
+
+3. Le nœud avec le plus de voix devient le leader du mandat en cours.
+
+#### Garanties de sécurité :
+
+1. **Correspondance du journal** - le même index/terme signifie le même
+   historique jusqu'à présent.
+
+2. **Exhaustivité du leader** — les enregistrements engagés sont stockés dans
+   les journaux des futurs dirigeants.
+
+3. **Sécurité des machines d'état** — les commandes sont appliquées dans un
+   ordre cohérent sur tous les nœuds.
+
+#### Aspects pratiques :
+
+1. La dépendance au quorum signifie : sans majorité, le cluster ne peut pas
+   valider de nouvelles entrées.
+
+2. Le compactage des instantanés/journaux est utilisé pour limiter la croissance
+   des journaux.
+
+3. Des délais d'attente corrects pour les battements de cœur et les élections
+   sont essentiels à la stabilité.
+
+#### Conclusion :
+
+Raft fournit un modèle de consensus clair et fiable : réplication basée sur les
+leaders, élections du quorum et garanties solides de cohérence des journaux.
+C'est pourquoi il est largement utilisé dans les systèmes de configuration, de
+coordination et de services avec état distribués.
+
+</details>

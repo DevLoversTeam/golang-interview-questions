@@ -9177,3 +9177,75 @@ C'est pourquoi il est largement utilisé dans les systèmes de configuration, de
 coordination et de services avec état distribués.
 
 </details>
+
+
+<details>
+<summary>144. Comment organiser CI/CD pour Go ?</summary>
+
+#### Go
+
+Un CI/CD for Go efficace est construit comme un pipeline cohérent : validation
+rapide du code, construction reproductible, tests automatisés, déploiement
+sécurisé et restauration contrôlée.
+
+#### Structure typique du pipeline CI :
+
+1. **Contrôles peluches + statiques**
+
+- `go vet`, linters, contrôles de sécurité de base.
+
+2. **Tests unitaires**
+
+- `go test ./...` (si nécessaire `-race` pour les branches critiques).
+
+3. **Tests d'intégration**
+
+- services/DB dans des conteneurs ou test-env.
+
+4. **Étape de construction**
+
+- construction d'artefact reproductible (binaire/conteneur).
+
+5. **Publication d'artefacts**
+
+- pousser l'image vers le registre, en marquant avec version/commit.
+
+#### Structure typique d'un CD :
+
+1. Déploiement en préparation.
+
+2. Fumée/contrôles automatiques.
+
+3. Promouvoir vers la production (porte manuelle ou basée sur des politiques).
+
+4. Surveillance des SLO/taux d'erreur/latence après le déploiement.
+
+#### Pratiques clés en matière de fiabilité :
+
+1. **Artefacts immuables** (ne reconstruisez pas deux fois la même version).
+
+2. **Épinglage des versions de la chaîne d'outils/dépendances**.
+
+3. **Gestion des secrets** via CI vault/secret store.
+
+4. **Parité environnementale** entre la mise en scène et la prod.
+
+5. **Déploiement Canary/bleu-vert** pour réduire les risques de publication.
+
+#### Ce qui est important spécifiquement pour Go :
+
+1. Des tests et des builds rapides permettent une courte boucle de rétroaction.
+
+2. Matrix-build pour plusieurs `GOOS/GOARCH` selon les besoins.
+
+3. Détection précoce des défauts concurrentiels (`-race`) dans les emplois
+   pertinents.
+
+#### Conclusion :
+
+CI/CD for Go doit être rapide, reproductible et géré avec des risques :
+vérifiez, créez, testez, déployez de manière incrémentielle et disposez d'un
+chemin de restauration garanti. C'est cette discipline qui produit des versions
+stables sans perdre en vitesse de développement.
+
+</details>

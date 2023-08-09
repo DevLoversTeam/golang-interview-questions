@@ -9249,3 +9249,72 @@ chemin de restauration garanti. C'est cette discipline qui produit des versions
 stables sans perdre en vitesse de développement.
 
 </details>
+
+
+<details>
+<summary>145. Comment organiser une restauration dans CI/CD pour le service Go afin de restaurer rapidement et en toute sécurité une version ayant échoué ?</summary>
+
+#### Go
+
+Une restauration fiable n'est pas un « plan B », mais fait partie de la
+conception du processus de publication. Pour restaurer un service Go rapidement
+et en toute sécurité, vous devez disposer d'artefacts reproductibles, d'un
+déploiement contrôlé et de déclencheurs de restauration clairs à l'avance.
+
+#### Principes de base du processus de restauration :
+
+1. **Artefacts immuables**
+
+- chaque version a une balise/sha unique ;
+
+- rollback = réédition d'un artefact précédemment vérifié.
+
+2. **Déploiement sans étapes destructrices**
+
+- Les modifications  doivent être réversibles ;
+
+- Les migrations DB sont rétrocompatibles ou avec un plan de restauration
+  distinct.
+
+3. **Commutation rapide du trafic**
+
+- canary/blue-green/rolling avec la possibilité de réduire ou de réinitialiser
+  instantanément la part d'une nouvelle version.
+
+#### Ce qui devrait être dans CI/CD :
+
+1. Fumée/vérifications automatiques après le déploiement.
+
+2. Portes SLO (taux d'erreur, latence p95/p99, saturation).
+
+3. Effacer la commande/procédure de restauration en une étape.
+
+4. Alerts déclenchés tôt plutôt qu'après un incident de masse.
+
+#### Stratégie de rollback en production :
+
+1. Dégradation des métriques détectée.
+
+2. Arrêt automatique ou manuel du déploiement.
+
+3. Trafic basculé vers la version stable précédente.
+
+4. Vérification de la récupération du SLO.
+
+5. Post mortem et cause de la régression enregistrées.
+
+#### L'aspect critique est la base de données :
+
+1. Modifier les schémas selon le principe d'expansion/contrat.
+
+2. Évitez les migrations qui cassent immédiatement l'ancien code.
+
+3. Déploiement de code séparé et étapes DDL dangereuses.
+
+#### Conclusion :
+
+Une restauration rapide et sûre dans Go CI/CD n'est possible que lorsqu'elle est
+conçue à l'avance : versions immuables, déploiement géré, portes de métriques,
+modifications réversibles et procédure de restauration opérationnelle éprouvée.
+
+</details>

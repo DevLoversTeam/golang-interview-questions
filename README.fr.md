@@ -9318,3 +9318,71 @@ conçue à l'avance : versions immuables, déploiement géré, portes de métri
 modifications réversibles et procédure de restauration opérationnelle éprouvée.
 
 </details>
+
+
+<details>
+<summary>146. Comment fonctionne le déploiement bleu-vert ?</summary>
+
+#### Go
+
+`Blue-green deployment` est une stratégie de publication dans laquelle deux
+environnements de production identiques existent simultanément :
+
+1. **Blue** est la version de combat actuelle.
+
+2. **Green** est une nouvelle version préparée pour recevoir du trafic.
+
+#### Comment ça marche étape par étape :
+
+1. La nouvelle version est déployée dans `green` sans affecter `blue`.
+
+2. En `green`, ils effectuent des contrôles de santé, des tests de fumée et une
+   validation de base.
+
+3. Après une validation réussie, le trafic passe de `blue` à `green` (via
+   LB/ingress/router).
+
+4. L'ancienne version (`blue`) reste disponible en tant qu'option de
+   restauration « à chaud ».
+
+#### Avantages :
+
+1. **Temps d'arrêt minimum** à la sortie.
+
+2. **Retour en arrière rapide** — il suffit de renvoyer le trafic vers
+   l'environnement précédent.
+
+3. **Validation de pré-commutation sécurisée** sans risque pour tous les
+   utilisateurs.
+
+4. **Modèle opérationnel clair** pour la gestion des versions.
+
+#### Risques et limites :
+
+1. Nécessite deux ressources (deux environnements en même temps).
+
+2. Complications avec les composants avec état et les migrations de bases de
+   données.
+
+3. Nécessite une synchronisation approfondie de la configuration, des secrets et
+   des dépendances externes.
+
+#### Recommandations pratiques :
+
+1. Combinez le bleu-vert avec la vérification automatique SLO avant le
+   basculement.
+
+2. Pour la base de données, utilisez des migrations rétrocompatibles
+   (étendre/contracter).
+
+3. Avoir une procédure formalisée de restauration et de vérification après le
+   changement.
+
+#### Conclusion :
+
+Le déploiement bleu-vert permet une version contrôlée et rapide avec une
+restauration presque instantanée. Il s’agit de l’une des stratégies de
+production les plus fiables, à condition que le système soit prêt à affronter un
+environnement dual et une gestion étatique disciplinée.
+
+</details>

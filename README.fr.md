@@ -894,7 +894,7 @@ enregistrement) conduit à des courses de données et à un comportement indéfi
    utilisés localement dans une seule goroutine ; un verrou intégré pour chaque
    opération ralentirait ces scénarios.
 
-2. **Modèle explicite de compétition :** Go confie le contrôle de la
+2. **Modèle explicite de concurrence :** Go confie le contrôle de la
    synchronisation au développeur, afin qu'il choisisse un mécanisme pour une
    charge de travail spécifique.
 
@@ -2313,7 +2313,7 @@ individuels.
 2. **Impossible d'encoder la priorité commerciale** uniquement dans l'ordre
    `case` dans `select`.
 
-3. **Le comportement est compétitif, mais non déterministe**, ce qui est normal
+3. **Le comportement est correct en concurrence, mais non déterministe**, ce qui est normal
    pour la logique événementielle.
 
 #### Comment mettre en œuvre la priorité, si nécessaire :
@@ -2742,7 +2742,7 @@ chaos, fuites et blocages.
 
 - les données passent par des étapes successives de traitement ;
 
-- chaque étape peut avoir sa propre compétition et sa propre contre-pression.
+- chaque étape peut avoir sa propre concurrence et sa propre contre-pression.
 
 4. **Sémaphore via canal tamponné**
 
@@ -2987,10 +2987,10 @@ même mémoire sans synchronisation.
 1. Courses classiques de lecture/écriture et d'écriture/écriture sur des
    variables partagées.
 
-2. Verrouillage/déverrouillage manqué dans les zones compétitives.
+2. Verrouillage/déverrouillage manqué dans les sections concurrentes.
 
 3. Partie d'erreurs de coordination dans des scénarios de test avec une
-   compétition réelle.
+   concurrence réelle.
 
 #### Ce que `-race` ne garantit pas :
 
@@ -2999,7 +2999,7 @@ même mémoire sans synchronisation.
    directe aux données.
 
 2. **Ne voit pas le code non exécuté :** si les tests ne couvrent pas un
-   parcours compétitif, la course peut passer inaperçue.
+   parcours concurrent, la condition de concurrence peut passer inaperçue.
 
 3. **Ne s'avère pas exempt de bogues :** Une exécution « propre » signifie
    uniquement que l'outil n'a détecté aucune violation au cours de cette
@@ -3019,11 +3019,11 @@ synchronisation.
 
 
 <details>
-<summary>51. Quels sont les avantages des opérations atomiques par rapport au mutex pour les opérations simples et compétitives ?</summary>
+<summary>51. Quels sont les avantages des opérations atomiques par rapport à un mutex pour les opérations concurrentes simples ?</summary>
 
 #### Go
 
-Les opérations `atomic` en Go conviennent aux scénarios compétitifs très simples
+Les opérations `atomic` en Go conviennent aux scénarios concurrents très simples
 dans lesquels vous devez effectuer en toute sécurité une opération élémentaire
 sur une seule valeur (incrémentation, lecture d'un indicateur, CAS). Dans de
 tels cas, ils peuvent être plus légers que `mutex`.
@@ -3197,7 +3197,7 @@ l'annulation via `context`.
 1. Nécessite un modèle clair « échec dans une tâche → arrêter le reste ».
 
 2. Besoin de mettre en œuvre rapidement et proprement une orchestration
-   compétitive.
+   concurrente.
 
 3. La lisibilité et le code court et maintenable sont importants.
 
@@ -3366,7 +3366,7 @@ scénarios dans lesquels les clés sont lues fréquemment et rarement modifiées
 
 2. **Clés pour la plupart stables**, sans désabonnement agressif.
 
-3. **Accès en lecture hautement compétitif** à partir de nombreux goroutines.
+3. **Accès en lecture hautement concurrent** depuis de nombreuses goroutines.
 
 #### Quand plus c'est mieux `map + mutex` :
 
@@ -3405,7 +3405,7 @@ cas, un simple `map + mutex` est souvent plus transparent et efficace.
 
 Les tests de concurrence dans Go sont des tests qui testent le comportement du
 code dans des conditions d'exécution parallèle de goroutines, de partage d'état
-et de compétition de ressources. Leur objectif est de détecter les défauts qui
+et de contention des ressources. Leur objectif est de détecter les défauts qui
 n’apparaissent pas dans un scénario linéaire.
 
 #### Que vérifient exactement ces tests :
@@ -3418,7 +3418,7 @@ n’apparaissent pas dans un scénario linéaire.
 
 4. Réalisation correcte des goroutines (pas de fuite).
 
-5. Observation des invariants sous charge compétitive.
+5. Observation des invariants sous charge concurrente.
 
 #### Pourquoi sont-ils nécessaires :
 
@@ -3431,7 +3431,7 @@ n’apparaissent pas dans un scénario linéaire.
 3. **Affirmation de garanties architecturales :** telles que le fait que le
    système ne perd pas d'événements et ne viole pas la cohérence de l'état.
 
-4. **Refactoring plus sûr :** les invariants compétitifs restent protégés par
+4. **Refactoring plus sûr :** les invariants de concurrence restent protégés par
    l'ensemble de régression.
 
 #### Outils et pratiques en Go :
@@ -4124,7 +4124,7 @@ réel.
 
 - entrée fixe ;
 
-- profil compétitif connu ;
+- profil de concurrence connu ;
 
 - environnement de démarrage stable.
 
@@ -4898,7 +4898,7 @@ particulièrement critique pour les emballages réutilisables.
    pas savoir qu'il existe quelque part un état global qui affecte le
    comportement.
 
-2. **Problèmes de compétitivité :** les mondiaux deviennent facilement une
+2. **Problèmes de concurrence :** les variables globales deviennent facilement une
    source de race/contestation.
 
 3. **Tests complexes :** les tests commencent à dépendre de l'ordre d'exécution
@@ -6022,7 +6022,7 @@ cohérence éventuelle.
 Les niveaux d'isolement déterminent dans quelle mesure les modifications des
 transactions parallèles sont « visibles » les unes par rapport aux autres. Plus
 le niveau d’isolement est élevé, moins il y a d’anomalies, mais généralement à
-un coût plus élevé en termes de performances et de compétitivité.
+un coût plus élevé en termes de performances et de concurrence.
 
 #### Niveaux d'isolement classiques (SQL) :
 
@@ -6933,7 +6933,7 @@ qui s'adapte bien et reste transparente.
 
 2. Mot sur la limite du module, pas à l'intérieur de la logique de domaine.
 
-3. Pour les scénarios compétitifs, protégez le test d'état double (`mutex`,
+3. Pour les scénarios concurrents, protégez l'état du test double (`mutex`,
    atomique).
 
 4. Ne dupliquez pas excessivement la logique de production en faux - sinon les
@@ -7582,7 +7582,7 @@ de workflow en tant que conteneur de service.
 
 3. **Stands composites multiservices** : docker-compose / Testcontainers.
 
-4. **CI laconique pour base de données simple** : services GitHub Actions.
+4. **Configuration CI minimale pour une base de données simple** : services GitHub Actions.
 
 #### Conclusion :
 

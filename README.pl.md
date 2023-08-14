@@ -93,3 +93,54 @@ przemysłowego: dyscyplinuje styl, zachęca do przejrzystości myślenia w kodzi
 zapewnia dobrą równowagę pomiędzy prostotą i wydajnością.
 
 </details>
+
+
+<details>
+<summary>3. Jakie są najważniejsze cechy Go w porównaniu z innymi językami?</summary>
+
+#### Go
+
+Go wyróżnia się tym, że łączy zwięzłą składnię z bardzo praktycznym inżynierskim
+modelem wykonania: język nie obciąża programisty niepotrzebną złożonością, ale
+zapewnia narzędzia do budowania szybkich i niezawodnych systemów.
+
+#### Kluczowe cechy Go:
+
+1. **Prosta i ścisła składnia:** kod jest łatwy do odczytania, a jednolitość
+   stylistyczna jest utrzymywana automatycznie poprzez `go fmt`.
+
+2. **Kompiluj do natywnego pliku binarnego:** aplikacja jest zwykle kompilowana
+   do pojedynczego pliku wykonywalnego bez dużych zewnętrznych zależności
+   podczas uruchamiania.
+
+3. **Statyczne pisanie z dużą przewidywalnością:** na etapie kompilacji
+   wykrywana jest duża liczba błędów, co zwiększa niezawodność produkcji.
+
+4. **Wbudowana współbieżność:** `goroutine` i `channel` sprawiają, że
+   programowanie równoległe jest mechanizmem naturalnym, a nie pomocniczym.
+
+5. **Szybki cykl rozwoju:** stosunkowo szybka kompilacja i standardowe narzędzia
+   przyspieszają testowanie i dostarczanie zmian.
+
+6. **Silna biblioteka standardowa:** obsługa sieci, HTTP, kryptografia,
+   manipulowanie plikami, profilowanie i testowanie dostępne od razu po wyjęciu
+   z pudełka.
+
+7. **Model jawnego błędu:** w Go błędy są obsługiwane jawnie za pośrednictwem
+   `error`, dzięki czemu kontrola stanu jest przejrzysta i możliwa do
+   kontrolowania.
+
+8. **GC i pamięć zarządzana:** Język upraszcza rozwój zaplecza systemu bez
+   konieczności ręcznego zarządzania cyklem życia większości obiektów.
+
+9. **Praktyczne podejście modułowe:** `go mod` standaryzuje zarządzanie
+   zależnościami i powtarzalność kompilacji.
+
+#### Wniosek:
+
+W przeciwieństwie do wielu języków, które skłaniają się albo do maksymalnej
+abstrakcji, albo do sterowalności na niskim poziomie, Go celowo utrzymuje
+równowagę inżynieryjną: prostotę, wydajność, skalowalność i wygodę pracy
+zespołowej.
+
+</details>

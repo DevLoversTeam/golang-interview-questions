@@ -144,3 +144,51 @@ równowagę inżynieryjną: prostotę, wydajność, skalowalność i wygodę pra
 zespołowej.
 
 </details>
+
+
+<details>
+<summary>4. Jaka jest różnica między paradygmatem programowania imperatywnego i deklaratywnego? Podaj przykłady języków.</summary>
+
+#### Go
+
+Paradygmaty imperatywne i deklaratywne różnią się przede wszystkim przedmiotem
+opisu: pierwszy wyjaśnia **jak** krok po kroku wykonać zadanie, drugi — **co
+dokładnie** należy w rezultacie uzyskać.
+
+#### Paradygmat imperatywny:
+
+1. **Istota:** Programista wyraźnie określa sekwencję instrukcji, przejścia
+   stanów, pętle, rozgałęzienia i kolejność wykonywania.
+
+2. **Nacisk:** kontrola algorytmów i kontrola przepływu wykonywania.
+
+3. **Typowe cechy:** zmienne, przypisania, `for`, `if`, mutacja danych.
+
+4. **Przykłady języków:** Go, C, C++, Rust (w większości praktyk), Java.
+
+#### Paradygmat deklaratywny:
+
+1. **Esencja:** opisuje pożądany wynik lub właściwości systemu bez
+   wyszczególniania etapów wdrażania.
+
+2. **Nacisk:** model danych, zasady i ograniczenia, a nie mechanika
+   algorytmiczna.
+
+3. **Typowe cechy:** wyrażenia wyższego poziomu, minimalizacja jawnej mutacji,
+   abstrakcja od kolejności wykonania.
+
+4. **Przykładowe języki/podejścia:** SQL, HCL (Terraform), HTML/CSS, style
+   funkcjonalne w Haskell i częściowo w Elixir.
+
+#### Wniosek praktyczny:
+
+- W rzeczywistych systemach paradygmaty są często łączone.
+
+- Go ma głównie charakter imperatywny, ale pewne elementy deklaratywności
+  pojawiają się w konfiguracjach, opisach schematów, DSL i zapytaniach o dane.
+
+- Na potrzeby rozmowy należy podkreślić, że wybór paradygmatu nie jest kwestią
+  „lepszy czy gorszy”, ale kwestią dopasowania zadania, zespołu i wymagań
+  dotyczących wsparcia kodu.
+
+</details>

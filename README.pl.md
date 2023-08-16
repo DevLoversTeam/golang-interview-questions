@@ -192,3 +192,53 @@ dokładnie** należy w rezultacie uzyskać.
   dotyczących wsparcia kodu.
 
 </details>
+
+
+<details>
+<summary>5. Dlaczego Go dobrze nadaje się do pisania usług Cloud Native?</summary>
+
+#### Go
+
+Nie przez przypadek Go uznawany jest za jeden z najbardziej naturalnych języków
+dla Cloud Native: jego właściwości architektoniczne dobrze wpisują się w
+wymagania stawiane nowoczesnym systemom rozproszonym – skalowalność,
+obserwowalność, niezawodność i prostota obsługi.
+
+#### Dlaczego Go działa skutecznie w środowisku Cloud Native:
+
+1. **Lekkie, konkurencyjne obliczenia:** `goroutine` i `channel` upraszczają
+   konstrukcję usług obsługujących jednocześnie dużą liczbę żądań.
+
+2. **Wysoka wydajność i przewidywalny czas działania:** Kompilator Go i
+   zoptymalizowany harmonogram działają dobrze w scenariuszach obciążonej sieci.
+
+3. **Szybki start i wdrożenie:** zazwyczaj wynikiem kompilacji jest pojedynczy
+   plik binarny, który można łatwo skontenerować i wdrożyć w Kubernetes lub
+   innych koordynatorach.
+
+4. **Niski narzut operacyjny:** Proste obrazy Dockera, szybka kompilacja, mniej
+   problemów z zależnościami podczas uruchamiania.
+
+5. **Zaawansowana biblioteka standardowa:** `net/http`, `context`, `crypto`,
+   `encoding` i inne pakiety pozwalają budować rozwiązania produkcyjne bez
+   nadmiernej zależności od frameworków innych firm.
+
+6. **Wygoda dla praktyków zajmujących się obserwowalnością:** W Go łatwo jest
+   zintegrować metryki, śledzenie i profilowanie, co ma kluczowe znaczenie dla
+   wykorzystania chmury.
+
+7. **Odporny ekosystem narzędzi infrastrukturalnych:** Duża część stosu Cloud
+   Native została napisana specjalnie w Go (np. Kubernetes, Prometheus, Helm,
+   Terraform), co upraszcza integrację i kontekst poleceń.
+
+8. **Przejrzystość kodu w rozwoju zespołu:** Go zachęca do prostych rozwiązań,
+   które zmniejszają obciążenie poznawcze związane ze wspieraniem architektury
+   mikrousług.
+
+#### Podsumowanie:
+
+Go dobrze nadaje się do usług Cloud Native, ponieważ łączy przewidywalność
+inżynieryjną z wydajnością i praktyczną wygodą: od pisania kodu po jego
+wdrożenie, monitorowanie i długoterminowe wsparcie.
+
+</details>

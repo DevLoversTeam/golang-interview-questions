@@ -242,3 +242,62 @@ inżynieryjną z wydajnością i praktyczną wygodą: od pisania kodu po jego
 wdrożenie, monitorowanie i długoterminowe wsparcie.
 
 </details>
+
+
+<details>
+<summary>6. Co to są zmienne `shadowing` i jak mogą powodować błędy w logice biznesowej?</summary>
+
+#### Go
+
+`Shadowing` (shadowing) ma miejsce, gdy w zakresie wewnętrznym zadeklarowana
+jest nowa zmienna o tej samej nazwie co zmienna zewnętrzna. W rezultacie kod nie
+działa z „oczekiwaną” zmienną, ale z jej lokalną kopią według nazwy.
+
+#### Jak to się najczęściej dzieje:
+
+1. **Krótka deklaracja `:=` w zagnieżdżonym bloku:** programista oczekuje
+   przypisania, a tak naprawdę tworzona jest nowa zmienna.
+
+2. **Obsługa błędów (`err`) w `if`/`for`/`switch`:** lokalny `err` przesłania
+   zewnętrzny, powodując niepowodzenie kolejnych kontroli stanu.
+
+3. **Praca ze stanem w funkcjach długich:** cieniowanie zmiennych pośrednich
+   utrudnia odczyt i zwiększa ryzyko defektów logicznych.
+
+#### Dlaczego jest to niebezpieczne dla logiki biznesowej:
+
+1. **Sprawdzanie fałszywych warunków:** system może przeskoczyć do niewłaściwej
+   gałęzi wykonania, ponieważ sprawdzana jest „niewłaściwa” zmienna.
+
+2. **Stan utracony lub nieprawidłowy:** na przykład wynik obliczeń pozostał w
+   bloku lokalnym, a stan zewnętrzny nie został zaktualizowany.
+
+3. **Złożone debugowanie:** wizualnie nazwa jest taka sama, ale semantycznie są
+   to różne obiekty; błąd objawia się niepozornie i często tylko w przypadkach
+   bojowych.
+
+4. **Ciche defekty bez paniki:** program może się skompilować i uruchomić, ale
+   zwrócić wynik niepoprawny biznesowo.
+
+#### Jak zapobiegać `shadowing`:
+
+- Świadomie rozróżniaj `=` i `:=` we wszystkich zagnieżdżonych blokach.
+
+- Utrzymuj krótką widoczność zmiennych i unikaj zbyt długich funkcji.
+
+- Używaj jasnych, semantycznie dokładnych nazw, szczególnie w przypadku stanów i
+  błędów.
+
+- Połącz analizę statyczną (`go vet`, `golangci-lint`) z regułami wykrywania
+  cieniowania.
+
+- W krytycznych miejscach logiki dodaj testy dla negatywnych scenariuszy i
+  warunków brzegowych.
+
+#### Wniosek:
+
+`Shadowing` nie jest dziwactwem składniowym, ale źródłem podstępnych błędów
+logicznych. W produkcyjnym kodzie Go dyscyplina deklaracji zmiennych
+bezpośrednio wpływa na poprawność zachowań biznesowych systemu.
+
+</details>

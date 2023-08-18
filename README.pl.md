@@ -301,3 +301,56 @@ logicznych. W produkcyjnym kodzie Go dyscyplina deklaracji zmiennych
 bezpośrednio wpływa na poprawność zachowań biznesowych systemu.
 
 </details>
+
+
+<details>
+<summary>7. Dlaczego warto używać `struct{}` (pustej struktury) i w jakich scenariuszach jest to skuteczne?</summary>
+
+#### Go
+
+`struct{}` w Go jest pustą strukturą, tj. typem bez pól. Jego kluczowa
+właściwość: nie przenosi ładunku danych, a jedynie rejestruje sam fakt istnienia
+wartości lub zdarzenia.
+
+#### Dlaczego `struct{}` jest skuteczny:
+
+1. **Null wolumin informacji:** typ nie zawiera pól, więc jest używany jako
+   token, a nie kontener danych.
+
+2. **Jasna semantyka intencji:** kod wyraźnie pokazuje, że ważny jest fakt
+   „jest/nie jest”, a nie ładunek.
+
+3. **Ograniczenie zbędnych alokacji w strukturach usług:** w wielu wzorach jest
+   to bardziej praktyczny wybór niż `bool` lub dowolne wartości, gdy dane nie są
+   potrzebne.
+
+#### Typowe scenariusze użycia:
+
+1. **Ustaw przez `map[K]struct{}`:** `map` w Go to para klucz-wartość, a do
+   zestawu potrzebujemy tylko unikalnych kluczy. `struct{}` tutaj idealnie
+   oznacza „prezent kluczy”.
+
+2. **Kanały sygnałowe `chan struct{}`:** są używane do powiadamiania o
+   wystąpieniu zdarzenia (zatrzymanie/wykonanie/wyłączenie), gdy nie ma potrzeby
+   przesyłania danych.
+
+3. **Typy tokenów i kontrakty API:** Pusta struktura może działać jako lekki
+   token semantyczny w wewnętrznych protokołach aplikacji.
+
+4. **Osadzanie kompozycji zachowań:** `struct{}` jest czasami używane jako
+   element techniczny kompozycji, gdy wymagana jest struktura bezstanowa.
+
+#### Kiedy nie stosować:
+
+- Kiedy wymagany jest faktyczny stan lub atrybuty jednostki.
+
+- Kiedy `bool` zapewnia jaśniejszą semantykę biznesową (np. wyraźna flaga
+  warunku zamiast ustalonego faktu).
+
+#### Podsumowanie:
+
+`struct{}` to narzędzie do precyzyjnej intencji: jeśli dane nie są potrzebne,
+ale trzeba wskazać fakt, obecność lub sygnał, pusta struktura jest eleganckim i
+wydajnym rozwiązaniem w kodzie Go.
+
+</details>

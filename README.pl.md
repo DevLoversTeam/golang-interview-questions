@@ -354,3 +354,85 @@ ale trzeba wskazać fakt, obecność lub sygnał, pusta struktura jest elegancki
 wydajnym rozwiązaniem w kodzie Go.
 
 </details>
+
+
+<details>
+<summary>8. Jak działa struktura wewnętrzna `slice` i co się dzieje, gdy przekazujesz ją do funkcji?</summary>
+
+#### Go
+
+W Go `slice` nie jest samą tablicą, ale lekkim deskryptorem „dodatkowym” w
+sekcji tablicy. Dlatego zachowanie `slice` różni się od normalnego kopiowania
+tablicy i często powoduje błędy w wywiadach i prawdziwym kodzie.
+
+#### Model wewnętrzny `slice`:
+
+`slice` koncepcyjnie składa się z trzech części:
+
+1. **Wskaźnik do tablicy bazowej** (`ptr`)
+
+2. **Długość** (`len`) - ile artykułów jest obecnie dostępnych
+
+3. **Pojemność** (`cap`) — ile elementów jest dostępnych aż do limitu tablicy
+   bazowej
+
+Oznacza to, że `slice` przechowuje metadane dotyczące regionu w pamięci, zamiast
+duplikować wszystkie elementy.
+
+#### Co się stanie, gdy przekażesz `slice` do funkcji:
+
+1. **Kopiowany jest nagłówek `slice` (ptr/len/cap), a nie cała tablica.**
+
+2. **Obie strony (osoba dzwoniąca i wywoływana) początkowo korzystają z tej
+   samej tablicy podstawowej.**
+
+3. **Zmiana elementów poprzez indeks** (`s[i] = ...`) w funkcji jest zwykle
+   widoczna z zewnątrz, ponieważ zmieniają się dane współdzielonej tablicy.
+
+4. **Zmiana samego nagłówka** (`s = s[:n]`, `s = append(...)`) w funkcji nie
+   powoduje zmiany nagłówka w obiekcie wywołującym, chyba że zwrócisz nowy
+   `slice`.
+
+#### Kluczowy niuans z `append`:
+
+- Jeśli w czasie `append` jest wystarczająca ilość `cap`, wpis trafia do tej
+  samej tablicy podstawowej.
+
+- Jeśli brakuje `cap`, środowisko wykonawcze przydziela nową tablicę, kopiuje do
+  niej dane, a lokalny `slice` w funkcji zaczyna odwoływać się do innej pamięci.
+
+Zatem po `append` funkcja może już działać z nową tablicą, natomiast stara
+`slice` pozostanie na zewnątrz, jeśli nowa wartość nie zostanie zwrócona.
+
+#### Wniosek praktyczny:
+
+- Chcesz zmienić elementy - możesz przekazać `slice` bez zmian.
+
+- Chcesz zmienić długość/pojemność lub wynik `append` - zwróć zaktualizowaną
+  `slice` z funkcji (lub przekaż wskaźnik do `slice`, jeśli jest to naprawdę
+  uzasadnione architektonicznie).
+
+#### Przykład:
+
+```go
+package main
+
+import "fmt"
+
+func grow(s []int) {
+	s = append(s, 99) // змінюємо локальний заголовок slice
+}
+
+func mutate(s []int) {
+	s[0] = 42 // змінюємо спільний базовий масив
+}
+
+func main() {
+	s := []int{1, 2, 3}
+	mutate(s)
+	grow(s)
+	fmt.Println(s) // [42 2 3], append у grow не змінив заголовок у викликачі
+}
+```
+
+</details>

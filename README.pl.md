@@ -496,3 +496,72 @@ n)` jest wyborem dojrzałym pod względem inżynieryjnym: zapewnia mniej alokacj
 lepszą wydajność i bardziej stabilne zachowanie pod obciążeniem.
 
 </details>
+
+
+<details>
+<summary>10. W jaki sposób wyrażenie plasterka `a[low:high:max]` steruje `cap` nowym plasterkiem?</summary>
+
+#### Go
+
+W Go pełna forma wycinka `a[low:high:max]` pozwala kontrolować nie tylko długość
+(`len`), ale także pojemność (`cap`) nowego `slice`. Jest to ważne narzędzie do
+kontrolowania skutków ubocznych podczas `append`.
+
+#### Formuły:
+
+Dla `s := a[low:high:max]`:
+
+1. `len(s) = high - low`
+
+2. `cap(s) = max - low`
+
+Pod warunkiem prawidłowych limitów:
+
+- `0 <= low <= high <= max <= cap(a)` (dla podstawy plasterka)
+
+#### Co daje praktycznie:
+
+1. **Widoczne ograniczenie pojemności:** możesz „odciąć” dostęp do końca
+   podstawowej tablicy, nawet jeśli fizycznie istnieje.
+
+2. **Bezpieczniejsze `append`:** jeśli `cap` zostanie sztucznie zmniejszone,
+   `append` szybciej ponownie przydzieli pamięć, zamiast nadpisywać sąsiednie
+   dane we współdzielonej tablicy.
+
+3. **Lepsza izolacja pomiędzy fragmentami kodu:** jest to szczególnie przydatne,
+   gdy jeden wycinek jest przekazywany do innej funkcji lub warstwy systemu i
+   nie chcesz, aby „rozrósł się” w obszar innej osoby.
+
+#### Przykład koncepcyjny:
+
+- `a[2:5]` daje `len=3`, `cap` rozciąga się na koniec tablicy podstawowej.
+
+- `a[2:5:5]` daje `len=3`, `cap=3` - dalej `append` jest niedostępny i wymusza
+  nową tablicę.
+
+#### Wniosek:
+
+Trzeci indeks w `a[low:high:max]` to dźwignia precyzyjnego sterowania `cap`.
+Jest to potrzebne, gdy ważne jest kontrolowanie wzrostu `slice`, unikanie
+nieoczekiwanego nadpisania pamięci współdzielonej i zapewnienie przewidywalności
+zachowania kodu.
+
+#### Przykład:
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	a := []int{0, 1, 2, 3, 4, 5}
+	s := a[2:4:4] // len=2 (2,3), cap=2
+	fmt.Println(len(s), cap(s)) // 2 2
+
+	s = append(s, 99) // новий backing array, а не розширення в a
+	fmt.Println(a)    // [0 1 2 3 4 5]
+	fmt.Println(s)    // [2 3 99]
+}
+```
+
+</details>

@@ -565,3 +565,54 @@ func main() {
 ```
 
 </details>
+
+
+<details>
+<summary>11. Czy wskaźnik do elementu plasterka ma pozostać ważny po wywołaniu `append`?</summary>
+
+#### Go
+
+Krótka odpowiedź: **nie, nie gwarantujemy**. Po `append` wskaźnik do elementu
+starego `slice` może stracić swoje znaczenie dla nowego `slice`, jeśli
+podstawowa tablica została ponownie przydzielona.
+
+#### Dlaczego tak się dzieje:
+
+1. `append` dodaje elementy w obrębie istniejącego `cap`, jeśli jest
+   wystarczająco dużo miejsca.
+
+2. Jeśli `cap` zostanie wyczerpany, środowisko wykonawcze tworzy nową tablicę,
+   kopiuje dane i zwraca `slice`, który już odnosi się do nowego adresu.
+
+3. Wcześniej pobrane wskaźniki pozostają powiązane ze starą tablicą, a nie
+   zaktualizowaną `slice`.
+
+#### Konsekwencje praktyczne:
+
+1. **Aliasing wskaźników staje się niebezpieczny:** logika może „zajrzeć” w
+   nieaktualny obszar pamięci.
+
+2. **Nieoczekiwane błędy w modyfikacjach:** zmiany dokonane za pomocą starego
+   wskaźnika nie mają wpływu na nowy `slice` po przeniesieniu.
+
+3. **Trudne debugowanie:** kod kompiluje się i często działa, ale wykazuje
+   nieprzewidywalne zachowanie pod obciążeniem lub na innych woluminach danych.
+
+#### Jak pisać bezpiecznie:
+
+- Nie przechowuj długotrwałych wskaźników do `slice` elementów, które
+  potencjalnie będą rosły przez `append`.
+
+- Jeśli wskaźnik jest naprawdę potrzebny, zapewnij stabilność pamięci: wstępnie
+  zarezerwuj pojemność (`make(..., 0, n)`) lub nie wykonuj `append` po pobraniu
+  adresów.
+
+- Często bezpieczniej jest przekazać indeks lub zwrócić nowy `slice` i powiązać
+  wszystkie pochodne odniesienia.
+
+#### Wniosek:
+
+Po `append` ważność wskaźników do elementów `slice` nie jest umową Go.
+Bezpieczny kod musi zakładać, że `append` może zmienić adres bazowy danych.
+
+</details>

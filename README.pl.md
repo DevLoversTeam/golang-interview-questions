@@ -616,3 +616,59 @@ Po `append` ważność wskaźników do elementów `slice` nie jest umową Go.
 Bezpieczny kod musi zakładać, że `append` może zmienić adres bazowy danych.
 
 </details>
+
+
+<details>
+<summary>12. Jak sprawnie usunąć elementy z plasterka bez zachowania porządku w Go?</summary>
+
+#### Go
+
+Jeśli kolejność elementów nie ma znaczenia, najskuteczniejszą strategią usuwania
+jest zastąpienie usuwanego elementu ostatnim elementem `slice`, a następnie
+skrócenie `slice` o jeden.
+
+#### Idea podejścia:
+
+1. Znajdź indeks `i` elementu do usunięcia.
+
+2. Przypisz `s[i] = s[len(s)-1]`.
+
+3. Zmniejsz długość: `s = s[:len(s)-1]`.
+
+#### Dlaczego jest skuteczny:
+
+1. **O(1) w czasie** (bez przesuwania wszystkich kolejnych elementów).
+
+2. **Minimalna liczba kopii** w porównaniu do usuwania w kolejności.
+
+3. **Dobrze skaluje się** w przypadku dużych kolekcji i gorących pętli.
+
+#### Na co zwrócić uwagę:
+
+- Kolejność elementów zmienia się po operacji.
+
+- Wymagane jest sprawdzenie poprawności indeksu.
+
+- W przypadku `slice` ze wskaźnikami czasami wskazane jest wyzerowanie elementu
+  końcowego przed obcięciem, aby uniknąć przechowywania zbędnych odniesień w
+  pamięci.
+
+#### Wniosek:
+
+Gdy stabilny porządek nie jest wymogiem logiki biznesowej, „zamień z ostatnim +
+obcięcie” jest kanonicznym i najszybszym sposobem na usunięcie elementu z
+`slice` w Go.
+
+#### Przykład:
+
+```go
+func removeUnordered[T any](s []T, i int) []T {
+	last := len(s) - 1
+	s[i] = s[last]
+	var zero T
+	s[last] = zero // опційно: щоб не тримати зайве посилання
+	return s[:last]
+}
+```
+
+</details>

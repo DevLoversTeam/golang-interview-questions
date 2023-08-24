@@ -672,3 +672,68 @@ func removeUnordered[T any](s []T, i int) []T {
 ```
 
 </details>
+
+
+<details>
+<summary>13. Jaka jest kluczowa kolejność iteracji w `map` i czy można na niej polegać? Jaki to ma wpływ na testy i serializację?</summary>
+
+#### Go
+
+W Go kolejność iteracji kluczy w `map` jest **niedeterministyczna**. Oznacza to,
+że podczas `for range` sekwencja klawiszy może się różnić pomiędzy
+uruchomieniami programu, a nawet pomiędzy poszczególnymi iteracjami w ramach
+pojedynczego przebiegu.
+
+#### Czy możesz polegać na zamówieniu:
+
+1. **Nie, nie możesz.**
+
+2. Zamówienie w `map` nie jest częścią umowy językowej.
+
+3. Każda logika, która w sposób dorozumiany opiera się na „stabilnym” porządku,
+   jest potencjalnie błędna.
+
+#### Jak to wpływa na testy:
+
+1. **Niestabilne testy:** porównania ciągów/tablic utworzonych za pomocą `map`
+   mogą losowo zakończyć się niepowodzeniem ze względu na inną kolejność
+   elementów.
+
+2. **Fałszywe regresje:** nie ma zmian w logice biznesowej, ale test kończy się
+   niepowodzeniem z powodu niestabilnych danych wyjściowych.
+
+3. **Właściwe podejście:** testy wymagają:
+
+- porównaj struktury jako zbiory/zbiory skojarzeniowe;
+
+- lub wstępnie posortuj klucze i zbuduj deterministyczny wynik.
+
+#### Jak to wpływa na serializację:
+
+1. Jeśli serializacja opiera się na bezpośrednim obejściu `map`, wynik tekstowy
+   może mieć inną kolejność pól/par klucz-wartość.
+
+2. To utrudnia:
+
+- migawka/złote-testy;
+
+- hashowanie ładunków;
+
+- porównanie artefaktów w CI.
+
+3. Aby uzyskać stabilne wyniki, powinieneś:
+
+- kup klucze osobno;
+
+- posortuj je;
+
+- uformuj wynik w ustalonej kolejności.
+
+#### Wniosek:
+
+`map` w Go jest zoptymalizowany pod kątem szybkiego dostępu za pomocą klucza, a
+nie zachowania porządku. Dlatego testy, rejestrowanie, podpisywanie danych i
+serializacja muszą celowo wprowadzać determinizm poprzez sortowanie kluczy lub
+inne zasady kanoniczne.
+
+</details>

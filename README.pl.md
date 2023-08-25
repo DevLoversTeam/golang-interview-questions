@@ -737,3 +737,60 @@ serializacja muszą celowo wprowadzać determinizm poprzez sortowanie kluczy lub
 inne zasady kanoniczne.
 
 </details>
+
+
+<details>
+<summary>14. Jak iterować po `map` w przewidywalnej kolejności?</summary>
+
+#### Go
+
+Ponieważ `map` w Go nie gwarantuje stabilnej kolejności przechodzenia,
+zamierzona iteracja musi być zorganizowana jawnie: najpierw zbierz klucze,
+następnie je posortuj, a dopiero potem odczytaj wartości w ustalonej kolejności.
+
+#### Podejście kanoniczne (Go 1.23+):
+
+1. Użyj `maps.Keys`, aby uzyskać kluczowy iterator.
+
+2. Użyj `slices.Sorted` (`slices.SortedFunc`), aby uzyskać posortowany fragment
+   klucza.
+
+3. Iteruj po posortowanym wycinku.
+
+#### Dlaczego to prawda:
+
+1. **Determinizm:** to samo wejście daje tę samą kolejność wyników.
+
+2. **Testy stabilne:** losowe awarie spowodowane inną sekwencją znikają.
+
+3. **Przewidywana serializacja:** łatwiejsze wykonywanie złotych testów,
+   podpisów, porównywanie artefaktów.
+
+#### Ważne niuanse:
+
+- W przypadku kluczy strukturalnych lub typów niestandardowych należy
+  zdefiniować jawne kryterium sortowania.
+
+- Trudność wzrasta z powodu sortowania (`O(n log n)`), ale taka jest cena
+  przewidywalności.
+
+- Jeśli porządek w ścieżce dostępu ma kluczowe znaczenie, czasami warto rozważyć
+  inną strukturę danych (np. utrzymanie osobnej uporządkowanej listy kluczy).
+
+#### Wniosek:
+
+Zamierzona iteracja `map` w Go jest zawsze świadomą strategią trójfazową:
+„zbieraj klucze → sortuj → przemierzaj”. Ten wzór jest uważany za standard
+produkcyjny zapewniający stabilną produkcję. Kompaktowy formularz za
+pośrednictwem `slices.Sorted(maps.Keys(m))` jest dostępny od wersji Go 1.23.
+
+#### Przykład:
+
+```go
+keys := slices.Sorted(maps.Keys(m))
+for _, k := range keys {
+	fmt.Printf("%v=%v\n", k, m[k])
+}
+```
+
+</details>

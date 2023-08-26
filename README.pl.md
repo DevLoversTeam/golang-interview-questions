@@ -794,3 +794,54 @@ for _, k := range keys {
 ```
 
 </details>
+
+
+<details>
+<summary>15. Dlaczego nie mogę uzyskać adresu elementu mapy?</summary>
+
+#### Go
+
+W Go nie możesz pobrać adresu elementu `map` (na przykład `&m[key]`), ponieważ
+wartość w `map` nie ma stabilnego adresu w pamięci. Podczas wzrostu,
+przywracania równowagi lub wewnętrznej reorganizacji środowisko wykonawcze `map`
+może przenosić elementy między zasobnikami.
+
+#### Kluczowy powód ograniczenia:
+
+1. **Niestabilność umiejscowienia:** `map` zmienia dynamicznie strukturę
+   wewnętrzną.
+
+2. **Niebezpieczeństwo „wiszących” wskaźników:** uzyskany dzisiaj adres może
+   utracić ważność po kolejnych operacjach z `map`.
+
+3. **Gwarancja bezpieczeństwa języka:** kompilator zabrania tej operacji, aby
+   uniknąć ukrytych błędów pamięci.
+
+#### Konsekwencje praktyczne:
+
+1. Nie możesz modyfikować pola struktury bezpośrednio poprzez `m[key].Field =
+   ...`, jeśli wartość mapy jest strukturą.
+
+2. Wzorzec aktualizacji struktury wartości mapy wygląda następująco:
+
+- odczytaj wartość do zmiennej tymczasowej;
+
+- zmień to;
+
+- odpisz do `map`.
+
+#### Gdy wymagana jest zmienność w:
+
+- Użyj `map[K]*T` zamiast `map[K]T`, jeśli chcesz pracować z tym samym obiektem
+  za pomocą wskaźnika.
+
+- Należy jednak pamiętać o kompromisach: dodatkowe alokacje, problemy z cyklem
+  życia obiektów i potrzeba synchronizacji przy równoczesnym dostępie.
+
+#### Wniosek:
+
+Zakaz przyjmowania adresu elementu `map` jest celowym projektem Go na rzecz
+bezpieczeństwa pamięci. Jeśli wymagane są zmiany „w miejscu”, wybierz pętlę
+odczyt-modyfikacja-zapis lub `map` z wartościami wskaźników.
+
+</details>

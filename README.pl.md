@@ -845,3 +845,53 @@ bezpieczeństwa pamięci. Jeśli wymagane są zmiany „w miejscu”, wybierz p�
 odczyt-modyfikacja-zapis lub `map` z wartościami wskaźników.
 
 </details>
+
+
+<details>
+<summary>16. Dlaczego `map` nie jest fabrycznie zabezpieczony wątkowo w Go?</summary>
+
+#### Go
+
+`map` w Go nie jest z założenia bezpieczny dla wątków: jednoczesny dostęp z
+wielu goroutines bez synchronizacji (szczególnie, gdy istnieje rekord) prowadzi
+do wyścigów danych i niezdefiniowanego zachowania.
+
+#### Dlaczego tak się dzieje:
+
+1. **Wydajność w scenariuszu podstawowym:** większość `map` jest używana
+   lokalnie w pojedynczej procedurze gor; wbudowana blokada dla każdej operacji
+   spowolniłaby te scenariusze.
+
+2. **Jawny model współbieżności:** Go przekazuje kontrolę nad synchronizacją
+   programiście, dzięki czemu wybiera on mechanizm dla konkretnego obciążenia.
+
+3. **Elastyczność architektury:** różne zadania wymagają różnych strategii
+   (mutex, sharding, podejście aktora, `sync.Map`), a „uniwersalna” automatyczna
+   blokada nie jest optymalna we wszystkich przypadkach.
+
+#### Co to oznacza w praktyce:
+
+1. **Jednoczesny odczyt i zapis bez zabezpieczenia jest zabroniony.**
+
+2. **Zapis + zapis bez zabezpieczenia jest zabroniony.**
+
+3. **Odczyt + tylko odczyt** może być bezpieczny, jeśli nikt nie modyfikuje
+   `map`.
+
+#### Jak zrobić to dobrze:
+
+- `map` + `sync.Mutex` lub `sync.RWMutex` dla zarządzanej synchronizacji.
+
+- `sync.Map` dla określonych wzorców dostępu (wiele odczytów, rzadkie zapisy lub
+  niezależne klucze).
+
+- Izolacja stanu architektonicznego za pomocą jednej „zastrzeżonej” procedury i
+  kanałów.
+
+#### Wniosek:
+
+`map` bezpieczeństwo braku przepływu po wyjęciu z pudełka nie jest wadą, ale
+świadomym kompromisem Go: minimalny narzut w ogólnym przypadku i pełna kontrola
+współbieżności w rękach inżyniera.
+
+</details>

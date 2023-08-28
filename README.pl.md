@@ -895,3 +895,72 @@ do wyścigów danych i niezdefiniowanego zachowania.
 współbieżności w rękach inżyniera.
 
 </details>
+
+
+<details>
+<summary>17. Czy struktura może być kluczem w `map` i jakie są tego ograniczenia? W czym jest to lepsze od map zagnieżdżonych?</summary>
+
+#### Go
+
+Tak, w Go struktura może być kluczem w `map` **jeśli jest porównywana**
+(`comparable`). Oznacza to, że wszystkie jego pola muszą być również
+porównywalne.
+
+#### Ograniczenia klucza strukturalnego:
+
+1. **Wszystkie pola struktury muszą być porównywalne.**
+
+- Dozwolone w szczególności: liczby, stringi, bool, wskaźniki, tablice (z
+  elementami porównywalnymi), inne porównywalne struktury.
+
+- Niedozwolone pola typów w kluczu: `slice`, `map`, `func` (nie są
+  porównywalne).
+
+2. **Porównanie opiera się na wartości wszystkich pól.**
+
+- Dwa klucze są uważane za równe tylko wtedy, gdy wszystkie odpowiadające im
+  pola są równe.
+
+3. **Klucz musi być stabilny po włożeniu.**
+
+- Zmienianie „sensu” klucza poprzez zewnętrzny, zmienny stan jest złą praktyką,
+  ponieważ niszczy przewidywalność dostępu.
+
+#### Dlaczego klucz strukturalny jest często lepszy niż zagnieżdżony `map`:
+
+1. **Prostszy model danych:**
+
+- Zamiast `map[A]map[B]V` możesz użyć `map[CompositeKey]V`, gdzie `CompositeKey`
+  to struktura z polami `A`, `B`.
+
+2. **Mniej szablonów i kontroli w dniu `nil`:**
+
+- W zagnieżdżonych `map` mapach wewnętrznych należy zainicjować i obsłużyć
+  brakujące klucze pośrednie.
+
+3. **Lepsza lokalizacja logiczna:**
+
+- Wszystkie kluczowe wymiary są zebrane w jednym typie, co poprawia czytelność i
+  łatwość konserwacji.
+
+4. **Mniej miejsca na błędy:**
+
+- Łatwiej uniknąć częściowo zainicjowanych struktur i niespójnych ścieżek
+  dostępu.
+
+#### W przypadku zagnieżdżenia `map` może być odpowiedni:
+
+- Kiedy wymagana jest hierarchiczna semantyka danych.
+
+- W przypadku częstej pracy z segmentami pośrednimi na poziomie pierwszego
+  klawisza.
+
+- Gdy różne warstwy mają oddzielne zasady cyklu życia.
+
+#### Wniosek:
+
+Klucz strukturalny Go jest potężnym i przejrzystym narzędziem do adresowania
+złożonego. Jeśli typ klucza jest poprawnie zaprojektowany i to `comparable`, to
+rozwiązanie jest często bardziej eleganckie i niezawodne niż zagnieżdżone `map`.
+
+</details>

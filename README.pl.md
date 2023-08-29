@@ -964,3 +964,53 @@ złożonego. Jeśli typ klucza jest poprawnie zaprojektowany i to `comparable`, 
 rozwiązanie jest często bardziej eleganckie i niezawodne niż zagnieżdżone `map`.
 
 </details>
+
+
+<details>
+<summary>18. Jak porównać dwie struktury - kiedy się kompiluje, a kiedy nie? </summary>
+
+#### Go
+
+W Go dwie struktury można porównać za pomocą operatora `==` lub `!=` tylko
+wtedy, gdy typ struktury to `comparable`. W praktyce oznacza to: **należy
+porównać wszystkie pola konstrukcji**.
+
+#### Po skompilowaniu porównania:
+
+1. Struktury są tego samego typu.
+
+2. Każde pole w strukturze jest typu porównywalnego.
+
+3. Porównanie odbywa się na wartościach wszystkich pól.
+
+#### Gdy porównanie się nie kompiluje:
+
+1. Jeśli co najmniej jedno pole ma nieporównywalny typ:
+
+- `slice`
+
+- `map`
+
+- `func`
+
+2. Jeśli próbujesz porównać różne typy struktur, nawet z podobnymi polami.
+
+#### Ważne wyjaśnienia:
+
+1. **Tablice są porównywane**, jeśli porównywane są ich elementy.
+
+2. **Porównywane są wskaźniki** (porównywane są adresy).
+
+3. **Interfejsy są porównywane**, jeśli porównywana jest także wartość
+   dynamiczna wewnątrz; w przeciwnym razie możliwa jest panika w czasie
+   wykonywania podczas porównywania.
+
+#### Wniosek praktyczny:
+
+- Jeśli struktura składa się wyłącznie z porównywalnych pól, możesz użyć `==`.
+
+- Jeśli struktura to `slice/map/func`, użyj jawnego porównania pól lub
+  oddzielnych podejść (takich jak wyspecjalizowana logika porównania), a nie
+  bezpośredniego operatora równości.
+
+</details>

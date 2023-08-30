@@ -1014,3 +1014,71 @@ porównać wszystkie pola konstrukcji**.
   bezpośredniego operatora równości.
 
 </details>
+
+
+<details>
+<summary>19. Jak zaimplementować porównanie dwóch struktur, jeśli zawierają one wycinki lub mapy? Co to jest `reflect.DeepEqual()`?</summary>
+
+#### Go
+
+Jeśli struktura zawiera `slice` lub `map`, bezpośrednie porównanie za pomocą
+`==` nie zostanie skompilowane. W takich przypadkach porównanie należy
+przeprowadzić osobno: ręcznie lub za pomocą narzędzi do głębokich porównań.
+
+#### Podstawowe podejścia:
+
+1. **Jawne porównanie pól (zalecane w przypadku logiki krytycznej):**
+
+- porównaj bezpośrednio proste pola;
+
+- dla `slice` sprawdź długość i elementy;
+
+- dla `map` sprawdź liczbę kluczy i pasujące wartości.
+
+2. **`reflect.DeepEqual(a, b)`:**
+
+- przeprowadza rekurencyjne („głębokie”) porównywanie złożonych struktur;
+
+- przydatny do szybkich kontroli, prototypów i części scenariuszy testowych.
+
+#### Co to jest `reflect.DeepEqual()`:
+
+`reflect.DeepEqual()` to funkcja standardowego pakietu `reflect`, która próbuje
+określić głęboką równość dwóch wartości poprzez rekursywne przechodzenie przez
+zagnieżdżone pola, elementy kolekcji i struktury danych.
+
+#### Niuanse `reflect.DeepEqual`, o których warto pamiętać:
+
+1. **Semantyka może nie odpowiadać równości biznesowej:**
+
+- na przykład `nil`-plasterek i pusty `[]T{}` są często traktowane inaczej.
+
+2. **Mniej przejrzysta diagnostyka:**
+
+- podczas upadku trudniej jest zrozumieć, które pole jest inne, bez dodatkowych
+  narzędzi.
+
+3. **Wydajność:**
+
+- odbicie jest wolniejsze niż specjalistyczne ręczne porównywanie w gorących
+  ścieżkach.
+
+#### Kiedy wybrać:
+
+1. **Zasady biznesowe i produkcyjne:** wyraźne porównanie domen (jasna
+   semantyka).
+
+2. **Testy i kontrole pomocnicze:** `reflect.DeepEqual` lub więcej
+   wyspecjalizowanych bibliotek testów.
+
+3. **Scenariusze krytyczne:** unikaj „magii” odbicia, gdy wymagane jest ścisłe
+   sprawdzanie równoważności.
+
+#### Wniosek:
+
+W przypadku struktur z `slice/map` prawidłowe porównanie jest przede wszystkim
+kwestią semantyki, a nie techniki. `reflect.DeepEqual()` to przydatne narzędzie,
+ale najbardziej niezawodną metodą inżynieryjną pozostaje wyraźna metoda
+porównania oparta na domenie.
+
+</details>

@@ -1082,3 +1082,52 @@ ale najbardziej niezawodną metodą inżynieryjną pozostaje wyraźna metoda
 porównania oparta na domenie.
 
 </details>
+
+
+<details>
+<summary>20. Co się dzieje podczas rzutowania między nazwanymi typami o tej samej strukturze, jeśli mają one różne metody?</summary>
+
+#### Go
+
+W Go rzutowanie między nazwanymi typami o tej samej strukturze podrzędnej
+dotyczy **tylko wartości danych**, ale nie „portuje” metod. Oznacza to, że po
+konwersji otrzymasz nową wartość innego nazwanego typu z własnym zestawem metod.
+
+#### Główna zasada:
+
+1. **Konwersja zmienia typ wartości, zamiast ujednolicać zachowanie typów.**
+
+2. **Metody należą do określonego, nazwanego typu**, w którym są zadeklarowane.
+
+3. Po `T2(vT1)` dostępne są metody `T2`, a metody `T1` nie są już bezpośrednio
+   dostępne.
+
+#### Co jest zapisywane podczas konwersji:
+
+1. Bitowa/boolowska reprezentacja pól (zgodnie z regułami zgodności typów).
+
+2. Wartość danych.
+
+#### Co nie jest zapisywane:
+
+1. Zestaw metod oryginalnego typu.
+
+2. Automatyczne dopasowanie interfejsu zapewniane przez oryginalny typ.
+
+#### Konsekwencje praktyczne:
+
+1. Dwa typy z tymi samymi polami mogą mieć różne zachowanie w interfejsie API.
+
+2. Po konwersji kod może się nie skompilować w miejscach, w których oczekiwano
+   interfejsu zaimplementowanego wyłącznie przez typ źródłowy.
+
+3. Jest to przydatne do modelowania domen: ta sama struktura danych, ale różne
+   role semantyczne i kontrakty.
+
+#### Wniosek:
+
+W Go konwersja między nazwanymi typami zmienia „tożsamość” typu, a nie
+kopiowanie zachowania. Dane mogą być takie same, ale metody i możliwości
+interfejsu są definiowane wyłącznie przez typ docelowy.
+
+</details>

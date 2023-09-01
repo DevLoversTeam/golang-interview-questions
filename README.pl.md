@@ -1131,3 +1131,53 @@ kopiowanie zachowania. Dane mogą być takie same, ale metody i możliwości
 interfejsu są definiowane wyłącznie przez typ docelowy.
 
 </details>
+
+
+<details>
+<summary>21. Co to jest `Memory Alignment` (wyrównanie) i jak wpływa na wielkość konstrukcji?</summary>
+
+#### Go
+
+`Memory Alignment` (wyrównanie) to reguła umieszczania danych w pamięci pod
+adresami wielokrotnościami określonego kroku (wymóg wyrównania) dla określonego
+typu. Procesor i środowisko wykonawcze odczytują takie dane szybciej i
+bezpieczniej, gdy spełnione są te wymagania.
+
+#### Jak to działa w frameworkach:
+
+1. Każde pole ma własne wymagania dotyczące wyrównania (np. `int64` zwykle
+   wymaga bardziej rygorystycznego wyrównania niż `byte`).
+
+2. Pomiędzy polami kompilator może dodać **dopełnienie** (bajty usługi
+   zastępczej), tak aby następne pole zaczynało się od prawidłowego adresu.
+
+3. Na końcu konstrukcji może znajdować się również wyściółka, dzięki czemu
+   szereg takich struktur zachowuje prawidłowe ustawienie każdego elementu.
+
+#### Wpływ na rozmiar konstrukcji:
+
+1. **Rozmiar struktury jest często większy niż suma rozmiarów pól** ze względu
+   na dopełnienie.
+
+2. **Kolejność pól ma znaczenie:** złe rozmieszczenie (`byte`, `int64`, `byte`,
+   ...) może znacznie zwiększyć całkowity rozmiar.
+
+3. **Optymalne grupowanie pól** (od większych do mniejszych) zwykle zmniejsza
+   zużycie pamięci.
+
+#### Dlaczego jest to ważne w praktyce:
+
+1. Mniejszy rozmiar struktury = lepsza lokalizacja pamięci podręcznej.
+
+2. Mniejsze zużycie pamięci RAM w dużych tablicach/pamięci podręcznej/indeksach.
+
+3. Wyższa przepustowość w gorących ścieżkach dzięki zmniejszonemu wykorzystaniu
+   pamięci.
+
+#### Wniosek inżynierski:
+
+Wyrównanie nie jest „egzotyką niskiego poziomu”, ale praktycznym czynnikiem
+wydajności. W Go właściwa kolejność pól w strukturze wpływa bezpośrednio na jej
+wielkość, a co za tym idzie na wydajność pamięci i szybkość systemu.
+
+</details>

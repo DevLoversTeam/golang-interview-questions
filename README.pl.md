@@ -1181,3 +1181,56 @@ wydajności. W Go właściwa kolejność pól w strukturze wpływa bezpośrednio
 wielkość, a co za tym idzie na wydajność pamięci i szybkość systemu.
 
 </details>
+
+
+<details>
+<summary>22. Dlaczego przekazywanie dużej struktury „według wartości” jest często wolniejsze niż przekazywanie wskaźnika?</summary>
+
+#### Go
+
+Przekazywanie dużej struktury przez wartość oznacza kopiowanie całej jej
+zawartości przy każdym wywołaniu funkcji. W przypadku typów zbiorczych może to
+być znacznie droższe niż przekazywanie pojedynczego wskaźnika do tych samych
+danych.
+
+#### Dlaczego istnieje różnica w wydajności:
+
+1. **Koszt kopiowania pamięci:** im większa struktura, tym więcej bajtów należy
+   skopiować w wywołaniach we/wy.
+
+2. **Załaduj pamięć podręczną procesora:** masowe kopie zwiększają ruch w
+   pamięci i mogą pogorszyć lokalizację pamięci podręcznej w obszarach gorącego
+   kodu.
+
+3. **Efekt kaskadowy w pętlach i potokach:** jeśli struktura jest przekazywana
+   wielokrotnie, kumulują się koszty ogólne.
+
+4. **Potencjalny wpływ na alokacje:** W niektórych scenariuszach zachowanie
+   kopiowania i ucieczki może wydłużyć czas wykonywania i ciśnienie GC.
+
+#### Kiedy wskaźnik jest często lepszy:
+
+1. Kiedy struktura jest duża i często przechodzi między funkcjami.
+
+2. Kiedy chcesz zmienić stan udostępnienia bez dodatkowego kopiowania.
+
+3. Kiedy ważne jest stabilne zachowanie opóźnień pod obciążeniem.
+
+#### Ale nie zawsze wskaźnik jest automatycznie lepszy:
+
+1. W przypadku małych struktur przekazywanie wartości może być prostsze i
+   całkiem wydajne.
+
+2. Value zapewnia lepszą izolację stanu (brak ukrytego współdzielonego stanu
+   zmiennego).
+
+3. Wskaźnik zwiększa ryzyko aliasingu i potrzebę dokładniejszej synchronizacji w
+   konkurencyjnym kodzie.
+
+#### Wniosek praktyczny:
+
+W Go wybór między wartością a wskaźnikiem nie jest dokonywany dogmatycznie, ale
+na podstawie profilu danych: duże struktury i częste wywołania faworyzują
+wskaźnik; małe, niezmienne dane często są odpowiednie do przekazywania wartości.
+
+</details>

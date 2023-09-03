@@ -1234,3 +1234,60 @@ na podstawie profilu danych: duże struktury i częste wywołania faworyzują
 wskaźnik; małe, niezmienne dane często są odpowiednie do przekazywania wartości.
 
 </details>
+
+
+<details>
+<summary>23. Dlaczego `map` jest wolniejszy niż `slice` przy dostępie sekwencyjnym i kiedy co wybrać?</summary>
+
+#### Go
+
+W przypadku dostępu sekwencyjnego (`sequential access`) `slice` jest zwykle
+szybszy niż `map`, ponieważ elementy `slice` są zwarte i czytane liniowo,
+podczas gdy `map` wykonuje mieszanie kluczy i dostęp do bardziej złożonej
+struktury wewnętrznej.
+
+#### Dlaczego `slice` jest szybszy w przebiegu sekwencyjnym:
+
+1. **Liniowe rozmieszczenie w pamięci:** elementy znajdują się obok siebie, co
+   dobrze pasuje do pamięci podręcznej procesora.
+
+2. **Prosty dostęp według indeksu:** minimalna liczba operacji pomocniczych na
+   element.
+
+3. **Większa przewidywalność dla procesora:** wzór liniowy zmniejsza liczbę
+   braków pamięci podręcznej.
+
+#### Dlaczego `map` działa wolniej w tym scenariuszu:
+
+1. **Klucze mieszające** zwiększają obciążenie obliczeniowe.
+
+2. **Nierówne rozmieszczenie segmentów** jest gorsze w przypadku lokalizacji
+   pamięci.
+
+3. **Bardziej złożona logika dostępu** (wyszukiwanie w segmentach, kolizje,
+   kontrole usług).
+
+#### Kiedy wybrać `slice`:
+
+1. Dane przekazywane są sekwencyjnie.
+
+2. Wymaga iteracji, sortowania i przetwarzania wsadowego.
+
+3. Klucz jest w rzeczywistości pozycją (indeksem), a nie dowolnym
+   identyfikatorem.
+
+#### Kiedy wybrać `map`:
+
+1. Wymaga szybkiego dostępu za pomocą klucza (`id`, `name`, klucz złożony).
+
+2. Semantyka zestawu/słownika jest ważna.
+
+3. Wyszukiwanie według wartości klucza dominuje w pełnym przechodzeniu liniowym.
+
+#### Wniosek praktyczny:
+
+`slice` — narzędzie do uporządkowanych, gęstych iteracji; `map` — dla dostępu do
+adresu za pomocą klucza. Jeśli obciążenie ma głównie charakter sekwencyjny,
+`slice` zwykle zapewnia lepszą wydajność i mniejsze obciążenie.
+
+</details>

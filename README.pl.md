@@ -1291,3 +1291,63 @@ adresu za pomocą klucza. Jeśli obciążenie ma głównie charakter sekwencyjny
 `slice` zwykle zapewnia lepszą wydajność i mniejsze obciążenie.
 
 </details>
+
+
+<details>
+<summary>24. Jak sprawdzić, czy zmienna implementuje interfejs?</summary>
+
+#### Go
+
+W Go implementacja interfejsu jest niejawna: uważa się, że typ implementuje
+interfejs, jeśli ma cały wymagany zestaw metod. Dzięki temu weryfikacja jest
+możliwa zarówno na etapie kompilacji, jak i w czasie wykonywania.
+
+#### 1) Weryfikacja na etapie kompilacji (zalecane):
+
+Najbardziej niezawodnym podejściem jest dodanie asercji w czasie kompilacji:
+
+```go
+var _ MyInterface = (*MyType)(nil)
+```
+
+Co to oznacza:
+
+1. Jeśli `*MyType` nie implementuje `MyInterface`, kod nie zostanie
+   skompilowany.
+
+2. To dokumentuje kontrakt typu bezpośrednio w bazie kodu.
+
+3. Szczególnie przydatne w przypadku publicznych interfejsów API, adapterów i
+   dużych poleceń.
+
+#### 2) Sprawdź podczas wykonywania (w czasie wykonywania):
+
+Jeśli istnieje wartość typu `any`/interfejs, używana jest asercja typu:
+
+```go
+v, ok := x.(MyInterface)
+```
+
+1. `ok == true` — wartość implementuje interfejs.
+
+2. `ok == false` — nie implementuje.
+
+3. Wariant bez `ok` może wywołać panikę, dlatego kod produkcyjny zwykle używa
+   bezpiecznej formy z `ok`.
+
+#### Wskaźnik a odbiorca wartości — kluczowy niuans:
+
+1. Zestawy metod `T` i `*T` są różne.
+
+2. Często to `*T` implementuje interfejs, a `T` nie.
+
+3. Podczas rozmowy kwalifikacyjnej ważne jest, aby jasno omówić tę kwestię,
+   ponieważ jest to typowe źródło błędów.
+
+#### Wniosek:
+
+Najlepszą praktyką jest naprawienie implementacji interfejsu za pomocą asercji w
+czasie kompilacji i użycie weryfikacji w czasie wykonywania za pomocą asercji, w
+której typ wartości jest znany tylko w czasie wykonywania.
+
+</details>

@@ -1351,3 +1351,94 @@ czasie kompilacji i użycie weryfikacji w czasie wykonywania za pomocą asercji,
 której typ wartości jest znany tylko w czasie wykonywania.
 
 </details>
+
+
+<details>
+<summary>25. Czym są `type assertion` i `type switch` – jakie są ich zalety i jak radzić sobie z asercjami bez paniki?</summary>
+
+#### Go
+
+`type assertion` i `type switch` w Go to mechanizmy służące do pracy z
+wartościami interfejsu, gdy w czasie wykonywania należy określić rzeczywisty
+(dynamiczny) typ.
+
+#### Co to jest `type assertion`:
+
+`type assertion` ma postać:
+
+```go
+v, ok := x.(T)
+```
+
+1. `x` — wartość typu interfejsu.
+
+2. `T` to typ, do którego staramy się doprowadzić.
+
+3. `ok == true` oznacza, że ​​typ dynamiczny jest zgodny z `T`.
+
+#### Korzyści `type assertion`:
+
+1. Umożliwia dostęp do określonego zachowania określonego typu.
+
+2. Umożliwia bezpieczną pracę z `any`/interfejsami w adapterach, dekoderach,
+   oprogramowaniu pośrednim.
+
+3. Przydatne, gdy oczekiwany jest jeden konkretny typ.
+
+#### Jak uniknąć paniki:
+
+Niebezpieczna forma:
+
+```go
+v := x.(T) // panic, якщо x не є T
+```
+
+Bezpieczna forma:
+
+```go
+v, ok := x.(T)
+if !ok {
+    // обробити невідповідність типу
+}
+```
+
+Jest to dwucyfrowa forma z `ok`, która jest standardem produkcyjnym.
+
+#### Co to jest `type switch`:
+
+`type switch` to wygodny sposób obsługi kilku możliwych typów jednocześnie:
+
+```go
+switch v := x.(type) {
+case string:
+    // ...
+case int:
+    // ...
+default:
+    // ...
+}
+```
+
+#### Korzyści `type switch`:
+
+1. Sprawia, że rozgałęzienia typów są czytelne.
+
+2. Redukuje kaskadę wielu stwierdzeń.
+
+3. Podaje jawną ścieżkę `default` dla nieznanych typów.
+
+#### Kiedy używać czego:
+
+1. **`type assertion`** — przy sprawdzaniu jednego oczekiwanego typu.
+
+2. **`type switch`** — gdy dopuszczamy kilka typów i dla każdego potrzebujemy
+   innej logiki.
+
+#### Wniosek:
+
+`type assertion` i `type switch` to kontrolowany sposób „ujawniania” typu
+wartości interfejsu dynamicznego. Aby uniknąć awarii, asercja powinna być
+dokonana w bezpiecznej formie `v, ok := ...` i zawsze mieć skrypt przetwarzający
+`ok == false`.
+
+</details>

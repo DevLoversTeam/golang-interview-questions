@@ -1442,3 +1442,55 @@ dokonana w bezpiecznej formie `v, ok := ...` i zawsze mieć skrypt przetwarzają
 `ok == false`.
 
 </details>
+
+
+<details>
+<summary>26. Dlaczego `interface{}` i `any` są identyczne, ale `*interface{}` prawie zawsze jest błędem?</summary>
+
+#### Go
+
+W Go `any` jest po prostu aliasem (`alias`) dla `interface{}`. Oznacza to, że z
+punktu widzenia typowego systemu są one absolutnie takie same: różnica jest
+jedynie stylistyczna i semantyczna w zakresie czytelności kodu.
+
+#### Dlaczego `interface{}` == `any`:
+
+1. `any` wprowadzono dla większej przejrzystości, szczególnie w kodzie ogólnym.
+
+2. Kompilator interpretuje `any` i `interface{}` jako ten sam typ.
+
+3. Zachowanie podczas przypisywania, potwierdzania i przełączania jest
+   identyczne.
+
+#### Dlaczego `*interface{}` prawie zawsze oznacza błąd:
+
+1. **Interfejs jest już „kontenerem referencyjnym” dla wartości i typu.**
+   Dodawanie kolejnego poziomu wskaźnika zwykle nie ma sensu.
+
+2. **Komplikacja semantyki zera:** przy `*interface{}` pojawia się kolejna
+   warstwa stanów (wskaźnik `nil`, niezerowy wskaźnik na interfejsie zerowym
+   itp.), co generuje nieoczywiste błędy.
+
+3. **Słaba czytelność i projekt interfejsu API:** ten typ prawie zawsze
+   sygnalizuje, że model danych lub sygnatura funkcji jest źle zaprojektowana.
+
+4. **Zamiast `*interface{}` zwykle wystarcza:**
+
+- lub przekaż `interface{}`/`any` według wartości;
+
+- lub użyj określonego typu wskaźnika (`*T`), jeśli wymagana jest zmienność
+  obiektu `T`.
+
+#### Kiedy może się zdarzyć `*interface{}`:
+
+- W wąskich scenariuszach technicznych (gdzie należy zmienić dokładnie zmienną
+  interfejsu, taką jak komórka), ale w zastosowanym kodzie produkcyjnym, jest to
+  rzadki i przeważnie niepożądany wzorzec.
+
+#### Wniosek:
+
+`any` i `interface{}` są identyczne. Zamiast tego `*interface{}` jest w
+większości przypadków niepotrzebną abstrakcją, która komplikuje kod i zwiększa
+ryzyko błędów logicznych.
+
+</details>

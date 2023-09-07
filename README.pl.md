@@ -1494,3 +1494,59 @@ większości przypadków niepotrzebną abstrakcją, która komplikuje kod i zwi�
 ryzyko błędów logicznych.
 
 </details>
+
+
+<details>
+<summary>27. Kiedy należy używać `interface{}` (`any`) i kiedy uważa się to za zły dźwięk?</summary>
+
+#### Go
+
+`any` (tj. `interface{}`) jest odpowiedni, gdy typ wartości jest obiektywnie
+nieznany na granicy API. Jednak nadmierne użycie `any` w logice domeny zwykle
+pogarsza bezpieczeństwo typów i utrudnia konserwację.
+
+#### Kiedy `any` jest naprawdę uzasadnione:
+
+1. **Warstwy infrastruktury i kontenery uniwersalne:** logowanie, opakowania
+   ogólne, oprogramowanie pośrednie, biblioteki niskiego poziomu.
+
+2. **Dekodowanie formatów o słabym typie:** takich jak części JSON o
+   nieprzewidywalnym schemacie.
+
+3. **Punkty integracji z zewnętrznymi API:** gdy kontrakt jest dynamiczny i nie
+   można z góry ustalić jego ścisłego typu.
+
+4. **Przejściowe etapy refaktoryzacji:** jako tymczasowy kompromis z późniejszym
+   powrotem do konkretnych typów.
+
+#### Kiedy ton jest zły:
+
+1. **W modelu biznesowym, w którym znany jest typ:** `any` ukrywa błędy do czasu
+   wykonania, a nie do czasu kompilacji.
+
+2. **Kiedy `any` zastępuje normalny projekt API:** wielokrotne potwierdzenia i
+   zmiany typu w każdym innym miejscu są objawem niezdefiniowanych kontraktów.
+
+3. **Kiedy możesz używać typów ogólnych lub interfejsu z metodą minimalną:**
+   daje to bardziej rygorystyczne i bardziej czytelne ograniczenia.
+
+4. **Kiedy `any` dostaje się „wszędzie” na skutek bezwładności:** kod staje się
+   kruchy, trudniejszy do testowania i trudniejszy do ewolucji.
+
+#### Ogólna zasada:
+
+- Domyślnie wybierz **konkretny typ**.
+
+- Jeśli wymagana jest abstrakcja zachowań — **interfejs z jasną umową**.
+
+- Jeśli wymagane jest uogólnienie danych — **ogólne**.
+
+- `any` pozostaw prawdziwie dynamiczne granice systemu.
+
+#### Wniosek:
+
+`any` to przydatne narzędzie, ale nie jest to uniwersalna odpowiedź. W dojrzałym
+kodzie Go używa się go punktowo: tam, gdzie niejednoznaczność typu jest
+naturalna, a nie tam, gdzie można i należy wyrazić ścisły kontrakt.
+
+</details>

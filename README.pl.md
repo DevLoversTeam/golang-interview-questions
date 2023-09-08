@@ -1550,3 +1550,62 @@ kodzie Go używa się go punktowo: tam, gdzie niejednoznaczność typu jest
 naturalna, a nie tam, gdzie można i należy wyrazić ścisły kontrakt.
 
 </details>
+
+
+<details>
+<summary>28. Jaka jest zaleta akceptowania interfejsów i zwracania określonych struktur?</summary>
+
+#### Go
+
+W Go obowiązuje wspólna i niezwykle praktyczna zasada: **akceptuj interfejsy,
+zwracaj struktury**. Jego siła polega na tym, że zależności wejściowe są
+elastyczne, a kontrakty wyjściowe przejrzyste i bogate w funkcje.
+
+#### Co oznacza „akceptowanie interfejsów”:
+
+1. Funkcja/metoda akceptuje umowę o minimalnym zachowaniu (np. `io.Reader`), a
+   nie typ zakodowany na stałe.
+
+2. Redukuje to sprzężenie między modułami.
+
+3. Ułatwia testowanie: łatwo zastąpić kod pośredniczący/próbny/fałszywy
+   wymaganymi metodami.
+
+#### Co oznaczają „struktury zwrotu”:
+
+1. Wywołanie otrzymuje konkretny typ z pełnym zestawem metod.
+
+2. API staje się bardziej przejrzyste: użytkownik widzi rzeczywiste możliwości
+   obiektu.
+
+3. Łatwiej ewoluować typ bez zrywania umów dotyczących interfejsu zewnętrznego.
+
+#### Dlaczego ta kombinacja jest skuteczna:
+
+1. **Na wejściu — abstrakcja, na wyjściu — konkret.**
+
+2. **Większa elastyczność integracji** bez utraty wyrazistości API.
+
+3. ** Lepsza łatwość konserwacji:** granice modułów są jasne, zależności są
+   kontrolowane.
+
+4. **Łatwiejsza refaktoryzacja:** Zmiany wewnętrzne są łatwiejsze do
+   wprowadzenia bez edycji kaskadowych.
+
+#### Kiedy zachować ostrożność:
+
+1. Nie twórz interfejsów zastępczych bez rzeczywistej potrzeby.
+
+2. Interfejs powinien działać tam, gdzie jest używany, a nie tam, gdzie jest
+   zaimplementowany.
+
+3. Jeśli potrzebna jest tylko jedna implementacja i nie ma korzyści z
+   testowania, zbyt duża abstrakcja może zaszkodzić czytelności.
+
+#### Wniosek:
+
+Akceptowanie interfejsów i przywracanie konkretnych struktur to równowaga między
+rozszerzalnością a przejrzystością. Pozwala na pisanie kodu Go, który jest
+jednocześnie wygodny w testowaniu, łatwy w utrzymaniu i naturalnie rozwijany.
+
+</details>

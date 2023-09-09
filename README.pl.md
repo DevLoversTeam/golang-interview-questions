@@ -1609,3 +1609,50 @@ rozszerzalnością a przejrzystością. Pozwala na pisanie kodu Go, który jest
 jednocześnie wygodny w testowaniu, łatwy w utrzymaniu i naturalnie rozwijany.
 
 </details>
+
+
+<details>
+<summary>29. Dlaczego Go używa interfejsów jednometodowych (np. `io.Reader`, `fmt.Stringer`) i jakie korzyści architektoniczne zapewnia?</summary>
+
+#### Go
+
+Interfejsy jednometodowe w Go to skoncentrowany kontrakt zachowania: opisują
+dokładnie jedną zdolność obiektu, bez przeciążania API. Dlatego `io.Reader`,
+`io.Writer`, `fmt.Stringer` stały się podstawowymi elementami budulcowymi
+ekosystemu.
+
+#### Dlaczego to podejście jest tak skuteczne:
+
+1. **Minimalna umowa:** typ musi zaimplementować tylko jedną metodę, aby
+   zintegrować się z dużą liczbą komponentów.
+
+2. **Niskie sprzężenie:** Moduły zależą od możliwości, a nie od konkretnej
+   implementacji lub dużego „grubego” interfejsu.
+
+3. **Kompozytowość:** złożone możliwości można łatwo zbudować z kombinacji
+   małych interfejsów.
+
+4. **Proste testowanie:** do testu wystarczy mała podróbka/odcinek z jedną
+   metodą.
+
+#### Korzyści architektoniczne:
+
+1. **Wymienność implementacji podobna do wtyczki:** plik, gniazdo sieciowe,
+   bufor w pamięci mogą działać tak samo jak `io.Reader`.
+
+2. **Stabilne granice modułów:** zależności pomiędzy warstwami systemu stają się
+   jasne i ewolucyjnie stabilne.
+
+3. **Łatwa ewolucja kodu:** można dodać nową implementację bez zmiany
+   konsumentów, jeśli umowa zostanie zachowana.
+
+4. **Czytelność intencji:** sygnatura funkcji natychmiast odpowiada na pytanie
+   „co jest wymagane od argumentu”.
+
+#### Wniosek praktyczny:
+
+Interfejsy jednometodowe nie są ozdobą stylistyczną, ale strategią
+architektoniczną Go: małe kontrakty, wysoka kompozycyjność, łatwa testowalność i
+kontrolowana skalowalność systemu.
+
+</details>

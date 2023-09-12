@@ -1781,3 +1781,76 @@ Metody na wartościach `nil` w Go są legalnym narzędziem, ale tylko przy
 jasna dokumentacja mówiąca, że wywołanie `nil` nie jest dozwolone.
 
 </details>
+
+
+<details>
+<summary>32. Jak powiedzieć głównej procedurze, aby czekała na zakończenie wszystkich procedur roboczych?</summary>
+
+#### Go
+
+Kanonicznym sposobem oczekiwania na zakończenie wszystkich działających
+goroutines w Go jest użycie `sync.WaitGroup`. Zapewnia prosty i solidny wzór:
+zwiększ licznik przed rozpoczęciem zadania, zmniejsz go po jego zakończeniu i
+wywołaj `Wait()` w głównej procedurze gor.
+
+#### Schemat podstawowy:
+
+1. Utwórz `var wg sync.WaitGroup`.
+
+2. Przed każdym wywołaniem goroutine `wg.Add(1)`.
+
+3. Wewnątrz goroutine wykonaj `defer wg.Done()`.
+
+4. W głównej procedurze wywołaj `wg.Wait()`.
+
+#### Dlaczego to działa:
+
+1. `WaitGroup` zlicza liczbę niedokończonych zadań.
+
+2. `Wait()` blokuje wykonanie, dopóki licznik nie osiągnie zera.
+
+3. Dzięki temu `main` nie zakończy się przed działającymi procedurami gor.
+
+#### Typowe błędy, których należy unikać:
+
+1. Zadzwoń `Add(1)` **po** rozpoczęciu goroutine (ryzyko wyścigu i
+   nieprawidłowego zakończenia).
+
+2. Zapomnij o `Done()` w przypadku błędu lub wczesnej gałęzi `return`.
+
+3. Ponowne użycie tego samego `WaitGroup` w różnych fazach bez wyraźnej
+   synchronizacji.
+
+#### Kiedy jest lepiej `errgroup`:
+
+Jeśli oprócz czekania potrzebujesz także:
+
+1. zbierz pierwszy błąd,
+
+2. anuluj inne zadania poprzez `context`,
+
+wtedy bardziej praktyczne jest użycie `errgroup.Group`.
+
+#### Wniosek:
+
+W przypadku zadania „czekaj na zakończenie wszystkich procedur” standardowym
+narzędziem jest `sync.WaitGroup`: prosty kontrakt, przewidywalne zachowanie i
+niezawodność produkcji.
+
+#### Przykład:
+
+```go
+var wg sync.WaitGroup
+
+for i := 0; i < 3; i++ {
+	wg.Add(1)
+	go func(id int) {
+		defer wg.Done()
+		fmt.Println("worker", id)
+	}(i)
+}
+
+wg.Wait()
+```
+
+</details>

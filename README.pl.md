@@ -1854,3 +1854,59 @@ wg.Wait()
 ```
 
 </details>
+
+
+<details>
+<summary>33. Dlaczego wzór `value := value` został użyty w pętlach i czy ma on zastosowanie po wersji 1.22?</summary>
+
+#### Go
+
+Szablon `value := value` był historycznie używany w pętlach `for range` do
+tworzenia oddzielnej lokalnej kopii zmiennej i bezpiecznego przechwytywania jej
+w zamknięciu, szczególnie w goroutine.
+
+#### Dlaczego było to potrzebne przed wersją 1.22:
+
+1. Zmienna iteracyjna w `range` została w rzeczywistości ponownie użyta pomiędzy
+   iteracjami.
+
+2. Zamknięcie często przechwytuje tę samą zmienną zamiast jej „bieżącej”
+   wartości.
+
+3. W rezultacie goroutine zobaczyła nieoczekiwane dane (zwykle ostatnią
+   wartość).
+
+Dlatego napisali:
+
+`v := v`
+
+aby utworzyć nową zmienną w ramach iteracji.
+
+#### Co się zmieniło od wersji 1.22:
+
+1. Zmieniono semantykę `range`: dla każdej iteracji zmienne pętli mają osobne
+   wartości do przechwycenia w zamknięciu.
+
+2. Typowy błąd z „późną” wartością w goroutines został naprawiony na poziomie
+   języka.
+
+3. W większości współczesnych przypadków szablon `value := value` nie jest już
+   potrzebny.
+
+#### Czy szablon jest aktualny dzisiaj:
+
+1. ** W przypadku kodu gwarantującego działanie w wersji Go 1.22+** – zwykle
+   nie.
+
+2. **W przypadku projektów ze starszymi wersjami Go** – tak, może być konieczne.
+
+3. **W przypadku środowisk/bibliotek mieszanych** należy dążyć do najniższej
+   obsługiwanej wersji.
+
+#### Wniosek praktyczny:
+
+`value := value` był wzorcem ochronnym przed konkretną pułapką `range`. Po
+wersji 1.22 potrzeba tego w większości zniknęła, ale pozostaje istotna w
+starszym kodzie lub podczas obsługi starszych wersji.
+
+</details>

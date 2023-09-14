@@ -1910,3 +1910,56 @@ wersji 1.22 potrzeba tego w większości zniknęła, ale pozostaje istotna w
 starszym kodzie lub podczas obsługi starszych wersji.
 
 </details>
+
+
+<details>
+<summary>34. Czy używanie goroutines może spowolnić system i w jakich przypadkach?</summary>
+
+#### Go
+
+Tak, może. Pomimo lekkiego charakteru goroutines, nie są one „darmowe”.
+Niewłaściwe lub nadmierne ich użycie może zmniejszyć wydajność, zwiększyć
+opóźnienia i skomplikować środowisko wykonawcze.
+
+#### Kiedy goroutines mogą spowolnić system:
+
+1. **Nadmierna liczba goroutines (eksplozja goroutine):** tysiące lub setki
+   tysięcy zadań bez ograniczania konkurencji wywierają presję na program
+   planujący i pamięć.
+
+2. **Zadania szczegółowe:** jeśli praca jest bardzo mała, narzut związany z
+   uruchomieniem/koordynacją może być większy niż praca użyteczna.
+
+3. **Intensywna synchronizacja:** częste blokowanie (`mutex`, kanały, `select`)
+   powoduje rywalizację i zmniejsza przepustowość.
+
+4. **Nieudana wymiana danych przez kanały:** nadmiarowe przekazywanie dużych
+   ładunków lub złożone topologie typu fan-in/fan-out mogą kosztować więcej niż
+   prostsze modele.
+
+5. **Brak przeciwciśnienia:** gdy producenci generują pracę szybciej niż
+   konsumenci ją przetwarzają, kumulują się kolejki, rośnie pamięć i opóźnienia.
+
+6. **Problemy z we/wy i zasobami zewnętrznymi:** nadmierna równoległość może
+   przeciążyć bazę danych, sieć, system plików lub interfejsy API innych firm,
+   degradując cały system, a nie go przyspieszając.
+
+#### Jak uniknąć degradacji:
+
+1. Konkurencja graniczna (pula procesów roboczych, semafor, ograniczone
+   kolejki).
+
+2. Profil (`pprof`, ślad) zamiast polegać na intuicji.
+
+3. Zmniejsz współdzielony stan zmienny i zablokuj rywalizację.
+
+4. Wybierz rozmiar równoległości zgodnie z rzeczywistym obciążeniem pracą i
+   zasobami.
+
+#### Wniosek:
+
+Horoutines przyspieszają system tylko wtedy, gdy kontrolowana jest równoległość.
+W produkcji zasada jest prosta: nie „więcej goroutin”, ale „wystarczająca ilość
+goroutines z właściwymi granicami i synchronizacją”.
+
+</details>

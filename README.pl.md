@@ -1963,3 +1963,74 @@ W produkcji zasada jest prosta: nie „więcej goroutin”, ale „wystarczając
 goroutines z właściwymi granicami i synchronizacją”.
 
 </details>
+
+
+<details>
+<summary>35. Jaka jest różnica między kanałami buforowanymi i niebuforowanymi? Kiedy należy używać slice + mutex zamiast kanałów?</summary>
+
+#### Go
+
+Kanały w Go mogą być buforowane lub niebuforowane i ta różnica określa semantykę
+synchronizacji pomiędzy goroutinami. Wybór typu kanału jest wyborem modelu
+koordynacji, a nie tylko „kwestią techniczną”.
+
+#### Kanał niebuforowany (`make(chan T)`):
+
+1. **Wymiana synchroniczna:** `send` jest blokowana do czasu, aż inna goroutine
+   wykona odpowiednią `receive` (i odwrotnie).
+
+2. **Wyraźne przekazanie:** jest dobre, gdy wymagana jest ścisła synchronizacja
+   kroków.
+
+3. **Minimalna kolejka:** dane nie kumulują się w kanale.
+
+#### Kanał buforowany (`make(chan T, n)`):
+
+1. **Więcej interakcji asynchronicznej:** `send` nie blokuje, dopóki jest
+   miejsce w buforze.
+
+2. **Zarządzana kolejka:** pozwala wygładzić krótkie szczyty obciążenia.
+
+3. ** Przeciwciśnienie ze względu na pojemność:** gdy bufor jest pełny, `send`
+   ponownie się blokuje.
+
+#### Gdy zamiast kanałów odpowiednie jest `slice + mutex`:
+
+1. **Wymaga współdzielonego bufora z nietrywialnymi operacjami:** usuwanie
+   partii, zmiana kolejności, dostęp losowy, złożone reguły agregacji.
+
+2. **Kiedy model ma „stan współdzielony z jawną blokadą”, a nie przepływ
+   komunikatów:** kanały nie zawsze są najłatwiejszym narzędziem do
+   modyfikowalnych kolekcji.
+
+3. **Gdy istotna jest subtelna optymalizacja pamięci/układu:** `slice` zapewnia
+   bardziej bezpośrednią kontrolę nad strukturą i operacjami danych.
+
+4. **Kiedy architektura kanału tworzy niepotrzebną złożoność:** czasami `mutex`
+   z wyraźnym niezmiennikiem jest prostszy, bardziej czytelny i szybszy.
+
+#### Praktyczna zasada wyboru:
+
+1. **Kanały** — do przekazywania zdarzeń/wiadomości pomiędzy niezależnymi
+   goroutinami przypominającymi aktora.
+
+2. **`slice + mutex`** — do zarządzania kolekcją współdzieloną z bogatym
+   zestawem operacji stanowych.
+
+#### Wniosek:
+
+Kanały buforowane i niebuforowane różnią się poziomem synchroniczności wymiany.
+Alternatywa `slice + mutex` jest uzasadniona, gdy potrzebna jest zarządzana
+struktura stanu współdzielonego, a nie transport wiadomości.
+
+#### Przykład:
+
+```go
+unbuf := make(chan int)    // надсилання чекає отримувача
+buf := make(chan int, 100) // надсилання не блокується, поки є місце
+
+buf <- 1
+buf <- 2
+```
+
+</details>

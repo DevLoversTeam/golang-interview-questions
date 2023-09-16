@@ -2034,3 +2034,49 @@ buf <- 2
 ```
 
 </details>
+
+
+<details>
+<summary>36. Co się stanie, gdy kanał `nil` zostanie odczytany, zapisany lub zamknięty?</summary>
+
+#### Go
+
+Kanał `nil` w Go to kanał bez zainicjowanego wewnętrznego bufora i mechanizmów
+synchronizacji. Jego zachowanie jest ściśle określone i bardzo ważne dla logiki
+konkurencji.
+
+#### Zachowanie kanału `nil`:
+
+1. **Czytanie z `nil`-kanału** - blokuje na zawsze.
+
+2. **Zapis na kanale `nil`** - blokuje na zawsze.
+
+3. **Zamknięcie kanału `nil`** - powoduje panikę.
+
+#### Dlaczego tak:
+
+1. Kanał `nil` nie ma struktury „na żywo”, za pośrednictwem której można
+   wymieniać informacje.
+
+2. W związku z tym operacje wysyłania/odbioru nie mogą zostać pomyślnie
+   zakończone.
+
+3. `close(nil)` jest zabronione, ponieważ tak naprawdę nie ma co zamykać.
+
+#### Konsekwencje praktyczne:
+
+1. W normalnym kodzie losowy kanał `nil` często prowadzi do zakleszczenia.
+
+2. W `select` może to być celowe narzędzie:
+
+- oddział z kanałem `nil` staje się nieaktywny;
+
+- tak dynamicznie „wyłącz” konkretny przypadek bez dodatkowych flag.
+
+#### Wniosek:
+
+Dla kanału `nil` wysyłanie/odbieranie — wieczne blokowanie i `close` — panika.
+Ta właściwość jest zarówno źródłem typowych błędów, jak i potężną techniką
+kontroli `select`, jeśli jest używana celowo.
+
+</details>

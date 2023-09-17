@@ -2080,3 +2080,72 @@ Ta właściwość jest zarówno źródłem typowych błędów, jak i potężną 
 kontroli `select`, jeśli jest używana celowo.
 
 </details>
+
+
+<details>
+<summary>37. Jak i dlaczego używać kanałów `nil` w `select`? Dlaczego kanał `nil` blokuje się na zawsze i jak z tego korzystać?</summary>
+
+#### Go
+
+Kanał `nil` w `select` to kontrolowany sposób dynamicznego włączania i
+wyłączania poszczególnych gałęzi. Ponieważ operacje na kanale `nil` nie mogą
+zostać zakończone, odpowiedni kanał `case` staje się nieaktywny.
+
+#### Dlaczego kanał `nil` blokuje się na zawsze:
+
+1. Kanał nie jest zainicjowany (`var ch chan T`), to znaczy nie ma struktury
+   wykonawczej do wysyłania/odbioru.
+
+2. `send` i `receive` nie mają „miejsca spotkania”, więc czekają w
+   nieskończoność.
+
+3. W `select` oznacza to: sprawa z tym kanałem nigdy nie zostanie wybrana.
+
+#### Jak z niego korzystać w `select`:
+
+1. **Dynamicznie wyłącz źródło zdarzenia:** przypisz `ch = nil` i gałąź `case
+   <-ch:` nie jest już aktywowana.
+
+2. **Zarządzanie cyklem życia etapów rurociągu:** po zakończeniu danego etapu
+   rurociąg jest resetowany w celu wykluczenia go z dalszej selekcji.
+
+3. **Unikanie zbędnych flag stanu:** zamiast dodatkowych `if` wewnątrz pętli
+   logika stanu jest przenoszona do samego mechanizmu `select`.
+
+#### Praktyczne środki ostrożności:
+
+1. Jeśli wszystkie kanały w `select` staną się `nil` i nie będzie żadnego
+   `default`, otrzymasz trwałą blokadę.
+
+2. `close(nil)` powoduje panikę, dlatego nie należy mylić zerowania i
+   zamknięcia.
+
+3. Kod z `nil`-kanałami wymaga wyraźnych niezmienników, w przeciwnym razie łatwo
+   jest uzyskać zakleszczenie trudne do debugowania.
+
+#### Wniosek:
+
+Kanał `nil` w `select` to elegancki przełącznik aktywności obudowy. Jest to
+przydatne w przypadku logiki kontrolowanej współbieżności, o ile stany są
+dokładnie kontrolowane i unika się sytuacji, w której wszystkie ścieżki ulegają
+zakleszczeniu.
+
+#### Przykład:
+
+```go
+var in <-chan int = source
+for {
+	select {
+	case v, ok := <-in:
+		if !ok {
+			in = nil // вимикаємо гілку
+			continue
+		}
+		_ = v
+	case <-ctx.Done():
+		return
+	}
+}
+```
+
+</details>

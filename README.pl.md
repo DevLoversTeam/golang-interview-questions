@@ -2149,3 +2149,56 @@ for {
 ```
 
 </details>
+
+
+<details>
+<summary>38. Kiedy należy używać `select` z gałęzią `default` i jakie scenariusze to obejmuje?</summary>
+
+#### Go
+
+`select` z odgałęzieniem `default` sprawia, że operacja nie jest blokowana:
+jeśli żaden kanał nie jest gotowy do wymiany, sterowanie natychmiast przechodzi
+do `default`. Jest to przydatne w przypadku kontrolowanej reakcji, ale
+niebezpieczne, jeśli jest używane bezmyślnie.
+
+#### W stosownych przypadkach:
+
+1. **Scenariusze „próba wysłania/odbioru”:** należy wypróbować wymianę i, jeśli
+   w tej chwili nie jest to możliwe, wybrać alternatywną ścieżkę bez blokowania.
+
+2. **Pętle zdarzeń z pracą w tle:** gdy w oczekiwaniu na zdarzenia goroutine
+   powinna wykonywać akcje pomocnicze (bicie serca, sprzątanie, telemetria
+   świetlna).
+
+3. ** Przeciwciśnienie i kontrolowane odciążanie:** jeśli bufor jest pełny,
+   `default` może odmówić/opóźnić zadanie zamiast blokować całą pętlę.
+
+4. **Miękkie limity czasu/odpytywanie statusu:** w połączeniu z `time.Ticker`
+   lub inną logiką pozwala nie „zawieszać się” w oczekiwaniu na kanał.
+
+#### Jakie ryzyko obejmuje i stwarza:
+
+1. **Obejmuje ryzyko zamarznięcia** w krytycznych obszarach, w których
+   blokowanie jest niedopuszczalne.
+
+2. **Może jednak utworzyć pętlę zajętości** (aktywne wirowanie procesora), jeśli
+   `default` uruchamia się zbyt często bez przerwy i znaczącej pracy.
+
+#### Praktyczne środki ostrożności:
+
+1. Nie używaj `default`, jeśli pożądane jest blokowanie synchronizacji.
+
+2. W pętlach dodaj kontrolę tempa (`ticker`, `sleep`, limity), aby uniknąć
+   marnowania zużycia procesora.
+
+3. Wyraźnie napraw politykę: co robimy, gdy kanał nie jest gotowy (upuść, ponów
+   próbę, kolejka, dziennik, metryka).
+
+#### Wniosek:
+
+`select` z `default` to nieblokujące narzędzie współbieżności. Jest to właściwe,
+gdy priorytetem jest reaktywność i zarządzanie obciążeniem, ale wymaga
+dyscypliny, aby nie zamienić cyklu przetwarzania w nieefektywne aktywne
+odpytywanie.
+
+</details>

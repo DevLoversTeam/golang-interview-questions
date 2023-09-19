@@ -2202,3 +2202,61 @@ dyscypliny, aby nie zamienić cyklu przetwarzania w nieefektywne aktywne
 odpytywanie.
 
 </details>
+
+
+<details>
+<summary>39. Jak działa `select` podczas odbierania danych z wielu kanałów jednocześnie?</summary>
+
+#### Go
+
+Jeśli jest wiele gotowych `case`, gdy zostanie wykonane `select`, Go wybiera
+jeden z nich pseudolosowo. Ma to na celu uniknięcie sztywnego priorytetu
+pierwszej gałęzi i ograniczenie systematycznego „głodu” poszczególnych kanałów.
+
+#### Co dzieje się krok po kroku:
+
+1. Runtime sprawdza wszystkie `case` w `select`.
+
+2. Definiuje zestaw gotowych operacji (wysyłanie/odbieranie, które można teraz
+   wykonać).
+
+3. Jeśli jeden `case` jest gotowy, zostaje wykonany.
+
+4. Jeśli kilka jest gotowych, jeden jest wybierany pseudolosowo.
+
+5. Jeśli żaden nie jest gotowy:
+
+- wykonuje `default` (jeśli istnieje),
+
+- w przeciwnym razie `select` zostanie zablokowany, dopóki przynajmniej jeden
+  `case` nie będzie gotowy.
+
+#### Konsekwencje praktyczne:
+
+1. **Nie ma gwarancji zlecenia przetwarzania** pomiędzy jednocześnie gotowymi
+   kanałami.
+
+2. **Nie można zakodować priorytetu biznesowego** tylko w zamówieniu `case` w
+   `select`.
+
+3. **Zachowanie jest poprawne pod względem konkurencyjnym, ale
+   niedeterministyczne**, co jest normalne w przypadku logiki sterowanej
+   zdarzeniami.
+
+#### Jak wdrożyć priorytet, jeśli jest to potrzebne:
+
+1. Zbuduj układ dwufazowy `select` (najpierw kanał krytyczny, potem wspólny).
+
+2. Użyj oddzielnych kolejek/programu planującego priorytety.
+
+3. Egzekwuj wyraźną politykę uczciwości/priorytetu w warstwie aplikacji, zamiast
+   polegać na randomizacji w czasie wykonywania.
+
+#### Wniosek:
+
+Jeśli jednocześnie dostępnych jest kilka kanałów, `select` wybiera jeden losowo
+(pseudolosowo). Jest to dobra strategia zapewniająca ogólną uczciwość, ale
+ustalenie priorytetów wymaga wyraźnej logiki architektonicznej oprócz
+podstawowej `select`.
+
+</details>

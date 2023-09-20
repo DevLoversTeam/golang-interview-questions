@@ -2260,3 +2260,76 @@ ustalenie priorytetów wymaga wyraźnej logiki architektonicznej oprócz
 podstawowej `select`.
 
 </details>
+
+
+<details>
+<summary>40. Jak bezpiecznie zamknąć kanał w Go, jeśli pisze do niego wiele goroutines?</summary>
+
+#### Go
+
+Podstawowa zasada Go: kanał jest zamykany przez **kto jest właścicielem strony
+zapisu** i dopiero wtedy, gdy wszystkie operacje `send` zostaną zakończone.
+Skrypt z wieloma procedurami pisania wymaga koordynacji ukończenia.
+
+#### Bezpieczne podejście (kanoniczne):
+
+1. Uruchom kilka podprogramów piszących.
+
+2. Każdy pisarz sygnalizuje to po zakończeniu pracy (`WaitGroup.Done()`).
+
+3. Oddzielna procedura kontrolna czeka na `wg.Wait()`.
+
+4. Dopiero wtedy wywołuje `close(ch)`.
+
+#### Dlaczego jest to bezpieczne:
+
+1. Żadna goroutine nie pisze na kanale po `close`.
+
+2. Unika paniki `send on closed channel`.
+
+3. Zamknięcie następuje dokładnie raz na kontrolowany punkt.
+
+#### Czego nie można zrobić:
+
+1. Pozwól każdemu autorowi na niezależne zamknięcie udostępnionego kanału.
+
+2. Zamknij kanał „na wszelki wypadek” z wielu lokalizacji.
+
+3. Wychwytywanie paniki jako „mechanizmu synchronizacji” jest antywzorcem.
+
+#### Dodatkowe praktyki:
+
+1. W przypadku wcześniejszego zatrzymania użyj oddzielnego `done/context`
+   zamiast `close(dataCh)` po stronie czytnika.
+
+2. Jeśli chcesz zagwarantować jednorazowe zamknięcie w złożonej topologii, użyj
+   `sync.Once`.
+
+#### Wniosek:
+
+W scenariuszu z wieloma programami piszącymi kanał jest bezpiecznie zamykany
+przez koordynatora po wyraźnym potwierdzeniu wykonania wszystkich podprogramów
+piszących. Zasada jest prosta: **wielu nadawców, jeden bliżej, ostatecznie
+wysyła**.
+
+#### Przykład:
+
+```go
+ch := make(chan int)
+var wg sync.WaitGroup
+
+for i := 0; i < 5; i++ {
+	wg.Add(1)
+	go func(v int) {
+		defer wg.Done()
+		ch <- v
+	}(i)
+}
+
+go func() {
+	wg.Wait()
+	close(ch) // один координатор закриває канал
+}()
+```
+
+</details>

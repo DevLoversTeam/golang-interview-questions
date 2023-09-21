@@ -2333,3 +2333,69 @@ go func() {
 ```
 
 </details>
+
+
+<details>
+<summary>41. Jak zaimplementować semafor przez kanał buforowany?</summary>
+
+#### Go
+
+W Go semafor jest naturalnie modelowany przez kanał buforowany o stałej
+pojemności. Liczba slotów w buforze jest równa maksymalnej dozwolonej liczbie
+jednoczesnych operacji (równoległość).
+
+#### Zasada działania:
+
+1. **Pobierz (zajmij miejsce):** przed rozpoczęciem pracy goroutine wykonuje
+   `sem <- token`. Jeżeli bufor jest pełny, wysyłanie jest blokowane.
+
+2. **Zwolnienie (zwolnienie gniazda):** po zakończeniu goroutine wykonuje
+   `<-sem`. W ten sposób zostaje zwolnione miejsce na następne zadanie.
+
+#### Typowa forma:
+
+- `sem := make(chan struct{}, N)`
+
+- `N` — limit jednocześnie aktywnych zadań.
+
+- `struct{}` jest wybrany jako lekki token bez ładunku.
+
+#### Dlaczego jest skuteczny:
+
+1. **Prosty model przeciwciśnienia:** Nadmiarowe zadania naturalnie czekają.
+
+2. **Przejrzysta synchronizacja:** Środowisko wykonawcze Go wykonuje
+   blokadę/wzbudzenie bez ręcznego sterowania zmiennymi warunkowymi.
+
+3. **Dobrze odczytany z kodu:** zamiar „ograniczenia konkurencji” jest
+   natychmiast widoczny.
+
+#### Praktyczne środki ostrożności:
+
+1. Zawsze wykonuj `release` zamiast `defer`, aby uniknąć utraty miejsca w
+   przypadku błędu.
+
+2. Aby anulować oczekiwanie, użyj `select` z `context.Done()`.
+
+3. Nie należy mylić semafora (limitu równoległości) z kolejką zadań (pulą
+   procesów roboczych).
+
+#### Wniosek:
+
+Buforowany kanał w Go to kanoniczna implementacja semafora zliczającego: prosta,
+niezawodna i dobrze zintegrowana z modelem goroutine. To jeden z najlepszych
+sposobów kontrolowania poziomu konkurencji w usługach produkcyjnych.
+
+#### Przykład:
+
+```go
+sem := make(chan struct{}, 10) // максимум 10 одночасних задач
+
+run := func(job Job) {
+	sem <- struct{}{}         // зайняти слот
+	defer func() { <-sem }() // звільнити слот
+	job.Do()
+}
+```
+
+</details>

@@ -2399,3 +2399,60 @@ run := func(job Job) {
 ```
 
 </details>
+
+
+<details>
+<summary>42. Jak zaimplementować wzorce `Fan-in` i `Fan-out`?</summary>
+
+#### Go
+
+`Fan-out` i `Fan-in` to podstawowe wzorce współbieżności w Go for zarządzanej
+równoległości: pierwszy rozdziela pracę między wielu wykonawców, drugi zbiera
+wyniki z powrotem do wspólnego wątku.
+
+#### `Fan-out` (rozgałęzianie obciążenia):
+
+1. Występuje kanał powodujący problemy.
+
+2. Uruchamia `N` procedurę procesu roboczego.
+
+3. Każdy pracownik czyta ze wspólnego kanału wejściowego i przetwarza jego
+   część.
+
+#### `Fan-in` (wyniki łączenia):
+
+1. Kilka kanałów producentów lub wyniki pracowników.
+
+2. Indywidualne procedury scalania wysyłają dane do jednego kanału wyjściowego.
+
+3. Po zakończeniu wszystkich gałęzi scalających kanał wyjściowy zostaje
+   zamknięty.
+
+#### Typowy schemat architektoniczny:
+
+1. `jobs` kanał → `fan-out` dotyczący pracowników.
+
+2. Każdy pracownik pisze do `results`.
+
+3. `fan-in` łączy `results` (lub kilka `results`-kanałów) w jeden kanał na
+   potrzeby następnego etapu potoku.
+
+#### Niezwykle ważne zasady:
+
+1. Zamykanie kanałów powinno być scentralizowane i jednorazowe.
+
+2. Użyj `WaitGroup` do koordynowania zakończenia pracy.
+
+3. W przypadku wcześniejszego zakończenia użyj `context`/`done`, aby uniknąć
+   wycieków goroutine.
+
+4. Kontroluj rozmiar buforów i poziom równoległości, aby uniknąć przeciążenia
+   pamięci lub zależności zewnętrznych.
+
+#### Wniosek:
+
+`Fan-out` skaluje przetwarzanie, `Fan-in` zwraca kontrolę nad strumieniem
+wynikowym. Razem stanowią podstawę najbardziej efektywnych rozwiązań potokowych
+w usługach Go.
+
+</details>

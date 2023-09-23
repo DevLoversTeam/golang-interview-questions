@@ -2456,3 +2456,57 @@ wynikowym. Razem stanowią podstawę najbardziej efektywnych rozwiązań potokow
 w usługach Go.
 
 </details>
+
+
+<details>
+<summary>43. Dlaczego nie powinieneś używać kanałów do przesyłania dużych ilości danych?</summary>
+
+#### Go
+
+Kanały w Go to świetne narzędzie do koordynowania i przekazywania
+wydarzeń/małych wiadomości, ale nie są najlepszym sposobem transportu ogromnych
+ładunków. W przypadku dużych ilości danych często powodują niepotrzebne
+obciążenie.
+
+#### Dlaczego to może nie być skuteczne:
+
+1. **Koszt kopiowania:** przekazywanie dużych wartości przez kanał zwiększa
+   liczbę operacji pamięciowych i ruch pomiędzy goroutines.
+
+2. **Koszty rywalizacji i synchronizacji:** kanały mają wewnętrzną koordynację
+   dostępu; przy dużym obciążeniu może stać się wąskim gardłem.
+
+3. **GC i zużycie pamięci:** duże bufory kanałów lub liczne duże komunikaty
+   zwiększają wykorzystanie pamięci i mogą zwiększać koszty przerw/czasu
+   działania.
+
+4. **Degradacja lokalizacji pamięci podręcznej:** duże obiekty przechodzą przez
+   konkurencyjny rurociąg gorzej niż sygnały kompaktowe + dostęp do
+   współdzielonej pamięci.
+
+#### Lepsze alternatywy:
+
+1. Transfer kanałem **linków/uchwytów/indeksów**, a nie dużych zbiorów danych.
+
+2. Trzymaj ładunek we współdzielonym buforze/puli i używaj kanału jako sygnału
+   gotowości.
+
+3. W stosownych przypadkach użyj puli procesów roboczych z kontrolowanym
+   dostępem do współdzielonej struktury danych (`slice/map + mutex`).
+
+#### Kiedy kanały są nadal odpowiednie:
+
+1. Dla małych komunikatów kontrolnych.
+
+2. Dla zdarzeń, poleceń, statusów i sygnałów zakończenia.
+
+3. Dla potoku, w którym przesuwa się lekki kontekst metadanych.
+
+#### Wniosek:
+
+Kanał w Go to przede wszystkim mechanizm synchronizacji i koordynacji. W
+przypadku dużych danych skuteczniejsze jest rozdzielenie: przesyłania informacji
+„co należy zrobić” kanałem i najbardziej masywnych ładunków — za pośrednictwem
+bardziej odpowiednich struktur pamięci.
+
+</details>

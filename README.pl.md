@@ -2510,3 +2510,71 @@ przypadku dużych danych skuteczniejsze jest rozdzielenie: przesyłania informac
 bardziej odpowiednich struktur pamięci.
 
 </details>
+
+
+<details>
+<summary>44. Jak poprawnie zwrócić błąd z goroutine do głównego wątku? </summary>
+
+#### Go
+
+Procedura nie może „zwrócić” wartości bezpośrednio poprzez `return` do osoby
+wywołującej. Dlatego błąd z zadania współbieżnego jest przekazywany jawnie:
+kanałem błędu lub poprzez `errgroup`, który hermetyzuje ten wzorzec.
+
+#### Podejścia kanoniczne:
+
+1. **`errgroup.Group` + `context` (zalecane):** najlepsze do uruchamiania grupy
+   goroutines, zbierania pierwszego błędu i anulowania pozostałych zadań.
+
+2. **Oddzielne `errCh` + `WaitGroup`:** wyraźna kontrola nad cyklem życia; po
+   zakończeniu wszystkich procesów roboczych kanał zostaje zamknięty, a główny
+   wątek odczytuje błędy.
+
+#### Kluczowe zasady poprawności:
+
+1. Błędy przesyłane są w jednym uzgodnionym kanale/agregatorze.
+
+2. Zamknięcie `errCh` jest wykonywane przez koordynatora po zakończeniu
+   wszystkich procedur zapisu.
+
+3. W przypadku pierwszego błędu krytycznego inne zadania należy zatrzymać za
+   pomocą `context` (aby uniknąć bezużytecznej pracy i wycieków goroutine).
+
+4. Błędów w konkurencyjnych gałęziach nie można zignorować - powoduje to „ciche”
+   defekty.
+
+#### Typowa strategia przetwarzania:
+
+1. Uruchom pracowników z dostępem do `ctx`.
+
+2. W przypadku błędu wyślij `error` do agregatora.
+
+3. Anuluj kontekst (jeśli wymagana jest zasada szybkiego działania).
+
+4. Poczekaj na zakończenie wszystkich procedur.
+
+5. Zwróć uzgodniony wynik (pierwszy błąd lub błąd zagregowany).
+
+#### Wniosek:
+
+Poprawny błąd „powrotu” z goroutine to dyscyplina jawnego kanału komunikacji
+oraz zarządzanie cyklem życia za pośrednictwem `WaitGroup`/`errgroup` i
+`context`. W produkcji najczęściej optymalnym wyborem jest `errgroup`.
+
+#### Przykład (wersja 1.22+):
+
+```go
+g, ctx := errgroup.WithContext(context.Background())
+
+for _, task := range tasks {
+	g.Go(func() error {
+		return task.Run(ctx)
+	})
+}
+
+if err := g.Wait(); err != nil {
+	return err
+}
+```
+
+</details>

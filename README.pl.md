@@ -2578,3 +2578,51 @@ if err := g.Wait(); err != nil {
 ```
 
 </details>
+
+
+<details>
+<summary>45. Czy `defer` w Go może złapać (`recover`) panikę, która wystąpiła w gorutynie podrzędnej?</summary>
+
+#### Go
+
+Krótka odpowiedź: **nie**. `recover` działa tylko w tej samej procedurze gor, w
+której wystąpiła panika, i tylko w funkcji `defer` wykonywanej na stosie
+wywołań.
+
+#### Główna zasada:
+
+1. Panika nie „przelatuje” pomiędzy goroutinami jako kontrolowany sygnał dla
+   `recover`.
+
+2. `defer` w nadrzędnej procedurze gor nie może wychwycić paniki dziecka.
+
+3. Aby wywołać panikę w procedurze roboczej, `defer` z `recover` musi znajdować
+   się w tej konkretnej procedurze roboczej.
+
+#### Konsekwencje praktyczne:
+
+1. Jeśli panika w podprogramie podrzędnym nie zostanie wykryta lokalnie, proces
+   może ulec awarii.
+
+2. W przypadku stabilnych usług każda „ryzykowna” gorutyna jest owinięta folią
+   ochronną `defer func(){ if r := recover(); r != nil { ... } }()`.
+
+3. Po `recover` należy wyraźnie zasygnalizować awarię obwodu głównego (poprzez
+   kanał `error`, `errgroup`, metryki, logowanie).
+
+#### Co jest uważane za dobrą praktykę:
+
+1. Lokalny `recover` w miejscu wypuszczenia długowiecznych pracowników.
+
+2. Jasne zasady: panika zamienia się w błąd/ostrzeżenie i nie znika po cichu.
+
+3. Używanie `context` do skoordynowanego zakończenia innych goroutines po
+   krytycznej awarii.
+
+#### Wniosek:
+
+`recover` w Go ma zasięg lokalny — pojedynczą procedurę gor. Dlatego
+przechwytywanie paniki w konkurencyjnym kodzie musi być zaprojektowane osobno na
+poziomie każdej procedury podrzędnej.
+
+</details>

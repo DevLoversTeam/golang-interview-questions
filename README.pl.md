@@ -2626,3 +2626,85 @@ przechwytywanie paniki w konkurencyjnym kodzie musi być zaprojektowane osobno n
 poziomie każdej procedury podrzędnej.
 
 </details>
+
+
+<details>
+<summary>46. Porozmawiaj o wzorcach konkurencji w Go.</summary>
+
+#### Go
+
+Wzorce współbieżności w Go to powtarzalne wzorce architektoniczne służące do
+koordynowania goroutines, potoków i prymitywów synchronizacji. Ich celem jest
+zapewnienie łatwej do opanowania równoległości bez chaosu, wycieków i
+zakleszczeń.
+
+#### Najczęściej używane wzorce:
+
+1. **Pula pracowników**
+
+- stała liczba procedur roboczych odczytuje zadania z kolejki;
+
+- ogranicza poziom równoległości i stabilizuje ładunek.
+
+2. **Wentylacja / Wentylacja**
+
+- `fan-out`: przydział jednej kolejki zadań wielu wykonawcom;
+
+- `fan-in`: Łączenie wyników z wielu źródeł w jeden kanał.
+
+3. **Rurociąg (przenośnik etapów)**
+
+- dane przechodzą przez kolejne etapy przetwarzania;
+
+- każdy etap może mieć własną konkurencję i przeciwciśnienie.
+
+4. **Semafor poprzez kanał buforowany**
+
+- ogranicza liczbę jednoczesnych operacji;
+
+- przydatny do pracy z bazami danych, deskryptorami plików, zewnętrznymi API.
+
+5. **Anulowanie kontekstu**
+
+- scentralizowane anulowanie całej grupy goroutines;
+
+- zapobiega wyciekom w przypadku przekroczenia limitu czasu, błędu lub
+  zamknięcia.
+
+6. **Errgroup (bezawaryjna orkiestracja)**
+
+- zbiera błędy z grupy zadań;
+
+- wygodnie łączy się z `context`, aby wcześniej zatrzymać resztę pracy.
+
+7. **Jeden właściciel / Pętla przypominająca aktora**
+
+- jedna goroutine ma stan zmienny;
+
+- inni komunikują się za pośrednictwem wiadomości, ograniczając rywalizację o
+  blokady.
+
+8. **Publikuj/Subskrybuj (transmisja)**
+
+- zdarzenia są wysyłane do wielu odbiorców;
+
+- wymaga dokładnego monitorowania buforów i cyklu życia subskrybenta.
+
+#### Podstawowe zasady dotyczące wszystkich wzorców:
+
+1. Jasne zasady dotyczące własności zasobów i zamykania kanałów.
+
+2. Ograniczenia konkursu (nie „nieskończone” goroutiny).
+
+3. Wymagana ścieżka zakończenia (`context`, `done`, `WaitGroup`).
+
+4. Obserwowalność: metryki, rejestrowanie, profilowanie.
+
+#### Wniosek:
+
+Siła Go nie leży w „samych goroutinach”, ale w dyscyplinie wzorców. Jest to
+właściwa kombinacja puli procesów roboczych, potoków, włączania i wyłączania,
+anulowania i koordynacji błędów, która zapewnia skalowalność, przewidywalność i
+niezawodność produkcji systemów.
+
+</details>

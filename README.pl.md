@@ -2708,3 +2708,64 @@ anulowania i koordynacji błędów, która zapewnia skalowalność, przewidywaln
 niezawodność produkcji systemów.
 
 </details>
+
+
+<details>
+<summary>47. Kiedy używać `sync.Mutex` i kiedy używać `sync.RWMutex`?</summary>
+
+#### Go
+
+`sync.Mutex` i `sync.RWMutex` rozwiązują ten sam problem — chronią stan
+współdzielony, ale przy użyciu innego modelu konkurencji. Właściwy wybór zależy
+od profilu dostępu do danych: proporcji odczytów i zapisów, czasu trwania sekcji
+krytycznych oraz poziomu rywalizacji.
+
+#### `sync.Mutex` — kiedy wybrać:
+
+1. **Zapisy mieszane lub częste:** jeśli operacje zapisu nie są częste, korzyści
+   płynące z `RWMutex` są często zanegowane.
+
+2. **Krótkie sekcje krytyczne:** proste blokowanie/odblokowywanie zwykle
+   zapewnia przewidywalne i szybkie działanie.
+
+3. **Podstawowy wybór domyślny:** mniejsza złożoność, mniejsze ryzyko błędnego
+   modelu zamka.
+
+4. **Gdy ważna jest łatwość konserwacji:** `Mutex` jest łatwiejsza do
+   odczytania, debugowania i profilowania.
+
+#### `sync.RWMutex` — kiedy ma to sens:
+
+1. ** Dominują odczyty, zapisy są rzadkie:** wielu jednoczesnych czytelników
+   może pracować równolegle.
+
+2. **Odczyty są stosunkowo długie:** równoległy dostęp do odczytu zapewnia
+   rzeczywisty wzrost przepustowości.
+
+3. **Konkurencja w zakresie odczytu jest duża:** i istnieją dowody empiryczne na
+   to, że wąskim gardłem staje się blokada odczytu.
+
+#### Ważne uwagi:
+
+1. `RWMutex` nie jest „automatycznie szybszy” — ze względu na bardziej złożoną
+   koordynację wewnętrzną może działać wolniej przy rzeczywistych obciążeniach.
+
+2. Czytniki są nadal blokowane podczas częstych operacji zapisu.
+
+3. Ostatecznego wyboru należy dokonać w oparciu o profilowanie (`pprof`,
+   benchmarki), a nie intuicję.
+
+#### Ogólna zasada:
+
+1. Zacznij od `sync.Mutex`.
+
+2. Przejdź do `sync.RWMutex` tylko wtedy, gdy istnieje scenariusz z dużą ilością
+   odczytów i udowodniony wzrost wydajności.
+
+#### Wniosek:
+
+`sync.Mutex` to niezawodna wartość domyślna dla większości zadań. `sync.RWMutex`
+to narzędzie do optymalizacji punktowej dla obciążeń zorientowanych na
+czytelnika, gdzie zysk jest potwierdzany metrykami.
+
+</details>

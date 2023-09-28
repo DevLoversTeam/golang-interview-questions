@@ -2769,3 +2769,51 @@ to narzędzie do optymalizacji punktowej dla obciążeń zorientowanych na
 czytelnika, gdzie zysk jest potwierdzany metrykami.
 
 </details>
+
+
+<details>
+<summary>48. Dlaczego nie można skopiować obiektów `sync.Mutex`?</summary>
+
+#### Go
+
+`sync.Mutex` zawiera stan blokady wewnętrznej. Kopiowanie takiego obiektu już po
+pierwszym użyciu stwarza niebezpieczną sytuację: pojawiają się dwa różne
+przypadki stanu blokady, które programista może błędnie uznać za jeden.
+
+#### Dlaczego jest to zasadniczo zabronione:
+
+1. **Mutex to nie tylko „dane”, ale element podstawowy synchronizacji
+   stanowej.**
+
+2. **Kopia nie ma tego samego stanu blokady** co oryginał.
+
+3. To narusza gwarancje wzajemnego wykluczenia i może prowadzić do wyścigu,
+   impasu lub paniki w złożonych scenariuszach.
+
+#### Typowe sposoby przypadkowego skopiowania muteksu:
+
+1. Przekaż strukturę zawierającą `sync.Mutex` według wartości do funkcji.
+
+2. Po inicjalizacji/użyciu zwróć następującą strukturę według wartości.
+
+3. Zachowaj/przekaż kopie za pośrednictwem kanałów lub kolekcji wartości.
+
+#### Prawidłowa praktyka:
+
+1. Struktury z `sync.Mutex` należy używać poprzez wskaźniki (`*T`), a nie
+   poprzez kopiowanie wartości.
+
+2. Nie eksportuj `Mutex` bezpośrednio do publicznego interfejsu API.
+
+3. Jeżeli typ posiada blokadę, należy udokumentować, że nie zostanie skopiowany
+   po pierwszym użyciu.
+
+4. Użyj `go vet` (blokad kopiujących) i lintersów do wczesnego wykrywania.
+
+#### Wniosek:
+
+`sync.Mutex` nie można skopiować, ponieważ podważa to sam model synchronizacji.
+Zapamiętaj zasadę: elementy podstawowe zamka mają stabilną tożsamość i muszą
+istnieć w jednej instancji na każdy stan chroniony.
+
+</details>

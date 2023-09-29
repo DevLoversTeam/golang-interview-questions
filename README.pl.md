@@ -2817,3 +2817,53 @@ Zapamiętaj zasadę: elementy podstawowe zamka mają stabilną tożsamość i mu
 istnieć w jednej instancji na każdy stan chroniony.
 
 </details>
+
+
+<details>
+<summary>49. Dlaczego odczytywanie i zapisywanie stanu współdzielonego bez synchronizacji jest wyścigiem danych, nawet jeśli jest „logicznie bezpieczne”?</summary>
+
+#### Go
+
+Jeśli chodzi o model pamięci Go, `data race` występuje, gdy dwie lub więcej
+gorprogramów jednocześnie uzyskuje dostęp do tej samej zmiennej, z których co
+najmniej jedna jest operacją zapisu, i nie ma ustalonej relacji `happens-before`
+(tj. synchronizacji) pomiędzy tymi dostępami.
+
+#### Dlaczego „logicznie bezpieczny” nie zapisuje:
+
+1. **Logika w głowie programisty ≠ gwarancja modelu pamięci.** Bez
+   synchronizacji nie jest zdefiniowana kolejność widoczności rekordów pomiędzy
+   rdzeniami/wątkami.
+
+2. **Optymalizacje kompilatora i procesora mogą zmienić obserwowaną kolejność**
+   odczytów/zapisów w dozwolonym modelu pamięci.
+
+3. **Niestabilność pod obciążeniem:** kod może „działać” podczas lokalnego
+   uruchamiania, ale może wystąpić przerwa w produkcji lub CI.
+
+#### Jakie są konsekwencje rasy:
+
+1. Odczytywanie nieaktualnych lub częściowo zaktualizowanych wartości.
+
+2. Niepowtarzalne błędy (heisenbugs), które są trudne do debugowania.
+
+3. Naruszenie niezmienników stanu biznesowego bez wyraźnej paniki.
+
+#### Co uważa się za prawidłową synchronizację:
+
+1. `sync.Mutex` / `sync.RWMutex`
+
+2. Atomics (`sync/atomic`) dla prostych scenariuszy niskiego poziomu
+
+3. Kanały jako mechanizm własności/sygnalizacji
+
+4. `WaitGroup`, `Cond`, `Once`, `context` — w swoich rolach koordynacyjnych
+
+#### Wniosek:
+
+Bez synchronizacji współdzielony odczyt/zapis w Go to z definicji wyścig,
+niezależnie od subiektywnego „bezpieczeństwa logicznego”. Jedynym niezawodnym
+sposobem jest jawne utworzenie relacji `happens-before` za pomocą poprawnych
+operacji podstawowych współbieżności.
+
+</details>

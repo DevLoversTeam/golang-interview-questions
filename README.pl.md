@@ -2867,3 +2867,55 @@ sposobem jest jawne utworzenie relacji `happens-before` za pomocą poprawnych
 operacji podstawowych współbieżności.
 
 </details>
+
+
+<details>
+<summary>50. Co to jest stan wyścigu i jak działa detektor `-race`? Co może, a czego nie może wykryć?</summary>
+
+#### Go
+
+`Race Condition` to ogólna klasa defektów współbieżności, w których wynik
+programu zależy od nieprzewidywalnej kolejności zdarzeń pomiędzy wątkami
+wykonania. `Data race` to szczególny przypadek sytuacji wyścigu, która odnosi
+się do niebezpiecznego jednoczesnego dostępu do tej samej pamięci bez
+synchronizacji.
+
+#### Jak działa `-race`:
+
+1. Podczas `go test -race` / `go run -race` kod jest instrumentowany.
+
+2. Runtime śledzi odczyty/zapisy pamięci pomiędzy goroutines.
+
+3. W przypadku wykrycia dostępu bez `happens-before` (i istnieje rekord) —
+   zgłaszany jest `data race` ze śladami stosu.
+
+#### Co `-race` dobrze wykrywa:
+
+1. Klasyczne wyścigi odczytu/zapisu i zapisu/zapisu na zmiennych
+   współdzielonych.
+
+2. Nieodebrane zablokowanie/odblokowanie w obszarach konkurencyjnych.
+
+3. Część błędów koordynacji w scenariuszach testowych z prawdziwą konkurencją.
+
+#### Czego `-race` nie gwarantuje:
+
+1. **Nie wykrywa wszystkich warunków wyścigu jako błędów logicznych:** np.
+   nieprawidłowy protokół interakcji bez bezpośredniego wyścigu danych.
+
+2. **Nie widzi niezrealizowanego kodu:** jeśli testy nie obejmują ścieżki
+   konkurencyjnej, wyścig może pozostać niezauważony.
+
+3. **Nie jest wolny od błędów:** „Czysty” przebieg oznacza jedynie, że narzędzie
+   nie wykrył w jego trakcie żadnych naruszeń.
+
+4. **Ma narzut:** spowolnienie i zwiększone zużycie pamięci w trybie
+   oprzyrządowania.
+
+#### Wniosek praktyczny:
+
+`-race` jest obowiązkowym narzędziem zapewniającym konkurencyjną higienę kodu,
+ale nie jest absolutną wyrocznią poprawności. Jego moc ujawnia się w połączeniu
+z testami jakości, niezmiennikami projektowymi i dyscypliną synchronizacji.
+
+</details>

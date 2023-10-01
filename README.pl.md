@@ -2919,3 +2919,58 @@ ale nie jest absolutną wyrocznią poprawności. Jego moc ujawnia się w połąc
 z testami jakości, niezmiennikami projektowymi i dyscypliną synchronizacji.
 
 </details>
+
+
+<details>
+<summary>51. Jakie są zalety operacji atomowych w porównaniu z mutexem w przypadku prostych operacji konkurencyjnych?</summary>
+
+#### Go
+
+Operacje `atomic` w Go są odpowiednie w bardzo prostych scenariuszach
+konkurencyjnych, w których trzeba bezpiecznie wykonać elementarną operację na
+pojedynczej wartości (inkrementacja, odczytanie flagi, CAS). W takich
+przypadkach mogą być lżejsze niż `mutex`.
+
+#### Zalety podejścia atomowego:
+
+1. **Mniejsze obciążenie w przypadku prostych operacji:** brak wyraźnego
+   `Lock/Unlock` wokół krótkiej operacji.
+
+2. **Wysoka wydajność w licznikach i flagach gorącej ścieżki:** np. metryki,
+   stany stop/start, lekka koordynacja.
+
+3. **Brak blokowania w klasycznym sensie:** wątki nie muszą czekać na
+   właściciela blokady w celu atomowego odczytu/zapisu.
+
+4. ** Jasne gwarancje kolejności pamięci poprzez API `sync/atomic`:** zapewniona
+   jest poprawna widoczność pomiędzy goroutinami dla określonej zmiennej.
+
+#### Kiedy atom jest lepszy niż muteks:
+
+1. Operacja dotyczy **jednej** zmiennej lub stanu bardzo lokalnego.
+
+2. Logika jest prosta i dobrze sformalizowana (`Load`, `Store`, `Add`,
+   `CompareAndSwap`).
+
+3. Wymaga minimalnego opóźnienia na ścieżce wysokiej częstotliwości.
+
+#### Kiedy mutex jest lepszy:
+
+1. A **niezmiennik między wieloma polami** musi być chroniony.
+
+2. Operacja obejmuje kilka kroków z logiką domeny.
+
+3. Czytelność i łatwość konserwacji są ważniejsze niż mikrooptymalizacja.
+
+#### Ważna uwaga:
+
+Atomic nie jest uniwersalnym zamiennikiem `mutex`. Nadmierne użycie atomów
+komplikuje kod i zwiększa ryzyko subtelnych błędów w modelu pamięci.
+
+#### Wniosek:
+
+Zaletą operacji atomowych jest szybka i tania synchronizacja w prostych
+przypadkach. W przypadku złożonych niezmienników stanu współdzielonego i
+biznesowego `mutex` jest zwykle bardziej niezawodnym narzędziem.
+
+</details>

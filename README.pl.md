@@ -2974,3 +2974,68 @@ przypadkach. W przypadku złożonych niezmienników stanu współdzielonego i
 biznesowego `mutex` jest zwykle bardziej niezawodnym narzędziem.
 
 </details>
+
+
+<details>
+<summary>52. Jak działa `sync.WaitGroup` i co się stanie, jeśli licznik będzie ujemny? Dlaczego nie można wywołać `wg.Done()` przed `wg.Add()`?</summary>
+
+#### Go
+
+`sync.WaitGroup` to licznik aktywnych zadań konkurencyjnych. Jego celem jest
+umożliwienie jednej goroutine (`Wait`) poczekania, aż inne zakończą swoją pracę.
+
+#### Jak to działa:
+
+1. `wg.Add(n)` zwiększa licznik o `n` (dodajemy liczbę zadań).
+
+2. Każde ukończone zadanie wyzwala `wg.Done()` (odpowiednik `Add(-1)`).
+
+3. `wg.Wait()` jest blokowany do momentu osiągnięcia przez licznik zera.
+
+#### Co się stanie z licznikiem ujemnym:
+
+1. To jest logiczny błąd koordynacji.
+
+2. Środowisko wykonawcze powoduje panikę (zwykle: `sync: negative WaitGroup
+   counter`).
+
+3. Ta sytuacja oznacza, że ​​`Done()` został wywołany więcej razy niż `Add()`.
+
+#### Dlaczego nie możesz zrobić `Done()` do `Add()`:
+
+1. Naruszona została umowa dotycząca cyklu życia zadania.
+
+2. `Wait()` może zakończyć się przedwcześnie, ponieważ w momencie oczekiwania
+   licznik nie odzwierciedla jeszcze rzeczywistej liczby zleceń.
+
+3. W najgorszym przypadku otrzymamy negatywny licznik i panikę.
+
+#### Prawidłowa dyscyplina:
+
+1. Zadzwoń `Add(1)` **zanim** rozpocznie się goroutine.
+
+2. Wewnątrz goroutyny ustaw `defer wg.Done()` bezpośrednio przy wejściu.
+
+3. Zadzwoń `Wait()` dopiero po zarejestrowaniu wszystkich zadań.
+
+#### Wniosek:
+
+`WaitGroup` jest niezawodny tylko w ścisłej sekwencji `Add -> go -> Done ->
+Wait`. Licznik ujemny i `Done()` do `Add()` to sygnał zepsutego modelu
+synchronizacji, co nieuchronnie prowadzi do niestabilnego zachowania lub paniki.
+
+#### Przykład:
+
+```go
+var wg sync.WaitGroup
+wg.Add(1)
+
+go func() {
+	defer wg.Done()
+	work()
+}()
+
+wg.Wait()
+```
+
+</details>

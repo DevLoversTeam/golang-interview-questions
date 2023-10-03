@@ -3039,3 +3039,67 @@ wg.Wait()
 ```
 
 </details>
+
+
+<details>
+<summary>53. Jaka jest różnica między `sync.WaitGroup` i `errgroup.Group`? Kiedy używać każdego z nich?</summary>
+
+#### Go
+
+`sync.WaitGroup` i `errgroup.Group` koordynują realizację goroutines, ale mają
+różne poziomy abstrakcji: `WaitGroup` tylko czeka, podczas gdy `errgroup`
+dodatkowo obsługuje błędy i anulowanie poprzez `context`.
+
+#### `sync.WaitGroup`:
+
+1. Odpowiada tylko za oczekiwanie na zakończenie zadań.
+
+2. Nie rejestruje błędów od razu po wyjęciu z pudełka.
+
+3. Nie anuluje automatycznie innych goroutines.
+
+4. Wymaga infrastruktury ręcznej:
+
+- kanał błędu;
+
+- koordynacja `context`;
+
+- niezawodna logika.
+
+#### `errgroup.Group`:
+
+1. Umożliwia uruchamianie goroutines przez `Go(func() error)`.
+
+2. Zwraca pierwszy błąd otrzymany w `Wait()`.
+
+3. W połączeniu z `errgroup.WithContext` automatycznie anuluje kontekst w
+   przypadku błędu.
+
+4. Redukuje standardowe wzorce dla typowego wzorca „zadania równoległe +
+   zatrzymanie w przypadku błędu”.
+
+#### Kiedy wybrać `WaitGroup`:
+
+1. Po prostu poczekaj na zakończenie bez agregacji błędów.
+
+2. Zasady obsługi błędów są niestandardowe i całkowicie niestandardowe.
+
+3. Kontrola niskiego poziomu jest ważniejsza niż wygoda API.
+
+#### Kiedy wybrać `errgroup`:
+
+1. Potrzebuje jasnego modelu „niepowodzenie w jednym zadaniu → zatrzymaj
+   resztę”.
+
+2. Musisz szybko i sprawnie wdrożyć konkurencyjną orkiestrację.
+
+3. Ważna jest czytelność i krótki, łatwy w utrzymaniu kod.
+
+#### Wniosek:
+
+`WaitGroup` - element podstawowy synchronizacji „tylko czekaj”. `errgroup` -
+wyższy poziom: „poczekaj + zwróć błąd + anuluj resztę poprzez kontekst”. W
+przypadku większości scenariuszy produkcyjnych z błędami i semantyką
+zapewniającą szybką awarię `errgroup` jest bardziej praktyczny.
+
+</details>

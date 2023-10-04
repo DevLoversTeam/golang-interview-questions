@@ -3103,3 +3103,63 @@ przypadku większości scenariuszy produkcyjnych z błędami i semantyką
 zapewniającą szybką awarię `errgroup` jest bardziej praktyczny.
 
 </details>
+
+
+<details>
+<summary>54. Opisz cel i implementację `sync.Once` - w jaki sposób gwarantuje jednorazową inicjalizację?</summary>
+
+#### Go
+
+`sync.Once` przeznaczony jest do gwarantowanego jednorazowego wykonania funkcji
+w warunkach równoczesnego dostępu. Niezależnie od liczby goroutines wywołujących
+`once.Do(f)` w tym samym czasie, treść `f` musi zostać wykonana tylko raz.
+
+#### Do czego się go używa:
+
+1. Leniwa inicjalizacja zasobów singletonu.
+
+2. Jednorazowa konfiguracja/ładowanie pamięci podręcznej.
+
+3. Bezpiecznie przeprowadzaj intensywną inicjalizację bez powielania pracy.
+
+#### Jak `sync.Once` gwarantuje powtarzalność:
+
+1. Sprawdza wewnętrzną flagę stanu wykonanego/nieudanego.
+
+2. Jeśli inicjalizacja nie została jeszcze wykonana — blokuje synchronicznie
+   konkurentów.
+
+3. Dokładnie jedna goroutine wykonuje `f`.
+
+4. W przypadku powodzenia oznacza stan jako „gotowy” i dalej `Do` powraca bez
+   ponownego uruchamiania `f`.
+
+#### Ważne właściwości:
+
+1. Zapewniona jest prawidłowa widoczność zainicjowanych danych dla innych
+   goroutines (bezpieczeństwo pamięci poprzez wewnętrzną synchronizację).
+
+2. Inne goroutines, które pojawiły się podczas wykonywania `f`, będą czekać na
+   zakończenie.
+
+3. `Once` nie jest przeznaczony do „ponownego uruchamiania” — jest to
+   jednorazowy cykl życia.
+
+#### Niuanse i ostrzeżenia:
+
+1. Jeśli `f` wpada w panikę, zachowanie to wymaga dokładnego rozważenia przy
+   projektowaniu: `Once` nie jest mechanizmem awaryjnym.
+
+2. Nie powinieneś ukrywać zbyt złożonej logiki biznesowej w `Do`; lepiej jest
+   tam zachować inicjalizację zasobu.
+
+3. Zadania resetowania/przeładowania wymagają innych wzorców (wskaźnik atomowy,
+   muteks, stan wersjonowania itp.).
+
+#### Wniosek:
+
+`sync.Once` to zdyscyplinowany prymityw jednorazowej inicjalizacji: bezpieczny
+pod względem wyścigowym, przewidywalny i bardzo przydatny tam, gdzie ponowne
+uruchomienie inicjalizacji jest albo zbędne, albo niebezpieczne.
+
+</details>

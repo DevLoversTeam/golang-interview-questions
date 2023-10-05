@@ -3163,3 +3163,66 @@ pod względem wyścigowym, przewidywalny i bardzo przydatny tam, gdzie ponowne
 uruchomienie inicjalizacji jest albo zbędne, albo niebezpieczne.
 
 </details>
+
+
+<details>
+<summary>55. Co to jest `sync.Cond` i kiedy zastępuje kanał?</summary>
+
+#### Go
+
+`sync.Cond` to prymityw synchronizacji warunkowej: pozwala gorutynom czekać, aż
+określony stan (warunek) stanie się prawdziwy i zostać obudzonym sygnałem z
+innej goroutiny.
+
+#### Model podstawowy `sync.Cond`:
+
+1. `Cond` działa na `Locker` (zwykle `*sync.Mutex`).
+
+2. Procedura w pętli sprawdza warunek pod blokadą.
+
+3. Jeśli warunek jest fałszywy — wywołuje `Wait()`.
+
+4. Inna goroutine wywołuje `Signal()` lub `Broadcast()` po zmianie stanu.
+
+#### Kluczowe metody:
+
+1. **`Wait()`** — atomowo zwalnia zamek, zasypia, a po przebudzeniu ponownie
+   chwyta zamek.
+
+2. **`Signal()`** — budzi jedną oczekującą procedurę.
+
+3. **`Broadcast()`** - budzi wszystkich oczekujących.
+
+#### Gdy przeważa kanał `sync.Cond`:
+
+1. **Złożony warunek dotyczący stanu współdzielonego, a nie przesyłania
+   komunikatu:** gdy ważne jest oczekiwanie na „predykat nad stanem” i nie
+   odbieranie ładunku.
+
+2. **Wielu kelnerów w jednym zasobie chronionym blokadą:** `Cond` w bardziej
+   naturalny sposób wyraża koordynację wokół stanu współdzielonego.
+
+3. **Wymagana precyzyjna kontrola wybudzania:** `Signal/Broadcast` są czasami
+   lepiej dopasowane niż semantyka kanału.
+
+4. **Scenariusze o wysokiej częstotliwości z minimalnym szumem alokacji:** w
+   niektórych przypadkach niskiego poziomu `Cond` daje bardziej efektywny model
+   niż budowanie dodatkowych protokołów kanałów.
+
+#### Kiedy kanał jest lepszy:
+
+1. Kiedy zadaniem jest przesyłanie zdarzeń/danych pomiędzy niezależnymi
+   aktorami.
+
+2. Kiedy ważny jest prosty model potoku i czytelny przepływ komunikatów.
+
+3. Kiedy nie chcesz zarządzać udostępnionym stanem zmiennym w stanie
+   zablokowanym.
+
+#### Wniosek:
+
+`sync.Cond` to narzędzie „czekające na zmianę warunku muteksu”, podczas gdy
+kanał to narzędzie „przekazujące wiadomość”. `Cond` dominuje tam, gdzie centrum
+logiki stanowi sam stan i jego niezmienniki, a nie transport danych.
+
+</details>

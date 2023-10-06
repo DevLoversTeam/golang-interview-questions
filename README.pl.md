@@ -3226,3 +3226,65 @@ kanał to narzędzie „przekazujące wiadomość”. `Cond` dominuje tam, gdzie
 logiki stanowi sam stan i jego niezmienniki, a nie transport danych.
 
 </details>
+
+
+<details>
+<summary>56. Jak jest zorganizowany `sync.Map`, kiedy zapewnia lepszą wydajność w porównaniu z mapą + mutex i gdzie jest używany w standardowej bibliotece?</summary>
+
+#### Go
+
+`sync.Map` to wyspecjalizowana mapa konkurencji z pakietu `sync`,
+zoptymalizowana przede wszystkim pod kątem obciążeń wymagających dużej liczby
+odczytów i scenariuszy, w których klucze są często odczytywane i rzadko
+zmieniane.
+
+#### Jak `sync.Map` jest zorganizowany koncepcyjnie:
+
+1. Posiada dwuwarstwowy model dostępu:
+
+- **część do odczytu** do szybkich odczytów, w większości bez blokad;
+
+- **brudna część** dla aktualizacji i nowych wpisów w trakcie synchronizacji.
+
+2. Odczyt z „gorącej” strefy odczytu często odbywa się bez wspólnego muteksu, co
+   zmniejsza rywalizację.
+
+3. Zapisy/promocje międzywarstwowe mają bardziej złożoną logikę wewnętrzną, ale
+   nie mają na celu karania odczytów masowych.
+
+#### Gdy `sync.Map` może być szybszy niż `map + mutex`:
+
+1. **Wiele odczytów, kilka zapisów** (klasyczny odczyt – głównie obciążenie).
+
+2. **Klucze w większości stabilne**, bez agresywnej rezygnacji.
+
+3. **Wysoce konkurencyjny dostęp do odczytu** z wielu goroutines.
+
+#### Kiedy więcej znaczy lepiej `map + mutex`:
+
+1. Wpisów jest wiele lub dominują.
+
+2. Wymaga złożonych niezmienników dla wielu kluczy.
+
+3. Bezpieczeństwo typu jest ważniejsze (ponieważ `sync.Map` działa poprzez
+   `any`).
+
+4. Potrzebuje prostszej i bardziej oczywistej logiki, którą zespół będzie mógł
+   wspierać.
+
+#### Gdzie jest używany w bibliotece standardowej:
+
+`sync.Map` jest używany w wewnętrznych pamięciach podręcznych i tabelach, gdzie
+charakter dostępu jest bliski intensywnemu odczytowi (w szczególności w
+częściach środowiska wykonawczego/standardowych pakietów do buforowania
+metadanych i struktur pomocniczych). Kluczowa idea jest wszędzie taka sama:
+zminimalizować blokowanie odczytów masowych.
+
+#### Wniosek:
+
+`sync.Map` nie jest „najlepszą mapą ogólnie”, ale narzędziem punktowym dla
+określonego profilu obciążenia. Jeśli masz scenariusz obejmujący głównie
+czytanie i dużą konkurencję, może to zapewnić wygraną; w innych przypadkach
+proste `map + mutex` jest często bardziej przejrzyste i wydajne.
+
+</details>

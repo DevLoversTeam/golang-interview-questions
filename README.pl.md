@@ -3288,3 +3288,59 @@ czytanie i dużą konkurencję, może to zapewnić wygraną; w innych przypadkac
 proste `map + mutex` jest często bardziej przejrzyste i wydajne.
 
 </details>
+
+
+<details>
+<summary>57. Czym są testy współbieżności w Go i dlaczego się je stosuje?</summary>
+
+#### Go
+
+Testy współbieżności w Go to testy testujące zachowanie kodu w warunkach
+równoległego wykonywania goroutines, współdzielenia stanu i konkurencji zasobów.
+Ich celem jest wykrycie defektów, które nie pojawiają się w scenariuszu
+liniowym.
+
+#### Co dokładnie sprawdzają poniższe testy:
+
+1. Poprawność synchronizacji (`mutex`, `channel`, `atomic`, `WaitGroup`).
+
+2. Brak wyścigu danych w stanie udostępnionym.
+
+3. Odporność na scenariusze zakleszczenia/blokady na żywo.
+
+4. Prawidłowe wykonanie goroutines (brak wycieków).
+
+5. Przestrzeganie niezmienników pod obciążeniem konkurencyjnym.
+
+#### Dlaczego są potrzebne:
+
+1. **Wczesne wykrywanie błędów konkurencyjnych:** wiele z nich pojawia się tylko
+   pod presją równoległości.
+
+2. **Ograniczenie niestabilności w środowisku produkcyjnym:** testy przechwytują
+   scenariusze, w których kolejność zdarzeń jest niedeterministyczna.
+
+3. **Zapewnienie gwarancji architektonicznych:** takich jak to, że system nie
+   traci zdarzeń i nie narusza spójności stanu.
+
+4. **Bezpieczniejsza refaktoryzacja:** konkurencyjne niezmienniki pozostają
+   chronione przez zestaw regresji.
+
+#### Narzędzia i praktyki w Go:
+
+1. `go test -race` jako obowiązkowy poziom weryfikacji.
+
+2. Równoległe skrypty poprzez goroutines, `t.Run`, `t.Parallel`.
+
+3. Wyraźne limity czasu/`context`, aby zapobiec zawieszaniu się testów.
+
+4. Przebiegi obciążeniowe i wielokrotne przebiegi w celu zwiększenia ryzyka
+   odtworzenia błędów niedeterministycznych.
+
+#### Wniosek:
+
+Konkurencyjne testy nie są „dodatkowym luksusem”, ale niezbędnym elementem
+jakości usług Go. Sprawdzają nie tylko funkcjonalność, ale także poprawność
+współdziałania goroutin w rzeczywistych warunkach równoległości.
+
+</details>

@@ -3344,3 +3344,82 @@ jakości usług Go. Sprawdzają nie tylko funkcjonalność, ale także poprawno�
 współdziałania goroutin w rzeczywistych warunkach równoległości.
 
 </details>
+
+
+<details>
+<summary>58. Dlaczego Go używa `context.Context` i jak jest przekazywany przez drzewo wywołań funkcji?</summary>
+
+#### Go
+
+`context.Context` w Go to standardowy mechanizm zarządzania cyklem życia
+żądań/operacji: anulowaniami, terminami, przekroczeniami limitów czasu i
+metadanymi żądań. Pozwala wszystkim gałęziom wykonania zobaczyć pojedynczy
+sygnał „stop”.
+
+#### Dlaczego potrzebujesz `Context`:
+
+1. **Anulowanie:** zatrzymanie pracy, która nie jest już potrzebna (klient się
+   rozłączył, wystąpił błąd w pobliskim oddziale, usługa kończy się).
+
+2. **Termin/limit czasu:** ogranicz czas wykonywania operacji (HTTP, DB,
+   zewnętrzne API), aby nie zawieszać się w nieskończoność.
+
+3. **Wartości o zakresie żądania:** przesyłaj dane żądania usługi (identyfikator
+   śledzenia, token uwierzytelniania, identyfikator dzierżawy) między warstwami.
+
+#### Jak jest przekazywany przez drzewo wywołań:
+
+1. `ctx` jest przekazywany jako **pierwszy parametr** do funkcji, która może
+   blokować lub wykonywać operacje we/wy.
+
+2. Każde wywołanie podrzędne otrzymuje to samo `ctx` lub pochodną:
+
+- `context.WithCancel`
+
+- `context.WithTimeout`
+
+- `context.WithDeadline`
+
+- `context.WithValue`
+
+3. Konteksty podrzędne tworzą drzewo:
+
+- anulowanie kontekstu nadrzędnego powoduje anulowanie wszystkich kontekstów
+  podrzędnych;
+
+- terminy są dziedziczone (lub zawężane).
+
+#### Zasady praktyczne:
+
+1. Nie przechowuj `Context` w strukturze jako pola o długim czasie życia.
+
+2. Nie przekazuj kontekstu `nil` (użyj `context.Background()` lub
+   `context.TODO()`).
+
+3. Nie używaj `WithValue` w przypadku parametrów biznesowych, które muszą być
+   jawnymi argumentami funkcji.
+
+#### Wniosek:
+
+`context.Context` to zapytanie „układ nerwowy” w Go. Rozprzestrzenia kontrolę
+czasu i anulowania w całym drzewie wywołań, dzięki czemu konkurencyjny kod jest
+łatwy w zarządzaniu, ekonomiczny i przewidywalny w środowisku produkcyjnym.
+
+#### Przykład:
+
+```go
+func handler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	if err := service.Do(ctx); err != nil {
+		http.Error(w, err.Error(), 500)
+	}
+}
+
+func (s *Service) Do(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+	return s.repo.Call(ctx)
+}
+```
+
+</details>

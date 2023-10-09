@@ -3423,3 +3423,53 @@ func (s *Service) Do(ctx context.Context) error {
 ```
 
 </details>
+
+
+<details>
+<summary>59. Czy `context.Context` jest niezmienne i co to oznacza w praktyce?</summary>
+
+#### Go
+
+Tak, `context.Context` jest koncepcyjnie niezmienny: po utworzeniu istniejący
+kontekst nie jest „edytowany”, ale nowy kontekst pochodny jest budowany na
+wierzchu kontekstu nadrzędnego.
+
+#### Co oznacza niezmienność w przypadku `Context`:
+
+1. Połączenia `WithCancel`, `WithTimeout`, `WithDeadline`, `WithValue` nie
+   zmieniaj starego `ctx`.
+
+2. Zwracają **nowy** kontekst potomka.
+
+3. Kontekst nadrzędny pozostaje niezmieniony.
+
+#### Konsekwencje praktyczne:
+
+1. **Bezpieczna propagacja między goroutinami:** ten sam `ctx` można przekazywać
+   bez ryzyka „ukrytego nadpisania” parametrów.
+
+2. **Przejrzysty cykl życia:** Drzewo kontekstu wyraźnie pokazuje, kto
+   odziedziczył po kim anulowanie/termin.
+
+3. **Zamierzone zachowanie API:** funkcja, która otrzymała `ctx`, nie może
+   podstępnie „przekręcić” jej do innych wywołań; może stworzyć jedynie
+   lokalnego potomka.
+
+4. ** Lepsza testowalność i debugowanie:** łatwiej jest dokładnie prześledzić,
+   gdzie pojawił się limit czasu/anulowanie/wartość, ponieważ są to oddzielne
+   węzły pochodne, a nie mutacje pojedynczego obiektu.
+
+#### Ważne wyjaśnienie:
+
+Niezmienność nie oznacza, że w środku nie ma dynamiki: sygnał anulowania i stan
+terminu ostatecznego mogą zmieniać się w czasie. Jest to jednak zmiana **stanu
+wykonania** w modelu kontekstowym, a nie „lokalna” mutacja kontraktu API
+przekazanego obiektu.
+
+#### Wniosek:
+
+`context.Context` w Go to model łańcucha funkcyjnego: nie zmieniamy
+istniejącego, lecz tworzymy jego pochodną. Zapewnia to przejrzystą kompozycję,
+bezpieczną współbieżność i przewidywalne zarządzanie cyklem życia zapytań.
+
+</details>

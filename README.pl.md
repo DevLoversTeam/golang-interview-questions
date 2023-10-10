@@ -3473,3 +3473,62 @@ istniejącego, lecz tworzymy jego pochodną. Zapewnia to przejrzystą kompozycj�
 bezpieczną współbieżność i przewidywalne zarządzanie cyklem życia zapytań.
 
 </details>
+
+
+<details>
+<summary>60. W jaki sposób użycie `context.WithCancel` pomaga uniknąć wycieków goroutine?</summary>
+
+#### Go
+
+`context.WithCancel` daje zarządzany sygnał zakończenia wszystkim procedurom gor
+działającym w tym samym drzewie kontekstu. Jest to klucz do zapobiegania
+wyciekowi gorutyny — sytuacji, w której goroutiny pomocnicze pozostają „żywe”,
+gdy praca straci na znaczeniu.
+
+#### Jak dochodzi do wycieku goroutine:
+
+1. Procedura czeka na kanał/sieć/zegar bez warunku zatrzymania.
+
+2. Żądanie już się zakończyło lub stało się niepotrzebne, ale pracownik o tym
+   nie wiedział.
+
+3. Takie „osierocone” goroutiny gromadzą i zużywają zasoby.
+
+#### Rola `WithCancel`:
+
+1. Tworzenie kontekstu podrzędnego: `ctx, cancel := context.WithCancel(parent)`.
+
+2. Wszystkie procedury robocze mają `select` z gałęzią `case <-ctx.Done():`.
+
+3. Kiedy zostanie wywołane `cancel()`, wszystkie zależne goroutines otrzymają
+   sygnał stopu.
+
+4. Grutyny kończą się w kontrolowany sposób, uwalniając zasoby.
+
+#### Praktyczne zasady bezpieczeństwa:
+
+1. Zawsze wywołuj `cancel()` (często przez `defer cancel()`), nawet po pomyślnym
+   zakończeniu.
+
+2. W każdej długotrwałej operacji pętli/blokowania sprawdź `ctx.Done()`.
+
+3. Pomiń `ctx` wszystkie wywołania we/wy obsługujące anulowanie.
+
+4. Połącz z `WaitGroup`/`errgroup`, aby poczekać na faktyczne zakończenie.
+
+#### Co daje systemowi:
+
+1. Nieobecność „wiszących” pracowników w tle.
+
+2. Lepsze wykorzystanie procesora/pamięci pod obciążeniem.
+
+3. Przewidywane zamknięcie i stabilniejsze działanie usługi.
+
+#### Wniosek:
+
+`context.WithCancel` to podstawowy mechanizm zapobiegający wyciekom w
+współbieżności Go: pojedynczy wyraźny sygnał stopu, który w spójny sposób kończy
+wszystkie powiązane goroutines i chroni system przed nadmiernym zużyciem
+zasobów.
+
+</details>

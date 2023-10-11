@@ -3532,3 +3532,74 @@ wszystkie powiązane goroutines i chroni system przed nadmiernym zużyciem
 zasobów.
 
 </details>
+
+
+<details>
+<summary>61. Dlaczego Go używa niestandardowych typów kluczy (np. `struct{}`) dla `context.WithValue` i jak to zapobiega kolizjom?</summary>
+
+#### Go
+
+W `context.WithValue` klucz musi być porównywalny, ale co najważniejsze, musi
+być **unikalny w obrębie aplikacji i przestrzeni zależności**. Dlatego zaleca
+się stosowanie własnych (niestandardowych) typów kluczy zamiast powszechnie
+używanych `string`.
+
+#### Dlaczego klucze `string` są niebezpieczne:
+
+1. Różne pakiety mogą przypadkowo użyć tego samego ciągu (`"userID"`,
+   `"request_id"` itp.).
+
+2. Wartość w kontekście zostanie nadpisana lub „przyćmiona” przez inny pakiet.
+
+3. Uzyskaj ciche, trudne do odtworzenia błędy
+   routingu/uwierzytelniania/logowania.
+
+#### Jak typ niestandardowy zapobiega kolizjom:
+
+1. Tworzy typ klucza prywatnego w pakiecie, na przykład: `type ctxKey struct{}`
+   lub `type ctxKey int`.
+
+2. Kod zewnętrzny nie może przypadkowo użyć tego samego typu klucza i wartości.
+
+3. W ten sposób kluczowa przestrzeń nazw zostaje odizolowana na poziomie
+   typowego systemu.
+
+#### Dlaczego często używa się `struct{}`:
+
+1. Lekki znacznik bez ładunku.
+
+2. Podkreśla, że ​​ważna jest tożsamość klucza, a nie jego „dane”.
+
+3. Dobrze odpowiada idiomowi „unikalny klucz lokalny pakietu”.
+
+#### Ogólna zasada:
+
+1. Zadeklaruj klucze jako nieeksportowane zmienne pakietu.
+
+2. Nie używaj „pustych” ciągów jako kluczy dla `WithValue`.
+
+3. Przechowuj w `Context` tylko dane usług o zakresie żądania, a nie parametry
+   biznesowe.
+
+#### Wniosek:
+
+Niestandardowe typy kluczy w `context.WithValue` to mechanizm przestrzeni nazw
+bezpieczny dla typów. Niezawodnie zmniejszają ryzyko kolizji pomiędzy pakietami
+i sprawiają, że wartości kontekstowe są przewidywalne w dużych bazach kodu.
+
+#### Przykład:
+
+```go
+type requestIDKey struct{}
+
+func withRequestID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, requestIDKey{}, id)
+}
+
+func requestID(ctx context.Context) (string, bool) {
+	v, ok := ctx.Value(requestIDKey{}).(string)
+	return v, ok
+}
+```
+
+</details>

@@ -3603,3 +3603,58 @@ func requestID(ctx context.Context) (string, bool) {
 ```
 
 </details>
+
+
+<details>
+<summary>62. Jaka jest różnica między `context.Value` a przekazywaniem parametrów za pomocą argumentów funkcji?</summary>
+
+#### Go
+
+`context.Value` i normalne argumenty funkcji mają różne cele. W kompetentnym
+projekcie Go nie są one wymienne: argumenty przekazują dane biznesowe, a
+`context.Value` to metakontekst o zasięgu żądania usługi.
+
+#### Przekaż argumenty:
+
+1. **Jawna umowa API:** wszystkie wymagane dane widoczne są w podpisie.
+
+2. **Bezpieczeństwo typów i czytelność:** kompilator pomaga kontrolować
+   poprawność.
+
+3. **Najlepszy wybór dla logiki domeny:** parametry domeny muszą być
+   przekazywane bezpośrednio.
+
+#### `context.Value`:
+
+1. **Niejawny kanał danych usługi:** identyfikator śledzenia, identyfikator
+   żądania, oświadczenia autoryzacji, dzierżawca, metadane korelacji.
+
+2. **Propaguje przez warstwy bez powiększania sygnatur:** przydatne w przypadku
+   oprogramowania pośredniczącego, rejestrowania i obserwowalności.
+
+3. **Mniejsza przejrzystość:** zależność wartości nie jest oczywista na
+   podstawie sygnatury funkcji.
+
+#### Dlaczego nie powinieneś zastępować argumentów `context.Value`:
+
+1. Spada przejrzystość interfejsu API (pojawiają się „ukryte” dane wejściowe).
+
+2. Zwiększa ryzyko błędów w czasie wykonywania z powodu asercji z `any`.
+
+3. Testy i refaktoryzacja są skomplikowane.
+
+#### Ogólna zasada:
+
+1. W `Context` jest tylko to, co należy do cyklu życia żądania i jest potrzebne
+   warstwom infrastruktury.
+
+2. W parametrach funkcji - wszystko, co stanowi istotę działania
+   przedsiębiorstwa.
+
+#### Wniosek:
+
+Argumenty tworzą wyraźną umowę domeny; `context.Value` zawiera metadane usługi
+żądania. Mieszanie tych ról degraduje architekturę, więc profesjonalny kod Go
+sprawia, że ​​granica między nimi jest wyraźna.
+
+</details>

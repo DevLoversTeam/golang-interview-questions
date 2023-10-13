@@ -3658,3 +3658,55 @@ Argumenty tworzą wyraźną umowę domeny; `context.Value` zawiera metadane usł
 sprawia, że ​​granica między nimi jest wyraźna.
 
 </details>
+
+
+<details>
+<summary>63. Jak działa alokacja stosu i sterty w Go?</summary>
+
+#### Go
+
+W Go rozmieszczenie danych na stosie lub stercie jest określane przez kompilator
+na podstawie analizy ucieczki. Programista nie wybiera tego bezpośrednio
+ręcznie, ale może napisać kod, aby zmniejszyć niepotrzebne alokacje sterty.
+
+#### Alokacja stosu:
+
+1. Dane znajdują się w wywołaniu funkcji (lub zarządzanym stosie goroutine).
+
+2. Przydział i wydanie są bardzo tanie.
+
+3. Nie ładuje bezpośrednio GC.
+
+#### Alokacja sterty:
+
+1. Wymagane są dane poza bieżącą ramką stosu.
+
+2. Pamięcią zarządza moduł zbierający elementy bezużyteczne.
+
+3. Daje większy narzut (alokacja + późniejsze wyrzucanie elementów
+   bezużytecznych).
+
+#### Co decyduje o tym, dokąd trafia wartość:
+
+1. **Analiza ucieczki kompilatora:** jeśli wartość „ucieknie” poza funkcję
+   (zwrócony zostanie wskaźnik, zapisany w długotrwałej strukturze, przechwycone
+   zostanie zamknięcie itp.), trafia do sterty.
+
+2. **Kontekst użycia:** nawet zmienna lokalna może trafić na stertę, jeśli jej
+   czas życia jest dłuższy niż bieżąca ramka.
+
+#### Dlaczego to jest ważne:
+
+1. Więcej alokacji sterty = więcej pracy dla GC.
+
+2. W ścieżce gorącej wpływa na opóźnienia i przepustowość.
+
+3. Optymalizacja alokacji często daje zauważalny wzrost wydajności usług.
+
+#### Wniosek praktyczny:
+
+W Go kluczem nie jest „ręczne zarządzanie pamięcią”, ale zrozumienie zachowań
+ucieczki. Przejrzysty projekt danych i minimalizacja niepotrzebnych wycieków w
+Heap pomagają w szybkim i stabilnym pisaniu kodu produkcyjnego.
+
+</details>

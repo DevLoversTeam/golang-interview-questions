@@ -3710,3 +3710,62 @@ ucieczki. Przejrzysty projekt danych i minimalizacja niepotrzebnych wycieków w
 Heap pomagają w szybkim i stabilnym pisaniu kodu produkcyjnego.
 
 </details>
+
+
+<details>
+<summary>64. Jak zminimalizować alokację sterty za pomocą `sync.Pool`?</summary>
+
+#### Go
+
+`sync.Pool` to tymczasowy mechanizm ponownego wykorzystania obiektu, który
+pozwala zmniejszyć częstotliwość alokacji sterty w obszarach gorącego kodu.
+Pomysł jest prosty: nie tworzyć za każdym razem od nowa przedmiotów
+krótkotrwałych, ale wyjąć je z basenu i zwrócić po użyciu.
+
+#### Schemat podstawowy:
+
+1. Utwórz pulę `New`, która w razie potrzeby inicjuje obiekt.
+
+2. Na wejściu operacji: `obj := pool.Get()`.
+
+3. Przed użyciem należy doprowadzić przedmiot do prawidłowego stanu.
+
+4. Po zakończeniu: wyczyść pola i `pool.Put(obj)`.
+
+#### Dlaczego to zmniejsza przydziały:
+
+1. Część żądań otrzymuje już przydzielone obiekty.
+
+2. Mniej nowych alokacji sterty.
+
+3. Mniejsze obciążenie GC przy dużej częstotliwości krótkich operacji.
+
+#### Gdzie `sync.Pool` jest szczególnie istotne:
+
+1. Bufory (`[]byte`, `bytes.Buffer`) w procedurach serializacji/obsługi sieci.
+
+2. Tymczasowe struktury pomocnicze w ścieżkach analizy/kodowania/dekodowania.
+
+3. Wysoce obciążone usługi HTTP/RPC z powtarzającymi się krótkimi operacjami.
+
+#### Ważne uwagi:
+
+1. `sync.Pool` to pamięć podręczna, a nie przechowywanie długoterminowe;
+   elementy można czyścić metodą GC.
+
+2. Obiekt przed `Put` musi zostać doprowadzony do czystego stanu, w przeciwnym
+   razie możliwy jest wyciek danych pomiędzy żądaniami.
+
+3. Basen nie jest panaceum: na zimnych ścieżkach złożoność kodu może się nie
+   opłacać.
+
+4. Optymalizację należy potwierdzać profilowaniem, a nie intuicją.
+
+#### Wniosek:
+
+`sync.Pool` jest skuteczny w przypadku ponownego wykorzystania krótkotrwałych
+obiektów w gorących ścieżkach, gdzie krytyczne alokacje i pauza GC są krytyczne.
+Jej siła polega na ograniczaniu turbulencji alokacyjnych, jednak należy ją
+stosować selektywnie i profilować.
+
+</details>

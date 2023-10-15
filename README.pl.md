@@ -3769,3 +3769,77 @@ Jej siła polega na ograniczaniu turbulencji alokacyjnych, jednak należy ją
 stosować selektywnie i profilować.
 
 </details>
+
+
+<details>
+<summary>65. Co oznaczają zmienne środowiskowe `GOGC` i `GOMEMLIMIT` i jaki mają wpływ na moduł zbierający elementy bezużyteczne?</summary>
+
+#### Go
+
+`GOGC` i `GOMEMLIMIT` to kluczowe parametry sterujące zachowaniem GC w Go.
+Pozwalają zrównoważyć zużycie pamięci, częstotliwość usuwania śmieci i wydajność
+usług.
+
+#### `GOGC`:
+
+1. Określa docelową szybkość wzrostu sterty przed następnym cyklem GC (w
+   procentach).
+
+2. Typowa wartość to `100` (pozwól, aby sterta w przybliżeniu podwoiła się w
+   stosunku do danych „na żywo” po poprzednim GC).
+
+3. Więcej `GOGC`:
+
+- mniej cykli GC;
+
+- większe zużycie pamięci;
+
+- potencjalnie niższe obciążenie procesora GC.
+
+4. Mniej niż `GOGC`:
+
+- częstsze GC;
+
+- mniejsza sterta;
+
+- wyższy narzut montażowy.
+
+#### `GOMEMLIMIT`:
+
+1. Ustawia miękki górny limit pamięci, w obrębie którego środowisko wykonawcze
+   stara się utrzymać proces.
+
+2. Kiedy pamięć zbliża się do tego limitu, GC działa bardziej agresywnie, nawet
+   jeśli `GOGC` pozwala na rzadsze gromadzenie danych.
+
+3. Szczególnie przydatne w kontenerach/orkiestratorach z twardymi limitami
+   pamięci.
+
+#### Jak one współpracują:
+
+1. `GOGC` ustawia ogólną „chciwość” wzrostu sterty.
+
+2. `GOMEMLIMIT` działa jak bezpiecznik ograniczający nadmierny wzrost pamięci.
+
+3. W środowisku produkcyjnym połączenie obu parametrów zapewnia najlepszą
+   kontrolę nad opóźnieniami i ryzykiem OOM.
+
+#### Podejście praktyczne:
+
+1. Zacznij od ustawień domyślnych.
+
+2. Pomiar `heap`, pauza GC, procesor, opóźnienie końcowe przy rzeczywistym
+   obciążeniu.
+
+3. Stopniowo dostosowuj parametry, rejestrując wpływ na SLA.
+
+4. W przypadku kontenerów konieczne jest dopasowanie `GOMEMLIMIT` do limitu
+   pamięci platformy.
+
+#### Wniosek:
+
+`GOGC` kontroluje częstotliwość GC poprzez cel wzrostu sterty i `GOMEMLIMIT`
+ogranicza pamięć od góry. Razem tworzą praktyczne narzędzie do dostrajania
+zachowania usług Go w czasie wykonywania.
+
+</details>

@@ -3843,3 +3843,55 @@ ogranicza pamięć od góry. Razem tworzą praktyczne narzędzie do dostrajania
 zachowania usług Go w czasie wykonywania.
 
 </details>
+
+
+<details>
+<summary>66. Co to jest `runtime.SetFinalizer` i czy jest używane w bibliotece standardowej?</summary>
+
+#### Go
+
+`runtime.SetFinalizer` to mechanizm wiązania funkcji finalizatora z obiektem,
+który może zostać wywołany przez GC, zanim obiekt zostanie ostatecznie
+zwolniony. Ważne: Finalizator nie zapewnia ścisłych gwarancji czasu działania i
+nie jest niezawodnym zamiennikiem jawnego `Close`/`Dispose`.
+
+#### Co robi `SetFinalizer`:
+
+1. Rejestruje wywołanie zwrotne dla określonego obiektu sterty.
+
+2. Kiedy obiekt stanie się nieosiągalny, środowisko wykonawcze **może**
+   uruchomić finalizator.
+
+3. Obiekt zostanie następnie odebrany w jednym z kolejnych cykli GC.
+
+#### Kluczowe ograniczenia:
+
+1. **Nie ma gwarancji, „kiedy” finalizator zostanie uruchomiony.**
+
+2. **Nie ma gwarancji, że zostanie on wykonany przed zakończeniem procesu.**
+
+3. Finalizatory komplikują analizę cyklu życia i mogą powodować ukryte
+   koszty/opóźnienia.
+
+#### Ogólna zasada:
+
+1. W przypadku zasobów (plików, gniazd, uchwytów, połączeń zewnętrznych) zawsze
+   używaj jawnego zamknięcia (`defer obj.Close()`).
+
+2. Finalizator jest dozwolony jedynie jako „sieć bezpieczeństwa” chroniąca przed
+   błędami użytkowania, a nie jako podstawowy sposób kontrolowania zasobu.
+
+#### Czy używany w bibliotece standardowej:
+
+Tak, używany punktowo w niektórych miejscach niskiego poziomu jako pomocniczy
+mechanizm bezpieczeństwa/diagnostyczny, ale nie jako podstawowy model
+zarządzania zasobami. Ogólna filozofia biblioteki standardowej polega na
+wyraźnym cyklu życia i wyraźnym zamknięciu.
+
+#### Wniosek:
+
+`runtime.SetFinalizer` to specjalistyczne narzędzie z miękkimi gwarancjami. W
+produkcji Go jest używany ostrożnie i rzadko; jawne zarządzanie zasobami
+pozostaje podstawą niezawodnego kodu.
+
+</details>

@@ -3895,3 +3895,67 @@ produkcji Go jest używany ostrożnie i rzadko; jawne zarządzanie zasobami
 pozostaje podstawą niezawodnego kodu.
 
 </details>
+
+
+<details>
+<summary>67. Jak znaleźć wyciek pamięci za pomocą `pprof`?</summary>
+
+#### Go
+
+Wyszukiwanie wycieków pamięci w Przejdź przez `pprof` opiera się na porównywaniu
+profili sterty w czasie: jeśli „żywe” obiekty stale rosną bez powrotu do poziomu
+podstawowego, mamy oznakę wycieku lub niekontrolowanego zatrzymania referencji.
+
+#### Podstawowa strategia diagnostyczna:
+
+1. Włącz profilowanie (`net/http/pprof`) w usłudze.
+
+2. Usuń wiele profili sterty:
+
+- na początku;
+
+- przy obciążeniu pracą;
+
+- po „cichym” okresie.
+
+3. Porównaj profile (`go tool pprof`, tryb różnicowy), aby znaleźć typy/stosy,
+   które stale rosną.
+
+#### Co obejrzeć w `pprof`:
+
+1. **`inuse_space` / `inuse_objects`** — to naprawdę zostaje w pamięci.
+
+2. **Najlepsze alokatory** i ich stosy wywołań.
+
+3. **Wykres wywołań (`web`)** przedstawia miejsce, w którym przechowywane są
+   obiekty długowieczne.
+
+4. Dynamika po kilku cyklach GC: prawdziwy wyciek nie „wybucha”.
+
+#### Typowe źródła wycieków:
+
+1. Mapa globalna/skrytka podręczna bez zasad eksmisji.
+
+2. Niewyczyszczone bufory/kolejki/kanały.
+
+3. Procedury niekończące się, które przechowują odniesienia do dużych struktur.
+
+4. Nie udało się zaprojektować pul lub „na zawsze” kolekcji metryk/etykiet.
+
+#### Techniki praktyczne:
+
+1. Uruchamiaj profile przy reprezentatywnym obciążeniu.
+
+2. Dodaj migawki porównawcze przed/po naprawie.
+
+3. Przyjrzyj się równolegle profilowi ​​goroutine (`goroutine`) — wycieki
+   goroutine często korelują z wyciekami pamięci.
+
+#### Wniosek:
+
+`pprof` pozwala znaleźć wyciek pamięci nie „na oko”, ale w sposób ewidentny: ze
+względu na wzrost wskaźników `inuse` i określonych stosów przechowywania.
+Kluczem do sukcesu jest porównanie profili czasowych przy stabilnym,
+powtarzalnym obciążeniu.
+
+</details>

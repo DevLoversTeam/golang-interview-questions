@@ -3959,3 +3959,71 @@ Kluczem do sukcesu jest porównanie profili czasowych przy stabilnym,
 powtarzalnym obciążeniu.
 
 </details>
+
+
+<details>
+<summary>68. Jak znaleźć gorące ścieżki i zmierzyć przepustowość?</summary>
+
+#### Go
+
+`Hot paths` to sekcje kodu, w których program zużywa najwięcej czasu i zasobów.
+Aby je poprawnie znaleźć, nie trzeba intuicji, ale profilowania pod rzeczywistym
+lub zbliżonym do rzeczywistego obciążeniem.
+
+#### Jak znaleźć gorące ścieżki:
+
+1. **Profilowanie procesora (`pprof`):** pokazuje, gdzie zużywany jest najwięcej
+   czasu procesora.
+
+2. **Profile sterty/alloc:** pomagają znaleźć „gorące” ścieżki alokacji, które
+   często powodują pośrednią degradację poprzez GC.
+
+3. **Trace (`go tool trace`):** daje obraz harmonogramu, blokad i opóźnień
+   pomiędzy goroutines i we/wy.
+
+4. **Wykres płomienia / góra / wykres połączeń:** wizualizuj, które funkcje
+   stanowią główny koszt.
+
+#### Jak mierzyć przepustowość:
+
+1. Zdefiniuj wskaźniki biznesowe dotyczące przepustowości:
+
+- req/s, msg/s, zadania/s, wiersze/s itp.
+
+2. Przeprowadź kontrolowane testy obciążenia:
+
+- stałe wejście;
+
+- znany profil konkurencyjny;
+
+- stabilne środowisko startowe.
+
+3. Usuń jednocześnie dane:
+
+- przepustowość;
+
+- opóźnienie (p50/p95/p99);
+
+- CPU, pamięć, GC, rywalizacja o blokadę.
+
+4. Porównaj zmiany „przed/po” w tych samych warunkach (najlepiej w wielokrotnych
+   seriach).
+
+#### Zasady praktyczne:
+
+1. Optymalizuj tylko to, co potwierdzi profiler.
+
+2. Nie zwiększaj przepustowości kosztem niekontrolowanego wzrostu opóźnień
+   końcowych.
+
+3. Po optymalizacji przeprofiluj ponownie, aby upewnić się, że wąskie gardło
+   rzeczywiście zniknęło, a nie zostało przesunięte.
+
+#### Wniosek:
+
+Znalezienie gorących ścieżek i pomiar przepustowości to jeden cykl:
+**profilowanie → hipoteza → zmiana → powtórzenie pomiaru**. W Go podejście to
+jest dobrze wspierane przez standardowe narzędzia i daje solidne rezultaty
+inżynieryjne.
+
+</details>

@@ -4027,3 +4027,72 @@ jest dobrze wspierane przez standardowe narzędzia i daje solidne rezultaty
 inżynieryjne.
 
 </details>
+
+
+<details>
+<summary>69. Jak zoptymalizować obsługę ciągów za pomocą `strings.Builder`? Dlaczego nie możesz łączyć w pętli?</summary>
+
+#### Go
+
+Ciągi znaków są niezmienne w Go. Oznacza to, że każda operacja łączenia tworzy
+nowy ciąg. Dlatego powtarzane w pętli `s += part` często generuje lawinę
+alokacji i kopii.
+
+#### Dlaczego łączenie w pętli jest nieefektywne:
+
+1. Przy każdej iteracji tworzony jest nowy wiersz.
+
+2. Stara zawartość jest kopiowana w kółko.
+
+3. Całkowity koszt może wzrosnąć kwadratowo w przypadku dużych ilości.
+
+4. Rosnący nacisk na GC z powodu krótkotrwałych obiektów pośrednich.
+
+#### Jak `strings.Builder` pomaga:
+
+1. `Builder` gromadzi dane w wewnętrznym buforze.
+
+2. Wpisy (`WriteString`, `WriteByte`, `WriteRune`) minimalizują zbędne kopie.
+
+3. Ostatnia linia jest generowana jednorazowo do `String()`.
+
+4. Można nazwać `Grow(n)`, jeśli jest to konieczne, aby wstępnie zarezerwować
+   pojemność i ograniczyć realokację.
+
+#### Praktyczne zalety:
+
+1. Mniej przydziałów.
+
+2. Większa przepustowość w gorących ścieżkach formatowania/generowania tekstu.
+
+3. Bardziej stabilne zachowanie opóźnień pod obciążeniem.
+
+#### Kiedy szczególnie konieczne jest użycie:
+
+1. Generowanie dużych ładunków (wiersze JSON/SQL/HTML/log).
+
+2. Konstrukcja łańcucha w pętlach.
+
+3. Wszelkie operacje, w których ciąg znaków jest tworzony z wielu fragmentów.
+
+#### Wniosek:
+
+Łączenie w pętli jest kosztowne ze względu na powtarzające się alokacje i
+kopiowanie niezmiennych wierszy. `strings.Builder` to idiomatyczne i wydajne
+narzędzie do konstruowania ciągów znaków w Go, szczególnie w miejscach
+wrażliwych na wydajność.
+
+#### Przykład:
+
+```go
+var b strings.Builder
+b.Grow(1024)
+
+for _, part := range parts {
+	b.WriteString(part)
+}
+
+result := b.String()
+```
+
+</details>

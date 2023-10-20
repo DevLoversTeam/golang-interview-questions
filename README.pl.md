@@ -4096,3 +4096,73 @@ result := b.String()
 ```
 
 </details>
+
+
+<details>
+<summary>70. Jak zoptymalizować serializację? </summary>
+
+#### Go
+
+Optymalizacja serializacji w Go to przede wszystkim praca z alokacjami, formatem
+danych, ponownym wykorzystaniem bufora i redukcją odbić w gorących ścieżkach.
+Najlepszy efekt daje tylko profilowane podejście, a nie „ślepe”
+mikrooptymalizacje.
+
+#### Praktyczne strategie optymalizacyjne:
+
+1. **Wybór formatu zadania:**
+
+- JSON jest wygodny i wszechstronny, ale cięższy niż procesor;
+
+- Protobuf/MessagePack są często szybsze i bardziej kompaktowe dla ruchu między
+  usługami.
+
+2. **Zmniejszenie alokacji:**
+
+- ponowne użycie `bytes.Buffer` / `[]byte` przez `sync.Pool`;
+
+- unikaj niepotrzebnych obiektów pośrednich podczas
+  porządkowania/unieszkodliwiania.
+
+3. **Serializacja wątku:**
+
+- użyj `Encoder/Decoder` w przypadku dużych strumieni, aby uniknąć jednoczesnego
+  przechowywania całego ładunku w pamięci.
+
+4. **Optymalizacja struktury danych:**
+
+- usuń niepotrzebne pola;
+
+- użyj poprawnych tagów (`omitempty`, w razie potrzeby skrótów klawiszowych);
+
+- unikaj nadmiernie zagnieżdżonych struktur, chyba że wymaga tego logika
+  biznesowa.
+
+5. **Unikanie zbędnych odbić w ścieżce gorącej:**
+
+- w krytycznych miejscach rozważ generowanie kodu lub ręczną zoptymalizowaną
+  (de)serializację.
+
+6. **Kontrola wielkości ładunku:**
+
+- kompresja jest odpowiednia tylko po pomiarach, ponieważ zwiększa koszty
+  procesora;
+
+- czasami lepiej przesłać mniej danych niż „lepiej” skompresować.
+
+#### Jak ocenić efekt:
+
+1. Wzorce (`go test -bench`) przed/po.
+
+2. Profile procesora/alokacji (`pprof`).
+
+3. Metryki produkcyjne: przepustowość, opóźnienie p95/p99, sterta, GC.
+
+#### Wniosek:
+
+Optymalna serializacja to równowaga formatu, alokacji i złożoności kodu. W Go
+najlepszą praktyką jest profilowanie, czyszczenie zbędnych kopii, ponowne
+wykorzystywanie buforów i wybieranie formatu spełniającego wymagania konkretnego
+systemu.
+
+</details>

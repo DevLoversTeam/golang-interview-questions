@@ -4166,3 +4166,57 @@ wykorzystywanie buforów i wybieranie formatu spełniającego wymagania konkretn
 systemu.
 
 </details>
+
+
+<details>
+<summary>71. Jak zoptymalizować pracę z plikami?</summary>
+
+#### Go
+
+Optymalizacja operacji we/wy plików w Go polega na wyborze odpowiedniego wzorca
+odczytu/zapisu, rozmiaru bufora, poziomu współbieżności i strategii dyskowej.
+Głównym celem jest ograniczenie wywołań systemowych, zbędnych kopii i
+zakleszczeń.
+
+#### Kluczowe praktyki:
+
+1. **Buforowane we/wy (`bufio.Reader/Writer`):** zmniejsza liczbę małych
+   `read/write` i zwiększa przepustowość.
+
+2. **Przetwarzanie wsadowe zamiast dostępu bajt po bajcie:** odczyt/zapis w
+   blokach jest znacznie wydajniejszy niż małe operacje.
+
+3. **Tworzenie dużych plików:** nie ładuj całego pliku do pamięci, jeśli można
+   go przetworzyć w częściach.
+
+4. **Właściwe postępowanie z uchwytami:** `defer file.Close()` natychmiast po
+   otwarciu – podstawowa higiena w celu uniknięcia wycieków FD.
+
+5. **Kontrola współbieżności:** równoległość jest użyteczna tylko w obrębie
+   przepustowości dysku/FS; nadmierne równoległe operacje we/wy mogą zmniejszyć
+   opóźnienia.
+
+6. **Zminimalizuj zbędne kopie:** użyj `io.Copy` i ponownie wykorzystaj bufory,
+   jeśli to konieczne.
+
+7. **Profilowanie przed optymalizacją:** sprawdza, czy wąskie gardło leży po
+   stronie dysku, procesora, serializacji czy synchronizacji.
+
+#### Dodatkowe wskazówki techniczne:
+
+1. W przypadku dzienników/zdarzeń należy wziąć pod uwagę zasady opróżniania
+   (częste opróżniania = niższa przepustowość).
+
+2. W przypadku dużych potoków należy oddzielić odczyt, przetwarzanie i zapis w
+   łatwych do zarządzania etapach.
+
+3. W przypadku krytycznych scenariuszy sprawdź ustawienia systemu plików i
+   kontenera/hosta (przydział we/wy, typ wolumenu, pamięć sieciowa).
+
+#### Wniosek:
+
+Efektywna praca z plikami w Go to dziedzina buforowania, przesyłania
+strumieniowego, kontrolowanej równoległości i pomiarów. Optymalizacja powinna
+opierać się na rzeczywistym profilu obciążenia, a nie na ogólnych założeniach.
+
+</details>

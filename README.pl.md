@@ -4220,3 +4220,77 @@ strumieniowego, kontrolowanej równoległości i pomiarów. Optymalizacja powinn
 opierać się na rzeczywistym profilu obciążenia, a nie na ogólnych założeniach.
 
 </details>
+
+
+<details>
+<summary>72. Jak działa przetwarzanie wsadowe i kiedy jest to właściwe?</summary>
+
+#### Go
+
+`Batching` to połączenie wielu małych operacji w większe pakiety (partie) w celu
+zmniejszenia narzutu każdej pojedynczej operacji. W systemach o dużym obciążeniu
+jest to jeden z najskuteczniejszych sposobów zwiększenia przepustowości.
+
+#### Jak działa grupowanie:
+
+1. Zdarzenia/rekordy gromadzą się w buforze.
+
+2. Pakiet jest wysyłany zgodnie z jednym z wyzwalaczy:
+
+- osiągnięty rozmiar `N`;
+
+- przekroczenie limitu czasu `T`;
+
+- ukończono/odebrano równo.
+
+3. Operacja wykonywana jest poprzez jedno wywołanie „wsadowe” (baza danych,
+   sieć, dysk, kolejka).
+
+#### Dlaczego jest skuteczny:
+
+1. **Mniej wywołań systemowych i podróży w obie strony.**
+
+2. **Lepsze ładowanie kanału I/O** (sieć, dysk, baza danych).
+
+3. **Mniejsze obciążenie związane z synchronizacją** w przypadku dużej liczby
+   małych zadań.
+
+#### Kiedy porcjowanie jest właściwe:
+
+1. Masowe operacje tego samego typu (logowanie, telemetria, zbiorcze
+   wstawianie/aktualizacja).
+
+2. Scenariusze, w których przepustowość jest ważniejsza niż minimalne możliwe
+   opóźnienie jednostki.
+
+3. Integracje, w których system zewnętrzny dobrze współpracuje z żądaniami
+   wsadowymi.
+
+#### Kiedy grupowanie może być szkodliwe:
+
+1. Rygorystyczne wymagania dotyczące opóźnienia pojedynczej operacji.
+
+2. Niepowodzenie konfiguracji rozmiaru partii/limitu czasu, zwiększające się
+   opóźnienie końcowe.
+
+3. Wysokie ryzyko utraty dużego bloku danych bez odpowiedniej logiki
+   ponawiania/usuwania danych.
+
+#### Zasady praktyczne:
+
+1. Ustaw **rozmiar i czas** (`N` + `T`) w tym samym czasie.
+
+2. Wykonaj wyraźne opróżnienie przy zamykaniu.
+
+3. Zapewnij ponowną próbę/wycofanie w przypadku częściowych lub całkowitych
+   niepowodzeń żądań wsadowych.
+
+4. Zmierz przepustowość ↔ równowagę opóźnień przy rzeczywistym obciążeniu.
+
+#### Wniosek:
+
+Batch to mnożnik wydajności architektury dla operacji masowych. Jego moc ujawnia
+się tam, gdzie redukcja narzutu na żądanie jest ważniejsza niż natychmiastowa
+reakcja na każde pojedyncze zdarzenie.
+
+</details>

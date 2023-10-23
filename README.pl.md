@@ -4294,3 +4294,57 @@ się tam, gdzie redukcja narzutu na żądanie jest ważniejsza niż natychmiasto
 reakcja na każde pojedyncze zdarzenie.
 
 </details>
+
+
+<details>
+<summary>73. Kiedy generowanie kodu (`go generate`) jest lepsze niż odbicie?</summary>
+
+#### Go
+
+`Code generation` i `reflection` rozwiązują podobne problemy z
+metaprogramowaniem, ale mają różne ceny. W Go generowanie kodu często wygrywa
+tam, gdzie w produkcji potrzebna jest szybkość, bezpieczeństwo typu i
+przewidywalność.
+
+#### Kiedy `go generate` jest lepsze niż odbicie:
+
+1. **Wydajność ścieżki gorącej jest krytyczna:** wygenerowany kod działa bez
+   odbicia w czasie wykonywania, więc zwykle jest szybszy i wymaga mniejszych
+   alokacji.
+
+2. **Wymagane wysokie bezpieczeństwo typu:** błędy są wykrywane w czasie
+   kompilacji, a nie w czasie wykonywania.
+
+3. **Wymagania dotyczące dużych opóźnień/przepustowości:** serializacja,
+   mapowanie, kodeki RPC, weryfikacja w żądaniach zbiorczych.
+
+4. **Stabilny kontrakt danych:** gdy schematy są znane z góry i rzadko się
+   zmieniają.
+
+5. **Wymaga przejrzystego debugowania:** wygenerowane wywołania można profilować
+   i analizować jak zwykły kod Go.
+
+#### Kiedy refleksja jest uzasadniona:
+
+1. Schemat jest dynamiczny i definiowany tylko w czasie wykonywania.
+
+2. Wymaga szybkiego prototypowania lub elastyczności biblioteki uniwersalnej.
+
+3. Niskie wymagania dotyczące wydajności, w przypadku których łatwiej jest
+   zaakceptować obciążenie środowiska wykonawczego.
+
+#### Kompromisy `go generate`:
+
+1. Dodaje krok w kompilacji/przepływie pracy.
+
+2. Musi obsługiwać szablony/generatory.
+
+3. Wygenerowany kod zwiększa rozmiar repozytorium.
+
+#### Wniosek praktyczny:
+
+Jeśli system jest wrażliwy na wydajność, a model domyślny jest stabilny, `go
+generate` jest zwykle lepszy niż odbicie. Refleksja jest właściwa tam, gdzie
+główną wartością jest dynamika, a nie maksymalna efektywność działania.
+
+</details>

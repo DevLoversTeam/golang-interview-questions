@@ -4348,3 +4348,67 @@ generate` jest zwykle lepszy niż odbicie. Refleksja jest właściwa tam, gdzie
 główną wartością jest dynamika, a nie maksymalna efektywność działania.
 
 </details>
+
+
+<details>
+<summary>74. Co to jest analiza ucieczki i jak ją sprawdzić za pomocą flag kompilatora?</summary>
+
+#### Go
+
+`Escape Analysis` to analiza kompilatora Go, która określa, czy wartość może
+pozostać na stosie, czy też musi zostać przydzielona na stercie, ponieważ
+„ucieka” z bieżącej ramki stosu.
+
+#### Dlaczego jest to ważne:
+
+1. Przydziały stosu są tańsze.
+
+2. Przydziały sterty zwiększają presję GC.
+
+3. Zrozumienie zachowań ucieczki pomaga zoptymalizować gorące ścieżki.
+
+#### Typowe powody ucieczki:
+
+1. Wskaźnik powrotu do wartości lokalnej.
+
+2. Zachowanie wartości w trwałej strukturze.
+
+3. Przejęcie zmiennej przez zamknięcie.
+
+4. Przekazywanie wartości do kontekstów, w których kompilator nie może
+   zagwarantować lokalnego cyklu życia.
+
+#### Jak sprawdzić flagi kompilatora:
+
+Najczęściej stosowana metoda:
+
+1. `go build -gcflags="-m" ./...`
+
+2. W celu uzyskania bardziej szczegółowych danych wyjściowych: `go build
+   -gcflags="-m -m" ./...`
+
+Wiadomości wyszukiwane są pod kątem takich fraz jak:
+
+- `moved to heap`
+
+- `escapes to heap`
+
+Jest to bezpośredni wskaźnik, że na stosie nie pozostała żadna wartość.
+
+#### Proces praktyczny:
+
+1. Uruchom test porównawczy/profil i znajdź gorący fragment.
+
+2. Sprawdź wyjście ucieczki kompilatora dla tej sekcji.
+
+3. Refaktoryzuj lokalnie (bez pogarszania czytelności).
+
+4. Ponowny efekt (`bench`, `pprof`, przydziały/op).
+
+#### Wniosek:
+
+Analiza ucieczki to „radar” kompilatora do analizy zachowań alokacyjnych.
+`-gcflags="-m"` pozwala zobaczyć, gdzie dane wyciekają do sterty i podejmować
+świadome decyzje dotyczące optymalizacji pamięci i wydajności.
+
+</details>

@@ -4412,3 +4412,55 @@ Analiza ucieczki to „radar” kompilatora do analizy zachowań alokacyjnych.
 świadome decyzje dotyczące optymalizacji pamięci i wydajności.
 
 </details>
+
+
+<details>
+<summary>75. Dlaczego `panic` i `recover` nie zastępują normalnej obsługi błędów?</summary>
+
+#### Go
+
+W Go `panic/recover` są przeznaczone do wyjątkowych, awaryjnych sytuacji, a nie
+do normalnej obsługi błędów logiki biznesowej. Normalnym sposobem obsługi błędów
+jest jawne zwrócenie `error` i kontrolowanie przepływu wykonywania.
+
+#### Dlaczego `panic/recover` nie zostało zastąpione przez `error handling`:
+
+1. **Narusza przejrzystość umowy:** w przypadku `error` sygnatura funkcji
+   wyraźnie pokazuje, co może pójść nie tak; z `panic` błąd staje się ukryty.
+
+2. **Utrudnij kontrolę przepływu:** panika rozwija stos, czyniąc zachowanie
+   mniej przewidywalnym dla osoby wywołującej.
+
+3. **Test gorszy:** testowanie scenariuszy paniki jest trudniejsze i mniej
+   naturalne niż testowanie zwracanych błędów.
+
+4. **Pogorszenie niezawodności usług:** nieprzechwycona panika w goroutine może
+   zniszczyć proces lub ważną pętlę przetwarzania.
+
+5. **`recover` ma charakter lokalny:** działa tylko w `defer` tej samej
+   procedurze gor, więc nie jest to uniwersalny mechanizm błędów między
+   komponentami.
+
+#### Kiedy `panic` jest uzasadnione:
+
+1. Naruszenie niezmienników wewnętrznych, co oznacza błąd oprogramowania.
+
+2. Stany umownie niemożliwe („to nigdy nie powinno się zdarzyć”).
+
+3. Krytyczne błędy inicjalizacji w przypadku nieprawidłowej kontynuacji.
+
+#### Kiedy potrzebny jest `error`:
+
+1. Oczekiwane awarie systemów zewnętrznych (sieć, DB, I/O).
+
+2. Błędy sprawdzania poprawności i domeny.
+
+3. Wszelkie sytuacje, w których osoba dzwoniąca ma wybór, jak zareagować.
+
+#### Wniosek:
+
+W dojrzałym kodzie Go `error` jest głównym narzędziem do zarządzanej obsługi
+błędów. `panic/recover` to mechanizm awaryjny na wyjątkowe przypadki, a nie
+codzienna alternatywa dla standardowej obsługi błędów.
+
+</details>

@@ -4464,3 +4464,72 @@ błędów. `panic/recover` to mechanizm awaryjny na wyjątkowe przypadki, a nie
 codzienna alternatywa dla standardowej obsługi błędów.
 
 </details>
+
+
+<details>
+<summary>76. Jak `errors.Is` i `errors.As` działają z zawijaniem błędów w Go i jaka jest między nimi różnica?</summary>
+
+#### Go
+
+We współczesnym Go błędy są często „opakowane” poprzez dodanie kontekstu za
+pomocą `fmt.Errorf("...: %w", err)`. `errors.Is` i `errors.As` pozwalają
+poprawnie pracować z takim łańcuchem błędów bez utraty pierwotnej przyczyny.
+
+#### Jak działa `errors.Is`:
+
+1. Sprawdza, czy łańcuch błędów zawiera określony błąd docelowy.
+
+2. Używane głównie w przypadku błędów wartowniczych (`io.EOF`,
+   `context.Canceled` itp.).
+
+3. Semantyka: **„czy to (lub wersja opakowana) jest dokładnym błędem?”**
+
+#### Jak działa `errors.As`:
+
+1. Przeszukuje łańcuch pod kątem błędu określonego typu.
+
+2. Jeśli zostanie znaleziony, zapisuje go do przekazanego celu (wskaźnika).
+
+3. Semantyka: **„czy można usunąć błąd tego typu z ciągu znaków?”**
+
+#### Kluczowa różnica:
+
+1. `errors.Is` — błąd sprawdzania **tożsamości/równoważności**.
+
+2. `errors.As` — **sprawdzanie typu** i dostęp do pól/metod specyficznych dla
+   typu.
+
+#### Praktyczny schemat użycia:
+
+1. Pierwszy `errors.Is` dla znanych przypadków wartowniczych.
+
+2. Następnie `errors.As`, jeśli wymagane są szczegóły typu niestandardowego
+   (kod, metadane, kontekst).
+
+3. Nie porównuj opakowanych błędów poprzez `==`, ponieważ w ten sposób traci się
+   poprawność w łańcuchu zawijania.
+
+#### Wniosek:
+
+`errors.Is` odpowiada na pytanie „czy to ten sam błąd?”, a `errors.As` odpowiada
+„czy jest to ten sam typ błędu?”. Razem tworzą poprawny i niezawodny model pracy
+z zawijaniem błędów w Go.
+
+#### Przykład:
+
+```go
+if err := repo.Save(ctx, x); err != nil {
+	return fmt.Errorf("save user: %w", err)
+}
+
+if errors.Is(err, sql.ErrNoRows) {
+	// перевірка sentinel-помилки
+}
+
+var ve *ValidationError
+if errors.As(err, &ve) {
+	// доступ до полів конкретного типу помилки
+}
+```
+
+</details>

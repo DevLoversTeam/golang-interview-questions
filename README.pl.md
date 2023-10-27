@@ -4533,3 +4533,77 @@ if errors.As(err, &ve) {
 ```
 
 </details>
+
+
+<details>
+<summary>77. Kiedy należy używać niestandardowego typu błędu zamiast błędu wartowniczego i jakie są praktyczne konsekwencje tego wyboru dla architektury?</summary>
+
+#### Go
+
+`Sentinel error` i `custom error type` to różne narzędzia do modelowania błędów.
+Sentinel nadaje się do prostego sygnału binarnego i typu niestandardowego - gdy
+błąd niesie ze sobą kontekst strukturalny i wpływa na zachowanie kilku warstw
+systemu.
+
+#### Kiedy wystarczy błąd wartownika:
+
+1. Wymagany jest jedynie fakt konkretnej kategorii błędu.
+
+2. Nie ma potrzeby wypełniania dodatkowych pól.
+
+3. Wystarczy sprawdzenie przez `errors.Is`.
+
+#### Kiedy występuje niestandardowy typ błędu:
+
+1. Wymaga **szczegółów strukturalnych**:
+
+- kod błędu;
+
+- przyczyna domeny;
+
+- identyfikator zasobu;
+
+- możliwość ponawiania;
+
+- Mapowanie HTTP/gRPC.
+
+2. Różne warstwy muszą podejmować różne decyzje na podstawie tych pól.
+
+3. Wymagaj stabilnej ewolucji kontraktu błędów bez chaotycznego sprawdzania
+   ciągów.
+
+#### Konsekwencje architektoniczne wyboru:
+
+1. **Błąd Sentinela**
+
+- łatwiejszy start;
+
+- bez kodu;
+
+- ale słabsza ekspresja i ryzyko „rozwoju” ukrytych reguł przetwarzania.
+
+2. **Niestandardowy typ błędu**
+
+- jasniejsza umowa dotycząca domeny;
+
+- lepsza integracja pomiędzy warstwami transportu/usług/domen;
+
+- wyższe testowanie zasad przetwarzania;
+
+- ale wymaga dyscypliny projektowej i podejścia do wersji.
+
+#### Zalecana praktyka:
+
+1. W przypadku prostych sygnałów globalnych — wartownik.
+
+2. W przypadku błędów istotnych dla domeny — typ niestandardowy + `errors.As`.
+
+3. Zawijaj mniejsze błędy przez `%w` bez utraty związku przyczynowego.
+
+#### Wniosek:
+
+Wybór pomiędzy typem wartowniczym a typem niestandardowym jest wyborem poziomu
+wyrazistości architektury błędów. Gdy błąd wpływa na routing decyzji w systemie,
+niestandardowy typ błędu zapewnia znacznie solidniejszy i skalowalny kontrakt.
+
+</details>

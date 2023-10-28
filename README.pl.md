@@ -4607,3 +4607,60 @@ wyrazistości architektury błędów. Gdy błąd wpływa na routing decyzji w sy
 niestandardowy typ błędu zapewnia znacznie solidniejszy i skalowalny kontrakt.
 
 </details>
+
+
+<details>
+<summary>78. Jak `defer` zachowuje się w pętli i jakie mogą być konsekwencje dla pamięci i wydajności?</summary>
+
+#### Go
+
+`defer` w Go nie jest wykonywany na końcu iteracji pętli, ale w momencie wyjścia
+z otaczającej ją funkcji. Dlatego `defer` wewnątrz pętli kumuluje się i jest
+wyzwalany dopiero po zakończeniu całej funkcji.
+
+#### Jak to działa:
+
+1. Każda iteracja dodaje nowe odroczone wywołanie do stosu odroczeń.
+
+2. Te wywołania nie są wykonywane aż do zakończenia funkcji.
+
+3. Przy wyjściu są uruchamiane w odwrotnej kolejności (LIFO).
+
+#### Potencjalne konsekwencje:
+
+1. **Opóźnione zwolnienie zasobów:** pliki, gniazda, transakcje, blokady mogą
+   pozostać otwarte dłużej niż to konieczne.
+
+2. **Większe zużycie pamięci:** wiele opóźnień wpisów w długiej pętli zwiększa
+   obciążenie.
+
+3. **Spadek wydajności:** w gorących pętlach nadmierne opóźnienia zwiększają
+   czas wykonania.
+
+4. **Ryzyko wyczerpania się zasobów:** np. „zbyt wiele otwartych plików”, jeśli
+   `defer file.Close()` znajduje się w długim cyklu odczytu.
+
+#### Kiedy jest bezpiecznie:
+
+1. Mała liczba iteracji.
+
+2. Krótki cykl życia funkcji.
+
+3. Zasoby nie są rzadkie.
+
+#### Najlepsza praktyka dotycząca pętli:
+
+1. Umieść treść iteracji w osobnej funkcji i umieść tam `defer`.
+
+2. Lub zamknij/zwolnij zasób jawnie na końcu każdej iteracji.
+
+3. W przypadku zamków szczególnie ważne jest kontrolowanie czasu przetrzymywania
+   sekcji krytycznej.
+
+#### Wniosek:
+
+`defer` w pętli to narzędzie wymagające dyscypliny: upraszcza kod, ale może
+potajemnie gromadzić zasoby i obciążenie. Jeśli istnieje wiele iteracji, lepiej
+upewnić się, że zasoby zostaną zwolnione w każdym kroku.
+
+</details>

@@ -4664,3 +4664,66 @@ potajemnie gromadzić zasoby i obciążenie. Jeśli istnieje wiele iteracji, lep
 upewnić się, że zasoby zostaną zwolnione w każdym kroku.
 
 </details>
+
+
+<details>
+<summary>79. Jak działa funkcja `init` i czy możesz polegać na kolejności jej wykonywania?</summary>
+
+#### Go
+
+`init` w Go to specjalna funkcja pakietu, która jest wykonywana automatycznie
+podczas inicjalizacji programu (przed `main`). Służy do wstępnej konfiguracji,
+która powinna nastąpić raz przed uruchomieniem głównej logiki.
+
+#### Jak działa inicjalizacja:
+
+1. Importowane zależności są inicjowane jako pierwsze.
+
+2. Następnie inicjowane są zmienne pakietu.
+
+3. Następnie wywoływane są funkcje `init` pakietu.
+
+4. Dopiero po zakończeniu całego drzewa inicjalizacji uruchamiany jest `main`.
+
+#### Czy możesz polegać na zamówieniu:
+
+1. **Między pakietami**: tak, w ramach zależności, zdefiniowana jest kolejność -
+   najpierw zależności, potem pakiet konsumencki.
+
+2. **W jednej paczce**:
+
+- kolejność inicjalizacji zmiennych jest określona przez zależności pomiędzy
+  nimi;
+
+- w przypadku wielu `init` różnych plików w tym samym pakiecie poleganie na
+  „losowej” kolejności plików tekstowych jest złym pomysłem projektowym.
+
+3. Wniosek: istnieją podstawowe gwarancje, ale z punktu widzenia architektury
+   lepiej nie budować krytycznej logiki biznesowej na złożonych, ukrytych
+   łańcuchach `init`.
+
+#### Ryzyko nadużywania `init`:
+
+1. Ukryte skutki uboczne.
+
+2. Cięższe debugowanie i testowanie.
+
+3. Bardziej złożona kontrola kolejności w dużych bazach kodu.
+
+#### Zalecenie praktyczne:
+
+1. Utrzymuj `init` minimalizm i przewidywalność.
+
+2. Użyj jawnych konstruktorów/funkcji `Setup` do ważnych inicjalizacji.
+
+3. Zależności i kolejność uruchamiania należy ustalić jawnie w warstwie
+   kompozycji.
+
+#### Wniosek:
+
+`init` w Go odbywa się automatycznie i posiada formalne gwarancje zamówienia na
+poziomie wykresu importu. Jednakże w przypadku czytelnej i testowalnej
+architektury lepiej jest wyraźnie określić inicjalizacje krytyczne, niż polegać
+na ukrytych efektach `init`.
+
+</details>

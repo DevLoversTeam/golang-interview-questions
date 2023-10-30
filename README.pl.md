@@ -4727,3 +4727,58 @@ architektury lepiej jest wyraźnie określić inicjalizacje krytyczne, niż pole
 na ukrytych efektach `init`.
 
 </details>
+
+
+<details>
+<summary>80. Dlaczego należy unikać zmiennych globalnych i funkcji `init` w bibliotekach?</summary>
+
+#### Go
+
+W kodzie biblioteki zmienne globalne i „ciężkie” funkcje `init` często powodują
+niejawne zachowanie, które utrudnia integrację, testowanie i przewidywanie
+aplikacji. Jest to szczególnie istotne w przypadku opakowań wielokrotnego
+użytku.
+
+#### Dlaczego zmienne globalne są złe w bibliotekach:
+
+1. **Ukryty współdzielony stan zmienny:** Konsument biblioteki może nie
+   wiedzieć, że istnieje stan globalny, który wpływa na zachowanie.
+
+2. **Kwestie związane z konkurencyjnością:** globalne firmy łatwo stają się
+   źródłem ras/konfliktów.
+
+3. **Testowanie złożone:** testy zaczynają zależeć od kolejności wykonywania i
+   skutków ubocznych poprzednich przypadków.
+
+4. **Słaba możliwość komponowania:** trudno jest mieć wiele niezależnych
+   instancji bibliotek z różnymi ustawieniami.
+
+#### Dlaczego „ciężki” `init` jest niepożądany:
+
+1. **Niejawne skutki uboczne importu:** wystarczy `import` i kod jest już
+   wykonany.
+
+2. **Brak wyraźnej kontroli czasu inicjalizacji:** Trudno jest kontrolować
+   kolejność/warunki uruchamiania w dużej aplikacji.
+
+3. **Pogorszona obserwowalność/możliwość debugowania:** błędy uruchamiania i
+   skutki uboczne są trudniejsze do zlokalizowania.
+
+#### Co jest zamiast tego lepsze:
+
+1. Jawne konstruktory (`New(...)`) i struktury konfiguracyjne.
+
+2. Projekt zorientowany na instancje bez globalnego stanu, który można
+   modyfikować.
+
+3. Jawny `Setup/Start/Close` cykl życia, jeśli jest to konieczne.
+
+4. Minimum `init` tylko dla działań bez skutków ubocznych.
+
+#### Wniosek:
+
+Biblioteka powinna być przewidywalna i dostosowana do potrzeb użytkownika.
+Unikanie stanu globalnego i nadmiernego `init` to inwestycja w testowalność,
+skalowalność i czystość architektury kodu Go.
+
+</details>

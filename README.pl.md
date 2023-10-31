@@ -4782,3 +4782,57 @@ Unikanie stanu globalnego i nadmiernego `init` to inwestycja w testowalność,
 skalowalność i czystość architektury kodu Go.
 
 </details>
+
+
+<details>
+<summary>81. Co się stanie, jeśli serializujesz do JSON strukturę z polami zaczynającymi się od małej litery?</summary>
+
+#### Go
+
+W Go nie można eksportować pól strukturalnych rozpoczynających się od małej
+litery (`unexported`). Pakiet `encoding/json` nie ma do nich refleksyjnego
+dostępu jako pól publicznych, więc są one ignorowane podczas serializacji.
+
+#### Co się stanie z `json.Marshal`:
+
+1. Tylko wyeksportowane pola (pisane wielkimi literami) zostaną uwzględnione w
+   formacie JSON.
+
+2. Pola zawierające małe litery będą ignorowane.
+
+3. Tagi `json:"..."` w nieeksportowanych polach nie „wymuszają” ich
+   serializacji.
+
+#### Konsekwencje w praktyce:
+
+1. Niespodziewanie „pusty” lub niekompletny kod JSON.
+
+2. Utrata ważnych danych w odpowiedziach API.
+
+3. Trudne debugowanie błędów, jeśli programista nie wziął pod uwagę reguły
+   eksportu.
+
+#### A co z deserializacją (`json.Unmarshal`):
+
+1. Podobnie `encoding/json` nie zapisze danych bezpośrednio w nieeksportowanych
+   polach.
+
+2. Kontrola procesu wymaga niestandardowych `MarshalJSON` / `UnmarshalJSON` ,
+   oddzielnych DTO lub innych jawnych mechanizmów transformacji.
+
+#### Ogólna zasada:
+
+1. W przypadku pól w formacie JSON użyj wyeksportowanych nazw.
+
+2. Trzymaj celowo nieeksportowanych danych wewnętrznych wrażliwych na domenę.
+
+3. Oddzielne modele wewnętrzne i DTO ds. transportu, gdy wymagana jest
+   szczegółowa kontrola zamówień publicznych.
+
+#### Wniosek:
+
+W Go serializacja JSON działa tylko z wyeksportowanymi polami struktury. Pola
+zawierające małe litery w standardzie `encoding/json` nie są serializowane,
+nawet jeśli są oznaczone.
+
+</details>

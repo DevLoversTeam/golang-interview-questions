@@ -4836,3 +4836,70 @@ zawierające małe litery w standardzie `encoding/json` nie są serializowane,
 nawet jeśli są oznaczone.
 
 </details>
+
+
+<details>
+<summary>82. Jakie są sposoby na uzyskanie danych z JSON w Go?</summary>
+
+#### Go
+
+Nie ma jednego „właściwego” sposobu pracy z JSON w Go: podejście jest wybierane
+na podstawie stabilności schematu, wymagań wydajnościowych i poziomu
+bezpieczeństwa typu.
+
+#### Główne metody:
+
+1. **Dekodowanie do struktury (`struct`)**
+
+- najbardziej typowa i najbardziej niezawodna opcja dla znanego schematu;
+
+- zapewnia bezpieczeństwo typu, przejrzyste kontrakty i lepszą łatwość
+  konserwacji.
+
+2. **Dekodowanie w `map[string]any`**
+
+- jest wygodny w przypadku częściowo dynamicznych ładunków;
+
+- elastyczny, ale mniej bezpieczny: wymaga asercji i kontroli typów.
+
+3. **Czytanie strumieniowe przez `json.Decoder`**
+
+- nadaje się do dużych plików JSON lub strumieni (treść HTTP, pliki);
+
+- umożliwia pracę bez ładowania całego dokumentu do pamięci.
+
+4. **`json.RawMessage` dla odroczonego/częściowego analizowania**
+
+- przydatne, gdy część schematu zależy od pola „dyskryminator”;
+
+- daje kontrolę nad etapami dekodowania.
+
+5. **Niestandardowe `UnmarshalJSON` / `MarshalJSON`**
+
+- w przypadku niestandardowych formatów, walidacji lub specjalnej semantyki
+  biznesowej.
+
+6. **Trzecie biblioteki / generator kodów**
+
+- jest odpowiedni w przypadku wymagań dotyczących wysokiej wydajności lub
+  szczególnych wymagań dotyczących kompatybilności.
+
+#### Praktyczny wybór:
+
+1. Stabilny kontrakt API → `struct`.
+
+2. Dynamiczny lub częściowo nieznany JSON → `map` + `RawMessage`.
+
+3. Duże ilości danych → `Decoder` (streaming).
+
+4. Wydajność krytyczna/patologiczny JSON → profilowanie + generator
+   kodów/alternatywy.
+
+#### Wniosek:
+
+Optymalny sposób „pobrania” danych JSON w Go zależy od charakteru schematu. W
+większości przypadków produkcyjnych podstawowym wyborem są struktury typowane, a
+mechanizmy dynamiczne (`map`, `RawMessage`, niestandardowe unmarshal) — w
+przypadku bardziej złożonych scenariuszy.
+
+</details>

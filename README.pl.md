@@ -4970,3 +4970,53 @@ if err := json.NewEncoder(w).Encode(resp); err != nil {
 ```
 
 </details>
+
+
+<details>
+<summary>84. Co to jest `json.RawMessage` i kiedy jest przydatny?</summary>
+
+#### Go
+
+`json.RawMessage` to typ (w zasadzie `[]byte`) z pakietu `encoding/json`, który
+umożliwia zapisanie fragmentu JSON „tak jak jest” bez natychmiastowego
+analizowania go w określonej strukturze.
+
+#### Co robi:
+
+1. **Odroczone analizowanie:** najpierw można przeanalizować tylko „opakowanie”
+   wiadomości, a pole złożone później, gdy znany jest wymagany typ.
+
+2. **Częściowe dekodowanie:** analizujemy tylko te części ładunku, które są
+   naprawdę potrzebne na tym etapie.
+
+3. **Przezroczysta retransmisja:** Fragment JSON można retransmitować bez utraty
+   oryginalnej reprezentacji.
+
+#### Kiedy jest to szczególnie przydatne:
+
+1. **Ładunki polimorficzne:** gdy typ pola zależy od dyskryminatora
+   `type/kind/version`.
+
+2. **Systemy sterowane zdarzeniami:** opakowanie zdarzenia jest stabilne, a
+   treść zdarzenia ma różne schematy.
+
+3. **Bramy integracji:** muszą odczytać metadane routingu i przekazać „treść”
+   prawie bez zmian.
+
+4. **Optymalizacja wydajności:** unikanie niepotrzebnego pełnego unmarshal dla
+   dużych lub częściowo niepotrzebnych obiektów.
+
+#### Co wziąć pod uwagę:
+
+1. `RawMessage` nie sprawdza automatycznie semantyki — weryfikacja pozostaje w
+   gestii Twojej logiki, gdy następuje `Unmarshal`.
+
+2. Odroczona analiza komplikuje kod, jeśli jest niepotrzebnie stosowana.
+
+#### Wniosek:
+
+`json.RawMessage` to narzędzie do zarządzanego „późnego wiązania” danych JSON.
+Jest to szczególnie cenne w protokołach polimorficznych i wieloformatowych,
+gdzie rodzaj wewnętrznego ładunku jest określany dopiero w czasie wykonywania.
+
+</details>

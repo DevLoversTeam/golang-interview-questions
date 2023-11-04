@@ -5020,3 +5020,60 @@ Jest to szczególnie cenne w protokołach polimorficznych i wieloformatowych,
 gdzie rodzaj wewnętrznego ładunku jest określany dopiero w czasie wykonywania.
 
 </details>
+
+
+<details>
+<summary>85. Jak zaimplementować niestandardowy organizator dla JSON? </summary>
+
+#### Go
+
+Niestandardowy organizator w Go jest implementowany za pomocą metody
+`MarshalJSON() ([]byte, error)` w Twoim typie. Pozwala to na pełną kontrolę nad
+sposobem serializacji obiektu do formatu JSON: format pola, sprawdzanie
+poprawności, obliczone wartości, maskowanie itp.
+
+#### Podejście podstawowe:
+
+1. Dodaj metodę: `func (t MyType) MarshalJSON() ([]byte, error)`.
+
+2. Wewnętrznie utwórz reprezentację pośrednią (często alias/strukturę DTO).
+
+3. Zadzwoń pod numer `json.Marshal`, aby uzyskać ten widok.
+
+4. Zwrotne bajty lub błąd.
+
+#### Dlaczego oni to robią:
+
+1. **Niestandardowy format wyjściowy:** np. konwersja czasu, pola wyliczeniowe,
+   dziesiętne, maski.
+
+2. **Zgodność z umową zewnętrzną:** gdy interfejs API wymaga określonego
+   schematu lub konwencji nazewnictwa.
+
+3. **Zarządzane ukrywanie danych:** nie generuj poufnych pól ani nie generuj
+   zredagowanej wersji.
+
+4. **Pola obliczone/pochodne:** zawierają wartości w formacie JSON, które nie
+   występują jako „surowe” pola struktury.
+
+#### Typowa technika bez rekurencji:
+
+Aby uniknąć nieskończonego wywołania `MarshalJSON`, użyj typu aliasu (`type
+alias MyType`) i zorganizuj alias lub oddzielne DTO.
+
+#### Ważne wskazówki:
+
+1. Zachowuj deterministyczną i prostą logikę zestawiania.
+
+2. Napisz testy dotyczące przypadków brzegowych i zgodności wstecznej kontraktu
+   JSON.
+
+3. Jeśli wymagana jest symetria, zaimplementuj także `UnmarshalJSON`.
+
+#### Wniosek:
+
+Niestandardowy `MarshalJSON` to narzędzie do dostosowywania ekspozycji
+publicznej. W produkcji stosuje się go, gdy standardowe tagi nie są
+wystarczające dla semantyki kontraktu, bezpieczeństwa lub domeny.
+
+</details>

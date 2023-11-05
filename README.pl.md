@@ -5077,3 +5077,67 @@ publicznej. W produkcji stosuje się go, gdy standardowe tagi nie są
 wystarczające dla semantyki kontraktu, bezpieczeństwa lub domeny.
 
 </details>
+
+
+<details>
+<summary>86. Jak analizować wielotypowy kod JSON, jeśli dane wejściowe lub dowolne z pól może być tablicą `[...]` lub obiektem `{...}`?</summary>
+
+#### Go
+
+Gdy pole JSON ma postać „zmiennoprzecinkową” (czasami tablicę, czasem obiekt),
+najbardziej niezawodnym podejściem w Go jest dekodowanie odroczone za pomocą
+`json.RawMessage` lub niestandardowego `UnmarshalJSON` z rzeczywistym
+rozpoznawaniem typu.
+
+#### Strategia kanoniczna:
+
+1. Odkoduj problematyczne pole w `json.RawMessage`.
+
+2. Spójrz na pierwszy znaczący bajt:
+
+- `[` → to jest tablica;
+
+- `{` → to jest obiekt.
+
+3. W zależności od formularza zatwierdź `json.Unmarshal` do odpowiedniego typu
+   celu.
+
+4. Normalizuj wynik do pojedynczego modelu wewnętrznego (tak, aby kod nie
+   zależał od zewnętrznego schematu „płynu”).
+
+#### Alternatywa: Niestandardowa `UnmarshalJSON`:
+
+1. Zaimplementuj metodę na własnym typie.
+
+2. Wewnątrz metody spróbuj parsować w `[]T`, a jeśli nie pasuje - w `T` (lub
+   odwrotnie).
+
+3. Zapisz w ujednoliconej reprezentacji, np. zawsze jako `[]T`.
+
+#### Dlaczego to jest ważne:
+
+1. Zewnętrzne interfejsy API są często niespójne między wersjami/punktami
+   końcowymi.
+
+2. Bezpośrednie `Unmarshal` do twardej struktury powoduje błędy takie jak
+   `cannot unmarshal object into Go value of type []...`.
+
+3. Normalizacja danych wejściowych radykalnie upraszcza resztę logiki
+   biznesowej.
+
+#### Praktyczne wskazówki:
+
+1. Jasno udokumentuj akceptowalne formy wejściowe JSON.
+
+2. Rejestruj nietypowe ładunki, aby diagnozować błędy kontraktów.
+
+3. Pokryj testami oba formularze (`{}` i `[]`) + przypadki brzegowe (null, puste
+   wartości, nieprawidłowy typ).
+
+#### Wniosek:
+
+W przypadku wielotypowego formatu JSON wzorzec „RawMessage → wykrywanie kształtu
+→ cel Unmarshal → normalizacja” działa najlepiej w Go. Zapewnia to stabilne
+przetwarzanie nawet przy niestabilnej umowie zewnętrznej.
+
+</details>

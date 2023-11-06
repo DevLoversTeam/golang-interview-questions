@@ -5141,3 +5141,64 @@ W przypadku wielotypowego formatu JSON wzorzec „RawMessage → wykrywanie kszt
 przetwarzanie nawet przy niestabilnej umowie zewnętrznej.
 
 </details>
+
+
+<details>
+<summary>87. Jak przetestować serializację (XML/JSON) w Go, gdy kolejność kluczy na mapie nie jest deterministyczna?</summary>
+
+#### Go
+
+Jeśli kolejność kluczy w `map` jest niedeterministyczna, testów nie można
+zbudować na dosłownym porównaniu „surowych” ciągów serializacyjnych. Prawidłowym
+podejściem jest porównywanie treści, a nie losowej kolejności prezentacji.
+
+#### Solidne strategie dla JSON:
+
+1. **Porównanie struktury w obie strony:**
+
+- serializuj;
+
+- deserializuj z powrotem do typu/modelu znormalizowanego;
+
+- porównaj dane jako strukturę.
+
+2. **Kanonizacja przed porównaniem:**
+
+- przetwarzaj JSON w model pośredni;
+
+- sortowanie kluczy/kolekcji;
+
+- porównaj widok kanoniczny.
+
+3. **Twierdzenia semantyczne zamiast równości ciągów:**
+
+- sprawdź określone pola i niezmienniki.
+
+#### Dla XML:
+
+1. Podobna zasada: porównaj drzewo elementów/atrybutów, a nie surowy ciąg
+   znaków.
+
+2. Normalizuj spacje, formatowanie, kolejność atrybutów (jeśli pozwala na to
+   umowa).
+
+3. Sprawdź równoważność semantyczną analizowanych struktur.
+
+#### Kiedy potrzebujesz złotego pliku:
+
+1. Formularz **wyjście deterministyczne**:
+
+- sortuj klucze przed serializacją;
+
+- lub serializuj nie `map`, ale strukturę/uporządkowaną listę par.
+
+2. Złoty test powinien zakończyć się niepowodzeniem tylko w przypadku zmian
+   semantycznych umowy, a nie losowej kolejności kluczy.
+
+#### Wniosek praktyczny:
+
+Testy serializacji dla `map` nie porównują „tekstu jeden do jednego”, ale
+równoważność danych. Determinizm należy albo wprowadzić jawnie (sortowanie),
+albo zastosować kontrole na poziomie semantycznym.
+
+</details>

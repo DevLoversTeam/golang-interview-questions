@@ -5202,3 +5202,69 @@ równoważność danych. Determinizm należy albo wprowadzić jawnie (sortowanie
 albo zastosować kontrole na poziomie semantycznym.
 
 </details>
+
+
+<details>
+<summary>88. Jakie są zalety i wady Protobuf w porównaniu do JSON? Czym różni się serializacja w Protobuf?</summary>
+
+#### Go
+
+Protobuf i JSON to dwie różne klasy formatów: JSON koncentruje się na
+czytelności i wszechstronności dla człowieka, podczas gdy Protobuf koncentruje
+się na zwartości, szybkości i kontraktowalności interakcji z maszyną.
+
+#### Zalety Protobuf nad JSON:
+
+1. **Bardziej kompaktowy rozmiar ładunku:** kodowanie binarne jest zwykle
+   znacznie mniejsze niż tekstowy JSON.
+
+2. **Wyższa wydajność serializacji/deserializacji:** mniejsze obciążenie
+   związane z analizą i lepsza przepustowość w ruchu między usługami.
+
+3. **Ścisły kontrakt oparty na pierwszym schemacie (`.proto`):** Jasny typowy
+   model, generator kodu i kontrola ewolucji pola.
+
+4. ** Lepsza kompatybilność wsteczna/przodowa dzięki regule pól i tagów.**
+
+#### Wady Protobufa:
+
+1. **Mniej czytelny dla oczu:** format binarny nie jest wygodny do ręcznego
+   debugowania bez narzędzi.
+
+2. **Dodatkowa infrastruktura:** `.proto`, generowanie kodu, wersjonowanie
+   schematu.
+
+3. **Próg wejścia jest wyższy niż JSON.**
+
+#### Zalety JSON:
+
+1. Łatwa integracja i szybki start.
+
+2. Czytelność dla człowieka i wygoda analizy ręcznej.
+
+3. Szeroka kompatybilność w ekosystemie internetowym.
+
+#### Czym różni się serializacja w Protobuf:
+
+1. Dane są kodowane nie za pomocą nazw pól, ale za pomocą znaczników
+   numerycznych (`field numbers`).
+
+2. Format jest binarny i ma różne typy na poziomie łącza.
+
+3. Struktury są generowane na podstawie `.proto` (generowanie kodu), a nie są
+   odzwierciedlane jak w typowym strumieniu JSON.
+
+4. Ewolucja umowy wymaga dyscypliny:
+
+- nie używaj ponownie starych tagów;
+
+- ostrożnie zmień typy/opcjonalne/powtarzające się pola.
+
+#### Wniosek:
+
+JSON jest lepszy w przypadku otwartych, zorientowanych na człowieka interfejsów
+API i szybkiej integracji. Protobuf jest przeznaczony dla wysokowydajnych
+systemów międzyusługowych z przejrzystym schematem kontraktu, w których rozmiar
+ładunku, opóźnienie i stabilność ewolucji mają kluczowe znaczenie.
+
+</details>

@@ -5268,3 +5268,53 @@ systemów międzyusługowych z przejrzystym schematem kontraktu, w których rozm
 ładunku, opóźnienie i stabilność ewolucji mają kluczowe znaczenie.
 
 </details>
+
+
+<details>
+<summary>89. Dlaczego należy ponownie wykorzystać `http.Client` zamiast tworzyć nowy dla każdego żądania?</summary>
+
+#### Go
+
+W Go `http.Client` i jego transport (`http.Transport`) zarządzają łączeniem
+połączeń TCP, utrzymywaniem aktywności, sesjami TLS i innymi optymalizacjami
+sieci. Jeśli dla każdego żądania utworzysz nowego klienta, korzyści te zostaną
+utracone.
+
+#### Dlaczego ponowne użycie jest ważne:
+
+1. **Bule połączeń:** ponowne wykorzystanie już otwartych połączeń zmniejsza
+   opóźnienia.
+
+2. **Mniejsze obciążenie związane z uzgadnianiem:** mniej konfiguracji protokołu
+   TCP/TLS na żądanie.
+
+3. **Lepsza przepustowość:** bardziej stabilna przepustowość w scenariuszach z
+   dużym obciążeniem.
+
+4. **Kontrola zasobów:** Masowe tworzenie nowych klientów/transportów może
+   zwiększyć liczbę gniazd i wyczerpać zasoby systemu.
+
+#### Co się dzieje z „klientem na żądanie”:
+
+1. Gorsza utylizacja utrzymywania przy życiu.
+
+2. Więcej krótkotrwałych połączeń.
+
+3. Większe opóźnienia i dodatkowe obciążenie sieci/procesora.
+
+#### Zalecana praktyka:
+
+1. Mają długotrwałe `http.Client` (często po jednym na usługę lub klasę polisy).
+
+2. Skonfiguruj limity czasu i parametry `Transport` jawnie pod obciążeniem.
+
+3. Dla różnych umów SLA/tras — Oddzielnych klientów ponownego wykorzystania, ale
+   nie „nowego klienta na połączenie”.
+
+#### Wniosek:
+
+`http.Client` należy ponownie wykorzystać w Go, ponieważ zapewnia wydajność
+sieci, mniejsze opóźnienia i lepszą stabilność pod obciążeniem. Tworzenie nowego
+klienta dla każdego żądania jest typową antypraktyką w systemach produkcyjnych.
+
+</details>

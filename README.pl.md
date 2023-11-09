@@ -5318,3 +5318,62 @@ sieci, mniejsze opóźnienia i lepszą stabilność pod obciążeniem. Tworzenie
 klienta dla każdego żądania jest typową antypraktyką w systemach produkcyjnych.
 
 </details>
+
+
+<details>
+<summary>90. Dlaczego musisz zamknąć `resp.Body` po żądaniu HTTP?</summary>
+
+#### Go
+
+`resp.Body` w Go to zasób przesyłania strumieniowego powiązany z połączeniem
+sieciowym. Jeśli nie zostanie zamknięty, klient nie będzie mógł poprawnie
+przywrócić połączenia do puli ani zwolnić zasobów systemowych, co prowadzi do
+degradacji usługi.
+
+#### Dlaczego jest to istotne:
+
+1. **Wyciek zasobów:** w niezamkniętych korpusach znajdują się uchwyty i
+   gniazda.
+
+2. **Pogorszenie ponownego wykorzystania połączeń:** funkcja keep-alive działa
+   gorzej, wzrasta liczba nowych połączeń.
+
+3. **Rosnące opóźnienia i błędy pod obciążeniem:** możliwe wyczerpanie puli
+   połączeń i limitów systemowych.
+
+4. **Niestabilne zachowanie klienta:** „zawiesza się”, przekroczenia limitu
+   czasu, nieoczekiwane awarie w połączeniach o dużej częstotliwości.
+
+#### Prawidłowy wzór:
+
+1. Po sprawdzeniu błędu z `Do` natychmiast wykonaj: `defer resp.Body.Close()`.
+
+2. Jeśli potrzebujesz maksymalnego ponownego wykorzystania połączeń:
+
+- przeczytaj treść do końca (lub poprawnie ogranicz czytanie),
+
+- , a następnie zamknij.
+
+#### Wniosek praktyczny:
+
+Zamknięcie `resp.Body` nie jest formalnością, ale warunkiem poprawnego działania
+klienta HTTP w Go. Ma to bezpośredni wpływ na wydajność, stabilność i
+efektywność wykorzystania zasobów usługi.
+
+#### Przykład:
+
+```go
+resp, err := client.Do(req)
+if err != nil {
+	return err
+}
+defer resp.Body.Close()
+
+body, err := io.ReadAll(resp.Body)
+if err != nil {
+	return err
+}
+_ = body
+```
+
+</details>

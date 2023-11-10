@@ -5377,3 +5377,53 @@ _ = body
 ```
 
 </details>
+
+
+<details>
+<summary>91. Czym `http.DefaultServeMux` różni się od niestandardowego `ServeMux`?</summary>
+
+#### Go
+
+`http.DefaultServeMux` to „domyślny” router globalny. Niestandardowy `ServeMux`
+to osobna, jawnie utworzona instancja routera, którą zarządzasz lokalnie w
+ramach określonego serwera.
+
+#### `http.DefaultServeMux`:
+
+1. **Globalny stan pakietu `net/http`:** rejestracja przez `http.Handle` /
+   `http.HandleFunc` pisze dokładnie tam.
+
+2. **Szybki start:** dobry do prostych przykładów i małych narzędzi.
+
+3. **Ryzyka w większych projektach:** ukryte rejestracje z różnych pakietów,
+   bardziej złożona kontrola zależności i testów.
+
+#### Niestandardowe `ServeMux`:
+
+1. **Kompozycja jawna:** `mux := http.NewServeMux()` i przekazanie jej do
+   `http.Server{Handler: mux}`.
+
+2. **Izolacja tras:** każdy serwer/test/instancja może mieć własną tabelę
+   obsługi.
+
+3. ** Lepsza testowalność i łatwość konserwacji:** mniej globalnych skutków
+   ubocznych, łatwiejsze przeprowadzanie niezależnych testów integracyjnych.
+
+4. **Bezpieczniejsza architektura dla monolitów i mikrousług:** routing staje
+   się częścią jawnego kodu startowego.
+
+#### Praktyczny wybór:
+
+1. W przypadku kodu produkcyjnego niestandardowy `ServeMux` jest prawie zawsze
+   lepszy.
+
+2. `DefaultServeMux` jest najczęściej odpowiedni w przypadku bardzo prostych
+   scenariuszy lub samouczków.
+
+#### Wniosek:
+
+Różnica między nimi polega na poziomie przejrzystości i kontroli.
+`DefaultServeMux` wygodne, ale globalne; niestandardowe `ServeMux` zapewnia
+izolowane, kontrolowane i czystsze architektonicznie routing.
+
+</details>

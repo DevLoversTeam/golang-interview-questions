@@ -5427,3 +5427,73 @@ Różnica między nimi polega na poziomie przejrzystości i kontroli.
 izolowane, kontrolowane i czystsze architektonicznie routing.
 
 </details>
+
+
+<details>
+<summary>92. Jak poprawnie wdrożyć płynne zamykanie serwera HTTP i procesu roboczego w tle w Go?</summary>
+
+#### Go
+
+`Graceful shutdown` w Go to kontrolowane zakończenie usługi bez utraty żądań i
+bez „osieroconych” procedur. Pomysł jest prosty: przestań otrzymywać nowy
+ładunek, pozwól, aby aktywna praca dobiegła końca, poprawnie zatrzymaj tło i
+zamknij zasoby w przewidywalnej kolejności.
+
+#### Sekwencja kanoniczna:
+
+1. Przechwytywanie sygnałów zakończenia (`SIGTERM`, `SIGINT`).
+
+2. Utwórz `context` z limitem czasu dla fazy wyłączania.
+
+3. Zadzwoń `server.Shutdown(ctx)`:
+
+- nowe połączenia nie są już akceptowane;
+
+- aktywne żądania mają czas na realizację.
+
+4. Anuluj kontekst/sygnał pracownikom działającym w tle, aby zatrzymali się.
+
+5. Poczekaj na zakończenie procesów roboczych (`WaitGroup`/`errgroup`).
+
+6. Zamknij zasoby zewnętrzne (baza danych, kolejki, producenci, pliki).
+
+#### Jak zatrzymać pracownika działającego w tle:
+
+1. Proces roboczy działa w pętli z `select`, gdzie znajduje się gałąź `case
+   <-ctx.Done(): return`.
+
+2. Podczas zamykania główny proces wywołuje funkcję anulowania.
+
+3. Pracownik kończy bieżący chroniony krok, spłukuje/oczyszcza i wychodzi.
+
+#### Krytyczne praktyki:
+
+1. **Wymagane są limity czasu:** gracja nie powinna zamieniać się w wieczne
+   oczekiwanie.
+
+2. **Wyłączenie idempotentne:** powtarzające się sygnały nie zakłócają logiki
+   wyłączania.
+
+3. **Obserwowalność:** etapy zatrzymania dziennika i wskaźniki czasu trwania.
+
+4. **Jasny porządek:** najpierw zatrzymaj pobór, następnie opróżnij w locie, a
+   następnie oczyść.
+
+#### Typowe błędy:
+
+1. Zatrzymaj proces „na stałe” bez `Shutdown`.
+
+2. Nie przekazuj `ctx` pracownikom/połączeniom zewnętrznym.
+
+3. Nie czekaj na zakończenie goroutines.
+
+4. Zapomnij o opróżnianiu buforów/kolejek przed wyjściem.
+
+#### Wniosek:
+
+Prawidłowe, łagodne zamknięcie w Go jest organizowane za pomocą sygnału
+`context`, `server.Shutdown` i jawnego oczekiwania na wszystkie zadania w tle.
+Takie podejście gwarantuje integralność żądań, przewidywalność wyników i
+niezawodność działania.
+
+</details>

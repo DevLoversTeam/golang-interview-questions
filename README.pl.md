@@ -5541,3 +5541,92 @@ W zastosowanej logice synchronizacji użyj `.Equal()`. Operator `==` dla
 równoważności momentów porównuje więcej niż zwykle jest to zamierzone.
 
 </details>
+
+
+<details>
+<summary>94. Jak działają indeksy? Jak wybrać indeksy dla tabel?</summary>
+
+#### Go
+
+Indeks w systemie DBMS jest pomocniczą strukturą danych (najczęściej
+przypominającą drzewo B), która przyspiesza wyszukiwanie wierszy według
+określonych pól bez konieczności pełnego skanowania tabeli. W rzeczywistości
+indeks przechowuje uporządkowaną reprezentację kluczy i odniesień do wierszy.
+
+#### Jak działają indeksy:
+
+1. Zapytanie z `WHERE/JOIN/ORDER BY` może używać indeksu, aby szybko znaleźć
+   odpowiedni zakres kluczy.
+
+2. Zamiast `Seq Scan` (odczyt całej tabeli) optymalizator wybiera `Index
+   Scan/Bitmap Scan`, jeśli jest to korzystne.
+
+3. Indeksy mogą również wspierać unikalność (`UNIQUE`).
+
+#### Cena indeksowa:
+
+1. Każdy indeks zajmuje miejsce na dysku.
+
+2. `INSERT/UPDATE/DELETE` stają się droższe, ponieważ trzeba zaktualizować
+   indeksy.
+
+3. Nadmiarowe indeksy spowalniają zapis i utrudniają konserwację.
+
+#### Jak prawidłowo wybrać indeksy:
+
+1. **Odrzuć prawdziwe prośby**, a nie „na wszelki wypadek”.
+
+2. Pola indeksu, które często znajdują się w:
+
+- `WHERE`
+
+- `JOIN ON`
+
+- `ORDER BY`
+
+- `GROUP BY` (w razie potrzeby)
+
+3. W przypadku indeksów złożonych należy wziąć pod uwagę kolejność kolumn
+   (reguła przedrostka skrajnego lewego):
+
+- najbardziej selektywne/częste schorzenia występują na początku.
+
+4. Obejrzyj `EXPLAIN (ANALYZE, BUFFERS)` i potwierdź, że indeks jest
+   rzeczywiście używany i przynosi zyski.
+
+5. Regularnie przeglądaj nieskuteczne/nieużywane indeksy.
+
+#### Podejście praktyczne:
+
+1. Zdefiniuj najczęściej powolne żądania.
+
+2. Dodaj minimalne wymagane indeksy.
+
+3. Sprawdź plan przed/po.
+
+4. Zmierz wpływ na równowagę odczytu/zapisu przy rzeczywistym obciążeniu.
+
+#### Wniosek:
+
+Indeks to narzędzie przyspieszające czytanie kosztem droższego pisania.
+Prawidłowy dobór indeksów zawsze zależy od zapytań: tylko dla określonych
+wzorców dostępu i dopiero po sprawdzeniu planu i wydajności.
+
+#### Przykład:
+
+```sql
+-- Перевіряємо план до індексу
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT *
+FROM orders
+WHERE tenant_id = 42
+  AND created_at >= now() - interval '7 days'
+ORDER BY created_at DESC
+LIMIT 100;
+
+-- Додаємо індекс під реальний патерн запиту
+CREATE INDEX CONCURRENTLY idx_orders_tenant_created_at
+  ON orders (tenant_id, created_at DESC);
+```
+
+</details>

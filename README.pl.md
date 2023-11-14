@@ -5630,3 +5630,76 @@ CREATE INDEX CONCURRENTLY idx_orders_tenant_created_at
 ```
 
 </details>
+
+
+<details>
+<summary>95. Co to jest widok zmaterializowany i czym różni się od zwykłego widoku? </summary>
+
+#### Go
+
+`View` i `Materialized View` reprezentują zapisane zapytanie, ale różnią się
+zasadniczo sposobem przechowywania wyniku i kosztem odczytu.
+
+#### Normalny `View`:
+
+1. To jest logiczna „tabela wirtualna” oparta na zapytaniu SQL.
+
+2. Dane nie są fizycznie przechowywane oddzielnie.
+
+3. Każde żądanie do widoku w rzeczywistości powoduje ponowne wykonanie bazowego
+   kodu SQL.
+
+#### `Materialized View`:
+
+1. To jest fizycznie przechowywany wynik zapytania.
+
+2. Odczyt jest zwykle znacznie szybszy, ponieważ nie trzeba za każdym razem
+   ponownie obliczać złożonego łączenia/agregacji.
+
+3. Dane mogą być nieaktualne do `REFRESH`.
+
+#### Kluczowa różnica:
+
+1. `View` = zawsze aktualne dane, ale wyższy koszt kalkulacji.
+
+2. `Materialized View` = szybki odczyt, ale kompromis w zakresie świeżości
+   danych.
+
+#### Kiedy wybrać `Materialized View`:
+
+1. Ciężkie zapytania analityczne i agregacje.
+
+2. Często czytaj raporty z rzadszymi aktualizacjami.
+
+3. Scenariusze, w których dopuszczalne jest kontrolowane opóźnienie istotności.
+
+#### Kiedy wystarczy zwykłe `View`:
+
+1. Wymagane są najbardziej aktualne dane w czasie rzeczywistym.
+
+2. Żądanie nie jest zbyt drogie.
+
+3. `View` jest używany jako abstrakcja dostępu logicznego, a nie jako pamięć
+   podręczna.
+
+#### Wniosek praktyczny:
+
+`Materialized View` to zasadniczo zarządzana pamięć podręczna wyników SQL z
+jawną aktualizacją; zwykły `View` to czysto logiczna projekcja bez
+przechowywania danych. Wybór pomiędzy nimi to równowaga pomiędzy świeżością i
+szybkością.
+
+#### Przykład:
+
+```sql
+CREATE MATERIALIZED VIEW mv_daily_sales AS
+SELECT date_trunc('day', created_at) AS day,
+       sum(amount) AS total
+FROM payments
+GROUP BY 1;
+
+-- Оновлення знімка даних
+REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
+```
+
+</details>

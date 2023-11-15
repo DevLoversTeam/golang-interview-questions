@@ -5703,3 +5703,81 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
 ```
 
 </details>
+
+
+<details>
+<summary>96. Co to jest KWAS? Skomentuj implementację ACID w PostgreSQL.</summary>
+
+#### Go
+
+`ACID` to cztery podstawowe właściwości systemów transakcyjnych gwarantujące
+poprawność danych nawet w przypadku awarii, konkurencji i dużego obciążenia:
+Atomowość, Spójność, Izolacja, Trwałość.
+
+#### Odszyfrowanie ACID:
+
+1. **Atomiczność:** transakcja jest albo w pełni wykonana, albo w ogóle nie
+   została wykonana.
+
+2. **Spójność:** po zatwierdzeniu dane pozostają ważne zgodnie z określonymi
+   regułami i ograniczeniami.
+
+3. **Izolacja:** transakcje równoległe nie powinny na siebie niewłaściwie
+   wpływać.
+
+4. **Trwałość:** Zatwierdzone zmiany pozostają nawet po awarii procesu/systemu.
+
+#### Jak PostgreSQL implementuje ACID:
+
+1. **Atomiczność:**
+
+- dziennik transakcji zmian + mechanizmy wycofywania;
+
+- w przypadku błędu wszystkie zmiany transakcji zostaną w całości wycofane.
+
+2. **Konsystencja:**
+
+- ograniczenia (`PRIMARY KEY`, `UNIQUE`, `CHECK`, `FOREIGN KEY`) i wyzwalacze;
+
+- zatwierdzenie jest możliwe tylko wtedy, gdy nie naruszono niezmienników.
+
+3. **Izolacja:**
+
+- MVCC (Multi-Version Concurrency Control): czytelnicy widzą spójne wersje linii
+  bez rażącego blokowania odczytów;
+
+- obsługa poziomów izolacji (`Read Committed`, `Repeatable Read`,
+  `Serializable`) z różną równowagą wydajności i rygorystyczności.
+
+4. **Trwałość:**
+
+- WAL (rejestrowanie z wyprzedzeniem): przed zatwierdzeniem zmiany są najpierw
+  rejestrowane w dzienniku;
+
+- po awarii odzyskiwanie odbywa się zgodnie z metodą WAL, która zachowuje
+  zatwierdzony stan.
+
+#### Wniosek praktyczny:
+
+W PostgreSQL ACID nie jest zapewniany za pomocą „jednego przycisku”, ale poprzez
+kombinację MVCC, WAL, menedżera transakcji, blokad i mechanizmów ograniczeń. To
+właśnie sprawia, że ​​PostgreSQL jest niezawodnym systemem DBMS dla krytycznych
+systemów transakcyjnych.
+
+#### Przykład:
+
+```sql
+BEGIN;
+
+UPDATE accounts
+SET balance = balance - 100
+WHERE id = 1;
+
+UPDATE accounts
+SET balance = balance + 100
+WHERE id = 2;
+
+COMMIT; -- або ROLLBACK при помилці
+```
+
+</details>

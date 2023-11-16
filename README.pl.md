@@ -5781,3 +5781,58 @@ COMMIT; -- або ROLLBACK при помилці
 ```
 
 </details>
+
+
+<details>
+<summary>97. Jaka jest różnica między BAzą a Kwasem?</summary>
+
+#### Go
+
+`ACID` i `BASE` to dwie różne filozofie spójności i niezawodności w systemach
+rozproszonych/transakcyjnych. Odzwierciedlają różne priorytety architektury:
+rygorystyczność i natychmiastową spójność w porównaniu z dostępnością i
+skalowalnością.
+
+#### KWAS:
+
+1. **Atomiczność, spójność, izolacja, trwałość**.
+
+2. Koncentruje się na ścisłych gwarancjach transakcyjnych.
+
+3. Korzyść — przewidywalna poprawność danych po każdym zatwierdzeniu.
+
+4. Zwykle stosowane w finansach, księgowości, krytycznych spójnych
+   scenariuszach.
+
+#### PODSTAWA:
+
+1. **Zasadniczo dostępne, stan miękki, ostateczna spójność**.
+
+2. Nacisk na wysoką dostępność i skalowanie poziome.
+
+3. Zezwala na tymczasową niespójność między węzłami.
+
+4. Spójność osiąga się „z biegiem czasu”, niekoniecznie natychmiast.
+
+#### Kluczowa różnica:
+
+1. **ACID**: „lepiej poczekać, ale zachować ścisłe gwarancje”.
+
+2. **BASE**: „najlepiej szybko reagować i być dostępnym, nawet jeśli spójność
+   nie jest natychmiastowa”.
+
+#### Praktyczne implikacje dla architektury:
+
+1. ACID upraszcza rozumowanie dotyczące niezmienników, ale może kosztować więcej
+   pod względem opóźnień/skalowania w środowisku rozproszonym.
+
+2. BASE zapewnia stabilność i dostępność na dużą skalę, ale wymaga mechanizmów
+   kompensacyjnych, idempotencji i przemyślanego projektu domeny.
+
+#### Wniosek:
+
+ACID i BASE nie są „dobre/złe”, ale różnymi kompromisami. Wybór zależy od tego,
+co jest ważniejsze dla systemu: natychmiastowa rygorystyczność niezmienników czy
+dostępność i skalowalność za cenę ostatecznej spójności.
+
+</details>

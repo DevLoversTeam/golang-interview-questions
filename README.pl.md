@@ -5836,3 +5836,66 @@ co jest ważniejsze dla systemu: natychmiastowa rygorystyczność niezmienników
 dostępność i skalowalność za cenę ostatecznej spójności.
 
 </details>
+
+
+<details>
+<summary>98. Nazwij poziomy izolacji transakcji.</summary>
+
+#### Go
+
+Poziomy izolacji określają, jak „widoczne” są dla siebie zmiany transakcji
+równoległych. Im wyższy poziom izolacji, tym mniej anomalii, ale zwykle wiąże
+się to z wyższym kosztem wydajności i konkurencyjności.
+
+#### Klasyczne poziomy izolacji (SQL):
+
+1. **Przeczytaj niezatwierdzone**
+
+- najniższy poziom;
+
+- umożliwia odczyt nienaprawionych zmian (brudny odczyt).
+
+2. **Odczyt zatwierdzony**
+
+- odczytywane są tylko zatwierdzone dane;
+
+- brudny odczyt jest zabroniony;
+
+- możliwy jest odczyt jednorazowy i odczyt fantomowy.
+
+3. **Odczyt powtarzalny**
+
+- wielokrotne czytanie tych samych wierszy w ramach transakcji daje ten sam
+  wynik;
+
+- redukuje niektóre anomalie, ale w zależności od systemu DBMS mogą pozostać
+  scenariusze fantomowe.
+
+4. **Możliwość serializacji**
+
+- najsurowszy poziom;
+
+- gwarantuje wynik równoważny sekwencyjnej realizacji transakcji;
+
+- maksymalna ochrona przed anomaliami, ale droższa od konkurencji.
+
+#### Wniosek praktyczny:
+
+Wybór poziomu izolacji to równowaga pomiędzy poprawnością a wydajnością. W
+produkcji określa się to na podstawie niezmienników domeny: gdzie `Read
+Committed` jest wystarczające i gdzie wymagane jest `Repeatable Read` lub
+`Serializable`.
+
+#### Przykład:
+
+```sql
+BEGIN;
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+
+SELECT balance FROM accounts WHERE id = 1;
+-- ... інші операції в межах тієї ж транзакції
+
+COMMIT;
+```
+
+</details>

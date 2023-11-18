@@ -5899,3 +5899,64 @@ COMMIT;
 ```
 
 </details>
+
+
+<details>
+<summary>99. Do czego służą grafowe bazy danych?</summary>
+
+#### Go
+
+Grafowe bazy danych są potrzebne tam, gdzie główną wartością nie są pojedyncze
+rekordy, ale powiązania między nimi i szybkie ominięcie wieloetapowych
+zależności.
+
+#### Co za grafowe modele baz danych:
+
+1. **Węzły** są jednostkami.
+
+2. **Krawędzie** — relacje między bytami.
+
+3. **Właściwości** węzłów i krawędzi są atrybutami modelu domeny.
+
+#### Do jakich zadań są szczególnie przydatne:
+
+1. **Wykresy społecznościowe:** znajomi, subskrypcje, rekomendacje.
+
+2. **Wykrywanie oszustw:** nietrywialne łańcuchy transakcji i podejrzane
+   powiązania.
+
+3. **Wykres wiedzy / wyszukiwanie semantyczne:** połączona reprezentacja wiedzy.
+
+4. **Topologia sieci/IT:** zależności usług, trasy, wpływ incydentów.
+
+5. **Modele ról/uprawnień:** złożone zasady dostępu z dziedziczeniem ról.
+
+#### Dlaczego relacyjna baza danych nie zawsze wystarczy:
+
+1. W scenariuszach łączenia wieloetapowego zapytania mogą stać się ciężkie i
+   kłopotliwe.
+
+2. Silnik wykresów jest zoptymalizowany specjalnie pod kątem żądań ścieżki
+   przejścia.
+
+3. Model „relacji jako podmiotu pierwszej klasy” sprawia, że ​​złożone przypadki
+   relacji stają się bardziej naturalne.
+
+#### Gdy baza danych wykresów jest opcjonalna:
+
+1. Jeśli połączenia są proste i rzadko są szczegółowo sprawdzane.
+
+2. Jeśli dominują klasyczne scenariusze CRUD/OLTP bez skomplikowanego
+   przechodzenia.
+
+3. Jeśli zespół i infrastruktura już efektywnie współpracują ze stosem
+   relacyjnym.
+
+#### Wniosek:
+
+Grafowe bazy danych są potrzebne, gdy wartość biznesowa leży w strukturze
+połączeń i wieloetapowej nawigacji po nich. Jest to wyspecjalizowane narzędzie
+dla domen skoncentrowanych na relacjach, gdzie podejście zorientowane na
+łączenie staje się nieskuteczne lub zbyt złożone.
+
+</details>

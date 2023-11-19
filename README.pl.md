@@ -5960,3 +5960,56 @@ dla domen skoncentrowanych na relacjach, gdzie podejście zorientowane na
 łączenie staje się nieskuteczne lub zbyt złożone.
 
 </details>
+
+
+<details>
+<summary>100. Jeśli dane są ograniczone czasowo, z jakich baz danych powinienem korzystać?</summary>
+
+#### Go
+
+Jeżeli dane mają określony charakter czasowy (metryki, logi, zdarzenia,
+telemetria) wskazane jest wybranie SZBD zgodnie z profilem obciążenia:
+częstotliwością rejestracji, rodzajem żądań, okresem przechowywania, wymaganiami
+dotyczącymi agregacji i opóźnieniami.
+
+#### Typowe opcje:
+
+1. **DB szeregów czasowych (TSDB)**
+
+- przykłady: Prometheus (dla metryk), VictoriaMetrics, InfluxDB, TimescaleDB;
+
+- mocne strony: duża szybkość przetwarzania, żądania okien czasowych, zasady
+  zmniejszania próbkowania/przechowywania.
+
+2. **PostgreSQL + podejście zorientowane na czas**
+
+- kiedy potrzebujesz transakcyjności, ekosystemu SQL i złożonych zapytań
+  łączących z danymi czasowymi;
+
+- często łączy się z podziałem czasu.
+
+3. **Kolumnowy magazyn OLAP**
+
+- do analizy dużych ilości wydarzeń historycznych (ClickHouse itp.);
+
+- strong w agregacjach i skanowaniu dużych zakresów czasu.
+
+#### Kryteria wyboru:
+
+1. **Telemetria z dużą ilością zapisów** → TSDB.
+
+2. **Transakcje operacyjne + czas** → PostgreSQL (z partycjonowaniem/indeksami).
+
+3. **Analiza historyczna na dużą skalę** → podejście kolumnowe/OLAP.
+
+4. **Model przechowywania i kosztów**: gorące dane w szybkiej warstwie, zimne
+   dane w tańszej pamięci masowej.
+
+#### Wniosek praktyczny:
+
+Nie ma „uniwersalnej” bazy danych dla danych ograniczonych czasowo: optymalna
+jest kombinacja narzędzi dla konkretnego obciążenia. W większości systemów
+działa strategia gorącej warstwy TSDB/OLTP + osobna warstwa analityczna dla
+długiej historii.
+
+</details>

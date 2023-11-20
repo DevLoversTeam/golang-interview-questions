@@ -6013,3 +6013,69 @@ działa strategia gorącej warstwy TSDB/OLTP + osobna warstwa analityczna dla
 długiej historii.
 
 </details>
+
+
+<details>
+<summary>101. Jak działa replikacja master-slave?</summary>
+
+#### Go
+
+Replikacja typu master-slave (replika podstawowa) to model, w którym jeden węzeł
+akceptuje zapisy, a jeden lub więcej węzłów repliki replikuje te zmiany w celu
+skalowania odczytu, nadmiarowości i zwiększonej odporności na błędy.
+
+#### Podstawowa zasada:
+
+1. **Master (główny)** obsługuje `INSERT/UPDATE/DELETE`.
+
+2. Zmiany są rejestrowane w dzienniku transakcji (WAL/binlog w zależności od
+   systemu DBMS).
+
+3. **Slave (replika)** odczytuje logi i stosuje zmiany do swojej kopii danych.
+
+4. Odczyty są często dystrybuowane do replik, zapisy pozostają na serwerze
+   podstawowym.
+
+#### Tryby replikacji:
+
+1. **Asynchroniczny**
+
+- primary nie czeka na potwierdzenie z repliki przed zatwierdzeniem;
+
+- mniejsze opóźnienie nagrywania;
+
+- możliwe opóźnienie replikacji i niespójność czasowa.
+
+2. **Synchroniczny/quasi-synchroniczny**
+
+- primary częściowo lub całkowicie czeka na potwierdzenie replik;
+
+- wyższa spójność;
+
+- potencjalnie większe opóźnienie zapisu.
+
+#### Co robi:
+
+1. Skalowanie obciążenia odczytu.
+
+2. Kopia zapasowa danych na potrzeby przełączania awaryjnego.
+
+3. Oddzielenie rekordów OLTP i scenariuszy intensywnego odczytu.
+
+#### Typowe ryzyko:
+
+1. **Opóźnienie replikacji** (czytnik może zobaczyć „stare” dane).
+
+2. Złożoność przełączania awaryjnego/powrotu po awarii i ról węzłów.
+
+3. Ryzyko rozszczepienia mózgu w przypadku nieprawidłowo zorganizowanych
+   scenariuszy przełączania.
+
+#### Wniosek praktyczny:
+
+Replikacja master-slave to równowaga między dostępnością, skalowalnością i
+spójnością. Jest skuteczny w przypadku skalowania odczytu, ale wymaga dyscypliny
+w zakresie monitorowania opóźnień, przemyślanego przełączania awaryjnego i
+jasnej polityki routingu żądań.
+
+</details>

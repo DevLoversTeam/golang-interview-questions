@@ -6079,3 +6079,87 @@ w zakresie monitorowania opóźnień, przemyślanego przełączania awaryjnego i
 jasnej polityki routingu żądań.
 
 </details>
+
+
+<details>
+<summary>102. Co to jest sharding i jakie są jego rodzaje?</summary>
+
+#### Go
+
+Sharding to poziomy podział danych na kilka niezależnych węzłów (shardów) w celu
+skalowania systemu poza pojedynczy serwer pod względem ilości danych, obciążenia
+i przepustowości.
+
+#### Dlaczego stosuje się sharding:
+
+1. Nieograniczaj pojedynczego węzła (CPU/RAM/dysk/we/wy).
+
+2. Zwiększ przepustowość zapisu/odczytu dzięki równoległemu działaniu
+   fragmentów.
+
+3. Lokalizuj gorące zestawy danych i ograniczaj konkurencję o zasoby.
+
+#### Główne typy shardingu:
+
+1. **Sharding na podstawie zakresu**
+
+- dane są podzielone według zakresów kluczy (na przykład według daty lub
+  przedziału identyfikatora);
+
+- proste dla scenariuszy szeregów czasowych;
+
+- ryzyko „gorących” zakresów.
+
+2. **Sharding oparty na skrótach**
+
+- shard jest określany na podstawie skrótu klucza;
+
+- rozkłada obciążenie bardziej równomiernie;
+
+- trudniejsze jest wykonywanie zapytań o zakres.
+
+3. ** Fragmentowanie oparte na katalogach/wyszukiwaniu**
+
+- oddzielny klucz map tabel/usług → fragment;
+
+- elastyczny routing i migracje;
+
+- dodatkowa złożoność i zależność od warstwy wyszukiwania.
+
+4. **Sharding w oparciu o lokalizację geograficzną/dzierżawę**
+
+- dane są udostępniane według regionu lub klienta (najemcy);
+
+- dobry do izolacji, zgodności i architektur z wieloma dzierżawcami;
+
+- możliwa nierównowaga między fragmentami.
+
+#### Architektoniczne wyzwania związane z shardingiem:
+
+1. Przywracanie równowagi danych w okresie wzrostu.
+
+2. Żądania, połączenia i transakcje typu Cross-shard.
+
+3. Komplikacje związane z tworzeniem kopii zapasowych/przywracaniem i
+   przełączaniem awaryjnym.
+
+4. Większa złożoność obserwowalności i wsparcia operacyjnego.
+
+#### Wniosek:
+
+Sharding to narzędzie skalujące, które zapewnia znaczny wzrost wydajności, ale
+kosztem złożoności architektury. Wybór typu shardingu powinien opierać się na
+schemacie dostępu do danych, modelu domeny i planie ewolucji systemu.
+
+#### Przykład:
+
+```go
+func shardForUser(userID int64, shards int) int {
+	if shards <= 0 {
+		return 0
+	}
+	return int(userID % int64(shards)) // hash/range-логіку змінюють під домен
+}
+```
+
+</details>

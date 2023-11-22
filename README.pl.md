@@ -6163,3 +6163,82 @@ func shardForUser(userID int64, shards int) int {
 ```
 
 </details>
+
+
+<details>
+<summary>103. Podziel się z nami swoimi doświadczeniami z optymalizacją baz danych. Jakich narzędzi użyłeś?</summary>
+
+#### Go
+
+W przypadku rozmowy kwalifikacyjnej to pytanie zwykle wymaga **ustrukturyzowanej
+historii przypadku**: kontekst → problem → działania → narzędzia → wskaźniki
+przed/po. Poniżej znajduje się przykładowa silna odpowiedź, którą możesz
+dostosować do własnych doświadczeń w świecie rzeczywistym.
+
+#### Przykład:
+
+1. **Kontekst**
+
+- w usłudze o dużym obciążeniu odczytem/zapisem zaobserwowano pogorszenie
+  opóźnienia p95/p99 w godzinach szczytu.
+
+2. **Objawy**
+
+- powolne żądania;
+
+- Wzrost procesora w węźle DB;
+
+- zwiększanie kolejek oczekiwania na blokady i żądań.
+
+3. **Co zrobiłeś**
+
+- zebrał najczęściej powolne żądania;
+
+- przeanalizowałem plany wykonania;
+
+- dodano/przebudowano indeksy na rzeczywiste `WHERE/JOIN/ORDER BY`;
+
+- usunięto N+1 i przeniesiono niektóre ciężkie operacje do partii;
+
+- dodano buforowanie dla przypadków gorącego odczytu;
+
+- zoptymalizowaliśmy schemat (rodzaje pól, podział czasowy, archiwizacja starych
+  danych).
+
+4. **Narzędzia**
+
+- `EXPLAIN (ANALYZE, BUFFERS)` / `EXPLAIN ANALYZE`;
+
+- żądanie statystyk (`pg_stat_statements` lub podobny);
+
+- profilowanie aplikacji (`pprof`) w celu oddzielenia wąskiego gardła bazy
+  danych od warstwy aplikacji;
+
+- metryki i dashboardy (Prometheus/Grafana);
+
+- testy ładowania przed/po zmianach.
+
+5. **Wynik (przykład receptury)**
+
+- p95 został warunkowo zmniejszony o 40–60%;
+
+- zwiększona przepustowość bez dodatkowych węzłów DB;
+
+- ustabilizowane okresy szczytowe i zmniejszona rywalizacja o śluzy.
+
+#### Jak odpowiedzieć najbardziej przekonująco:
+
+1. Mów językiem pomiarów, a nie ogólnych zwrotów.
+
+2. Wyjaśnij kompromis: co zostało przyspieszone i jakim kosztem.
+
+3. Podkreśl powtarzalny proces: „najpierw mierzony, potem zmieniany, a następnie
+   testowany”.
+
+#### Wniosek:
+
+Silną odpowiedzią na optymalizację bazy danych jest przypadek inżynierski
+potwierdzający koncepcję wraz ze wskaźnikami i narzędziami. To właśnie ta
+struktura świadczy o dojrzałości i praktycznych kompetencjach.
+
+</details>

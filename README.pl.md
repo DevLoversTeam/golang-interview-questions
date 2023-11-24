@@ -6311,3 +6311,98 @@ wydajności. `lib/pq` jest historycznie ważny, ale w przypadku większości now
 systemów Go/PostgreSQL preferowanym wyborem jest `pgx`.
 
 </details>
+
+
+<details>
+<summary>105. Jak pisać testy jednostkowe w Go?</summary>
+
+#### Go
+
+Test jednostkowy w Go testuje małą, izolowaną jednostkę zachowania
+(funkcję/metodę) z jasnymi danymi wejściowymi i oczekiwanym wynikiem. Siła tego
+podejścia leży w determinizmie, szybkości i przejrzystości przyczyn upadku.
+
+#### Podstawowe zasady jednostkowego testu jakości:
+
+1. **Jedno zachowanie to jedna intencja testowa.**
+
+2. **Izolacja od systemów zewnętrznych** (baza danych, sieć, czas, system
+   plików).
+
+3. **Determinizm**: Te same warunki muszą dać ten sam wynik.
+
+4. **Czytelność i diagnostyka** komunikatów o błędach.
+
+#### Struktura idiomatyczna w Go:
+
+1. Plik `*_test.go`.
+
+2. Wyświetl funkcje `func TestXxx(t *testing.T)`.
+
+3. Ułóż → Działaj → Potwierdź wzór.
+
+4. W przypadku wielu przypadków — testy oparte na tabelach.
+
+#### Co należy uwzględnić:
+
+1. Pozytywne scenariusze (szczęśliwa ścieżka).
+
+2. Negatywne skrypty i błędy.
+
+3. Przypadki graniczne (puste dane, zera, duże wartości, nieprawidłowe dane
+   wejściowe).
+
+4. Niezmienniki, których nie wolno naruszać w żadnych okolicznościach.
+
+#### Praktyczne narzędzia:
+
+1. Pakiet standardowy `testing`.
+
+2. `go test ./...` do regularnego biegania.
+
+3. `-race` dla witryn konkurencyjnych.
+
+4. W razie potrzeby - `testify` (twierdzenie/wymaganie), ale bez nadmiernej
+   magii.
+
+#### Typowe błędy:
+
+1. Testy zależne od czasu/sieci/wykonania.
+
+2. Sprawdzanie tylko „bez paniki”, bez merytorycznych zapewnień.
+
+3. Zbyt duże skrypty integracyjne udające testy jednostkowe.
+
+#### Wniosek:
+
+Pisanie testów jednostkowych w Go oznacza zaprojektowanie weryfikowalnego
+zachowania: minimalnej objętości, jasnej umowy, izolacji od świata zewnętrznego
+i wiarygodnych asercji. Takie podejście zapewnia szybką i stabilną ochronę przed
+regresją.
+
+#### Przykład:
+
+```go
+func TestSum(t *testing.T) {
+	tests := []struct {
+		name string
+		a, b int
+		want int
+	}{
+		{"pos", 2, 3, 5},
+		{"zero", 0, 7, 7},
+	}
+
+	for _, tc := range tests {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			got := Sum(tc.a, tc.b)
+			if got != tc.want {
+				t.Fatalf("got %d, want %d", got, tc.want)
+			}
+		})
+	}
+}
+```
+
+</details>

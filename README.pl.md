@@ -6449,3 +6449,51 @@ Różnica jest prosta i fundamentalna: `t.Error` — „napraw i kontynuuj”, `
 znaczący po konkretnym błędzie.
 
 </details>
+
+
+<details>
+<summary>107. Czym `testify/assert` różni się semantycznie od `testify/require`?</summary>
+
+#### Go
+
+Różnica semantyczna pomiędzy `assert` i `require` jest taka sama jak pomiędzy
+`t.Error` i `t.Fatal` w standardzie `testing`: jeden pozwala na kontynuację
+testu, drugi natychmiast go zatrzymuje.
+
+#### `testify/assert`:
+
+1. Jeśli instrukcja zakończy się niepowodzeniem, oznacza test jako nieudany.
+
+2. **Nie przerywa** wykonywania bieżącego testu.
+
+3. Przydatne, gdy chcesz zebrać wiele niezależnych niespójności w jednym
+   przebiegu.
+
+#### `testify/require`:
+
+1. Jeśli potwierdzenie się nie powiedzie, oznacza test jako nieudany.
+
+2. **Natychmiast zatrzymuje** bieżący test (teraz niepowodzenie).
+
+3. Wymagane w przypadku sprawdzenia wymagań wstępnych, bez którego poniższe
+   kroki są nieprawidłowe.
+
+#### Kiedy wybrać:
+
+1. `require` — w przypadku krytycznych warunków wstępnych:
+
+- obiekt nie jest `nil`;
+
+- błąd nie występuje przed dalszymi działaniami;
+
+- wejście jest przygotowane poprawnie.
+
+2. `assert` — dla warunków końcowych i niezależnych kontroli wyniku.
+
+#### Wniosek praktyczny:
+
+`require` kontroluje cykl życia testu, `assert` — szczegóły diagnostyczne. Dobry
+test zwykle łączy w sobie oba: `require` dla „warunków zatrzymania”, `assert`
+dla dalszej kontroli treści.
+
+</details>

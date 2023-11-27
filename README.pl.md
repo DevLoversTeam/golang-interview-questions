@@ -6497,3 +6497,58 @@ test zwykle łączy w sobie oba: `require` dla „warunków zatrzymania”, `ass
 dla dalszej kontroli treści.
 
 </details>
+
+
+<details>
+<summary>108. W jaki sposób `t.Run` umożliwia uruchamianie podtestów i ich filtrowanie?</summary>
+
+#### Go
+
+`t.Run` umożliwia zorganizowanie pojedynczego testu w zestaw nazwanych
+podtestów. Każdy podprzypadek jest wykonywany jako osobna jednostka logiczna, co
+upraszcza testy tabel, diagnostykę i selektywne uruchamianie.
+
+#### Jak działa `t.Run`:
+
+1. W teście głównym wywoływany jest `t.Run(name, func(t *testing.T) { ... })`.
+
+2. Każde wywołanie tworzy oddzielny podtest z własnym `t`.
+
+3. Podtesty mogą mieć różne dane wejściowe, potwierdzenia i ustawienia.
+
+#### Dlaczego jest to wygodne:
+
+1. **Lepsza czytelność testów opartych na tabeli.**
+
+2. **Precyzyjna diagnostyka:** możesz dokładnie zobaczyć, która sprawa padła.
+
+3. **Hierarchia testów:** można zagnieżdżać `t.Run` w grupowanych scenariuszach.
+
+4. **Kontrola współbieżności:** poszczególne podskrzynki można uruchamiać
+   poprzez `t.Parallel()`.
+
+#### Jak działa filtrowanie:
+
+1. `go test -run <pattern>` uruchamia testy, których nazwy pasują do wzorca.
+
+2. Ścieżka nazwy jest brana pod uwagę w podtestach (np. `TestXxx/case_name`).
+
+3. Pozwala to na punktowe uruchomienie pojedynczego problemu bez pełnego
+   zestawu.
+
+#### Praktyczny przykład myślenia:
+
+1. `TestParser` zawiera dziesiątki przypadków do `t.Run`.
+
+2. Podczas debugowania uruchamiany jest tylko jeden: `go test -run
+   'TestParser/invalid_header'`.
+
+3. Uzyskaj szybszą pętlę sprzężenia zwrotnego i czystszy cykl korekcji.
+
+#### Wniosek:
+
+`t.Run` zamienia testy monolityczne w zarządzany system podtestów z szczegółowym
+wyzwalaniem i filtrowaniem. Jest to jedno z kluczowych narzędzi wspieranego
+projektowania testów w Go.
+
+</details>

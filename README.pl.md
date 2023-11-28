@@ -6552,3 +6552,84 @@ wyzwalaniem i filtrowaniem. Jest to jedno z kluczowych narzędzi wspieranego
 projektowania testów w Go.
 
 </details>
+
+
+<details>
+<summary>109. Jak przetestować procedury obsługi HTTP?</summary>
+
+#### Go
+
+Procedury obsługi HTTP w Go są testowane w izolacji, bez prawdziwego gniazda
+sieciowego, przy użyciu `httptest`. Celem jest przetestowanie kontraktu warstwy
+HTTP: stanu, nagłówków, treści odpowiedzi, obsługi błędów i scenariuszy
+brzegowych.
+
+#### Podejście kanoniczne:
+
+1. Utwórz żądanie poprzez `httptest.NewRequest(...)`.
+
+2. Utwórz rejestrator za pomocą `httptest.NewRecorder()`.
+
+3. Osoba obsługująca połączenie: `handler.ServeHTTP(rec, req)`.
+
+4. Sprawdź:
+
+- `rec.Code` (kod stanu);
+
+- nagłówki;
+
+- body (JSON/schemat/wiadomość).
+
+#### Co należy uwzględnić:
+
+1. **Szczęśliwa ścieżka** (poprawne żądanie, oczekiwana odpowiedź).
+
+2. **Błędy walidacji** (niekompletny/nieprawidłowy ładunek, parametry
+   zapytania).
+
+3. **Metody HTTP** (GET/POST/PUT/DELETE + 405, jeśli metoda nie jest dozwolona).
+
+4. **Błędy zależności** (usługa/repozytorium zwraca błąd).
+
+5. **Skrypty kontekstowe** (przekroczenie limitu czasu/anulowanie, jeśli logika
+   to obsługuje).
+
+#### Wskazówki architektoniczne:
+
+1. Eksportuj logikę biznesową z procedury obsługi do warstwy usług.
+
+2. W testach modułu obsługi próbne/fałszywe zależności usług.
+
+3. Przetestuj sam kontrakt HTTP, a nie wewnętrzną implementację.
+
+#### Praktyczne minimalne kontrole:
+
+1. Poprawnie `Content-Type`.
+
+2. Struktura odpowiedzi JSON.
+
+3. Zgodność kodów stanu z błędami domeny.
+
+4. Brak wycieku poufnych informacji w treści błędu.
+
+#### Wniosek:
+
+Test obsługi HTTP w Go to test zachowania punktu końcowego jako czarnej
+skrzynki: żądanie przychodzące → wyczyść wyjście HTTP. `httptest` zapewnia
+szybkie, deterministyczne i w miarę dokładne narzędzie do testowania takich
+kontraktów.
+
+#### Przykład:
+
+```go
+req := httptest.NewRequest(http.MethodGet, "/health", nil)
+rec := httptest.NewRecorder()
+
+handler.ServeHTTP(rec, req)
+
+if rec.Code != http.StatusOK {
+	t.Fatalf("status=%d", rec.Code)
+}
+```
+
+</details>

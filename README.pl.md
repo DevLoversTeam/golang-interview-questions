@@ -6633,3 +6633,64 @@ if rec.Code != http.StatusOK {
 ```
 
 </details>
+
+
+<details>
+<summary>110. Jak sprawdzić błędy?</summary>
+
+#### Go
+
+Testowanie błędów w Go powinno sprawdzać nie tylko fakt istnienia błędu, ale
+także jego semantykę: typ, kategorię, łańcuch opakowania i oczekiwaną reakcję
+systemu.
+
+#### Co dokładnie sprawdzić:
+
+1. **Występowanie/brak błędu** w konkretnym scenariuszu.
+
+2. **Kategoria błędu** spowodowana `errors.Is` (błędy wartownicze).
+
+3. **Typ błędu** poprzez `errors.As` (niestandardowy typ błędu z polami).
+
+4. **Kontekst opakowania** (czy pierwotna przyczyna zostanie utracona przez
+   `%w`).
+
+5. **Efekt behawioralny**: poprawny kod stanu, ponowna próba/brak ponownej
+   próby, wycofanie itp.
+
+#### Zalecane praktyki:
+
+1. Unikaj delikatnych kontroli pełnotekstowych `err.Error()`.
+
+2. W przypadku stabilnych kontraktów użyj `errors.Is/As`, a nie `==` w przypadku
+   opakowanych błędów.
+
+3. W testach opartych na tabeli jawnie określ oczekiwaną klasę błędu i
+   konsekwencje.
+
+#### Co testować w negatywnych scenariuszach:
+
+1. Błędy sprawdzania poprawności danych wejściowych.
+
+2. Błędy zależności zewnętrznych (DB, HTTP, kolejki).
+
+3. Przekroczenia limitu czasu/przerwanie przez `context`.
+
+4. Stany graniczne (puste wartości, nieprawidłowe formaty, przekroczone limity).
+
+#### Akcent architektoniczny:
+
+1. Błąd musi być częścią kontraktu API funkcji.
+
+2. Testy muszą wykazać, że obsługa błędów jest deterministyczna i przewidywalna.
+
+3. Jeśli system mapuje błędy domeny na warstwę transportową, przetestuj to
+   mapowanie osobno.
+
+#### Wniosek:
+
+Jakościowe testowanie błędów w Go polega na sprawdzaniu semantyki, a nie ciągu
+komunikatu. Tego rodzaju weryfikacja sprawia, że ​​kod jest odporny na
+refaktoryzację i niezawodny w produkcji.
+
+</details>

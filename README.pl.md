@@ -6694,3 +6694,66 @@ komunikatu. Tego rodzaju weryfikacja sprawia, że ​​kod jest odporny na
 refaktoryzację i niezawodny w produkcji.
 
 </details>
+
+
+<details>
+<summary>111. Jak zwilżyć zależności zewnętrzne bez korzystania z frameworków innych firm?</summary>
+
+#### Go
+
+W Go zewnętrzne zależności są wyśmiewane najprościej poprzez interfejsy i własne
+implementacje z podwójnym testem (stub/fake/spy), bez potrzeby stosowania
+ciężkich frameworków do kpin. Jest to podejście idiomatyczne, które można dobrze
+skalować i które pozostaje przejrzyste.
+
+#### Schemat podstawowy:
+
+1. Podświetl interfejs minimalnej zależności w warstwie konsumenta.
+
+2. Implementacja produkcyjna działa z prawdziwą bazą danych/HTTP/kolejką.
+
+3. W teście zastąp własną strukturę, która implementuje ten sam interfejs.
+
+#### Testuj typy podwójne bez bibliotek innych firm:
+
+1. **Stub** — zwraca predefiniowane dane.
+
+2. **Fałszywe** - uproszczona „działająca” implementacja (na przykład
+   repozytorium w pamięci).
+
+3. **Spy** — przechwytuje połączenia (argumenty, numer, kolejność).
+
+4. **Ręczna próbna wersja** — skrypt z przewodnikiem z dostosowywalnymi
+   odpowiedziami/błędami.
+
+#### Zalety tego podejścia:
+
+1. Pełne bezpieczeństwo typów kompilatora.
+
+2. Magia czasu działania zerowego.
+
+3. Lepsza czytelność testów i przewidywalna ewolucja kodu.
+
+4. Brak zewnętrznych zależności na stosie testowym.
+
+#### Zalecenia praktyczne:
+
+1. Spraw, aby interfejsy były małe (ze względu na zachowanie, a nie „we
+   wszystkich metodach”).
+
+2. Mot na granicy modułu, a nie wewnątrz logiki domeny.
+
+3. W scenariuszach konkurencyjnych należy chronić podwójny test stanu (`mutex`,
+   atomy).
+
+4. Nie powielaj nadmiernie logiki produkcji w fałszywych - w przeciwnym razie
+   testy staną się kruche.
+
+#### Wniosek:
+
+Wyśmiewanie bez frameworków w Go polega przede wszystkim na dobrym projektowaniu
+zależności: mały interfejs + ręczny test-double. Podejście to jest proste,
+niezawodne i rozsądne pod względem architektonicznym, co zapewnia długoterminowe
+wsparcie projektu.
+
+</details>

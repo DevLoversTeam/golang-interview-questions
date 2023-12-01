@@ -6757,3 +6757,70 @@ niezawodne i rozsądne pod względem architektonicznym, co zapewnia długotermin
 wsparcie projektu.
 
 </details>
+
+
+<details>
+<summary>112. Jak używać `TestMain` do skonfigurowania środowiska testowego? </summary>
+
+#### Go
+
+`TestMain(m *testing.M)` to punkt wejścia dla całego zestawu testów. Umożliwia
+globalną inicjalizację przed testami i gwarantuje sprzątanie po nich.
+
+#### Kiedy `TestMain` jest właściwe:
+
+1. Należy raz wywołać udostępnione środowisko testowe:
+
+- testowa baza danych/kontener;
+
+- katalogi tymczasowe;
+
+- konfiguracje/sekrety globalne;
+
+- zależności usług w tle.
+
+2. Wymaga scentralizowanego usunięcia po zakończeniu wszystkich testów pakietu.
+
+#### Podstawowy cykl życia:
+
+1. Trwa instalacja (inicjalizacja zasobów).
+
+2. Testy trwają przez `code := m.Run()`.
+
+3. Trwa czyszczenie.
+
+4. Proces kończy się poprzez `os.Exit(code)`.
+
+#### Ważne zasady:
+
+1. `m.Run()` należy wywołać dokładnie raz.
+
+2. Zwrócony kod należy przekazać do `os.Exit`, w przeciwnym razie status testów
+   zostanie utracony.
+
+3. Czyszczenie należy przeprowadzić nawet w przypadku błędów konfiguracji (o ile
+   to możliwe).
+
+4. Nie wykonuj dodatkowej logiki w `TestMain`, która nie jest związana ze
+   środowiskiem.
+
+#### Praktyczne wskazówki:
+
+1. Nie polegaj wyłącznie na `TestMain` w celu izolowania testów w pakiecie —
+   często nadal konieczna jest lokalna konfiguracja/porzucenie w określonych
+   testach.
+
+2. Jeśli to możliwe, preferuj lżejsze mechanizmy (`t.Cleanup`) na poziomie
+   testowym; `TestMain` użyj w prawdziwym kontekście wsadowym.
+
+3. W testach równoległych uważnie monitoruj stan współdzielony zainicjowany w
+   `TestMain`.
+
+#### Wniosek:
+
+`TestMain` — narzędzie do wsadowej orkiestracji środowiska testowego: jedna
+konfiguracja, jedno uruchomienie wszystkich testów, jedno czyszczenie. Sprawdza
+się tam, gdzie trzeba kontrolować cykl życia współdzielonych zasobów dla całego
+pakietu.
+
+</details>

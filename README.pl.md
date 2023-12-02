@@ -6824,3 +6824,71 @@ się tam, gdzie trzeba kontrolować cykl życia współdzielonych zasobów dla c
 pakietu.
 
 </details>
+
+
+<details>
+<summary>113. Jak korzystać ze złotych pilników?</summary>
+
+#### Go
+
+`Golden files` to pliki referencyjne z oczekiwanymi wynikami, z którymi test
+porównuje rzeczywiste wyniki. Podejście to jest szczególnie przydatne w
+przypadku programów formatujących, generatorów kodu, serializacji i dowolnego
+tekstu/struktury wyjściowej.
+
+#### Podstawowy przepływ pracy:
+
+1. Wygeneruj wynik za pomocą testowanej funkcji.
+
+2. Przeczytaj odpowiedni plik `.golden`.
+
+3. Porównaj rzeczywistą moc wyjściową ze standardem.
+
+4. Jeśli istnieje różnica, test kończy się niepowodzeniem z powodu różnicy.
+
+#### Typowa struktura:
+
+1. Wejście testowe (`testdata/input/...`).
+
+2. Standardy (`testdata/golden/...`).
+
+3. Testy oparte na tabelach, w których każdy przypadek ma swój własny złoty
+   plik.
+
+#### Bardzo przydatna praktyka — tryb aktualizacji:
+
+1. Dodaj flagę, np. `-update`.
+
+2. Jeśli opcja jest włączona, test nadpisuje złote pliki nowym wynikiem.
+
+3. Przyspiesza to obsługę testów porównawczych z uzasadnionymi zmianami
+   zachowania.
+
+#### Na co zwrócić uwagę:
+
+1. **Wyjście determinizmu:** przed porównaniem znormalizuj kolejność danych,
+   znaczniki czasu i wartości losowe.
+
+2. **Różnica jakościowa:** w przypadku awarii testowej powinno być jasne, co
+   dokładnie się zmieniło.
+
+3. **Nie nadużywaj:** złote pliki dla dużych „czarnych skrzynek” bez kontroli
+   semantycznej mogą utrudniać diagnostykę.
+
+#### Kiedy złote pilniki są najbardziej odpowiednie:
+
+1. Renderowanie/generowanie tekstu.
+
+2. Transformacja JSON/XML/config.
+
+3. Wyjście CLI.
+
+4. Kompilatory, parsery, generatory kodu.
+
+#### Wniosek:
+
+Złote pliki to praktyczne narzędzie do testowania wyników kontraktów.
+Zapewniając determinizm i wygodny proces aktualizacji, zapewniają szybką i
+przejrzystą ochronę przed niepożądanymi regresjami w formacie wyniku.
+
+</details>

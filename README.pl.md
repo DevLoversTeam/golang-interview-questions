@@ -6892,3 +6892,58 @@ Zapewniając determinizm i wygodny proces aktualizacji, zapewniają szybką i
 przejrzystą ochronę przed niepożądanymi regresjami w formacie wyniku.
 
 </details>
+
+
+<details>
+<summary>114. Jak poprawnie przetestować kod Go, który używa `time.Now()`, aby testy były deterministyczne?</summary>
+
+#### Go
+
+`time.Now()` sprawia, że testy są niedeterministyczne, ponieważ zwraca
+rzeczywisty bieżący czas. Aby testy były stabilne, należy wstrzyknąć czas, a nie
+wczytać go bezpośrednio do logiki biznesowej.
+
+#### Podejście kanoniczne:
+
+1. Eksportuj źródło czasu do zależności:
+
+- funkcja `now func() time.Time`;
+
+- interfejs `Clock` z metodą `Now()`.
+
+2. W produkcji przenieś zegar rzeczywisty (`time.Now`).
+
+3. Prześlij w teście ustalony czas (fałszywy zegar).
+
+#### Dlaczego to działa:
+
+1. Wynik nie zależy od momentu rozpoczęcia testu.
+
+2. Zniknęły niepewne scenariusze „czasami się zawieszają, czasem nie”.
+
+3. Łatwo sprawdzaj przypadki Edge: terminy, TTL, daty przejścia, strefy czasowe.
+
+#### Dodatkowe praktyki:
+
+1. Nie porównuj wartości czasu ze „twardą” dokładnością do milisekund, chyba że
+   jest to wymagane przez domenę.
+
+2. W przypadku testów z timerami/opóźnieniami użyj kontrolowanego zegara lub
+   wystarczających buforów czasu.
+
+3. Napraw `Location/UTC` jawnie, aby uniknąć zależności środowiskowych.
+
+#### Czego nie robić:
+
+1. Pozostaw `time.Now()` w głębi logiki domeny bez możliwości podstawienia.
+
+2. Ratowanie `time.Sleep` w testach spowalnia i nie gwarantuje stabilności.
+
+#### Wniosek:
+
+Deterministyczne testowanie taktowania w Go opiera się na odwróceniu zależności:
+synchronizacja jest sygnałem wejściowym, a nie globalnym efektem ubocznym.
+Wstrzykiwanie źródła zegara sprawia, że ​​testy są szybkie, powtarzalne i
+architektonicznie czyste.
+
+</details>

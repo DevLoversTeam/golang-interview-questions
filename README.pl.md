@@ -6947,3 +6947,59 @@ Wstrzykiwanie źródła zegara sprawia, że ​​testy są szybkie, powtarzalne
 architektonicznie czyste.
 
 </details>
+
+
+<details>
+<summary>115. W jaki sposób `t.Parallel()` przyspiesza zestaw testów i gdzie może je zepsuć?</summary>
+
+#### Go
+
+`t.Parallel()` umożliwia jednoczesne uruchamianie testów (lub podtestów), co
+zazwyczaj skraca całkowity czas działania w środowiskach wielordzeniowych. Ale
+współbieżność bez izolacji łatwo zamienia stabilne testy w niestabilne.
+
+#### Jak przyspiesza biegi:
+
+1. Niezależne testy działają jednocześnie.
+
+2. Lepsze wykorzystanie procesora i czekanie we/wy.
+
+3. Duży zestaw małych testów działa znacznie szybciej w CI.
+
+#### Gdzie `t.Parallel()` może złamać testy:
+
+1. **Współdzielony stan zmienny:** zmienne globalne, współdzielone pamięci
+   podręczne w pamięci, konfiguracje statyczne bez synchronizacji.
+
+2. **Zewnętrzne zasoby współdzielone:** jeden schemat/tabela DB, jeden port,
+   jeden plik, jeden tymczasowy katalog danych.
+
+3. **Zależność kolejności wykonania:** jeśli test domyślnie oczekuje, że inny
+   został już uruchomiony.
+
+4. **Skutki uboczne dla środowiska:** zmiany w zmiennych środowiskowych, strefie
+   czasowej, katalogu roboczym bez izolacji.
+
+5. **Błędy w podtestach opartych na tabeli:** przechwytywanie zmiennych w pętli
+   bez lokalnej kopii w zamknięciu.
+
+#### Jak bezpiecznie używać:
+
+1. Tylko równoległe, w pełni izolowane testy.
+
+2. Unikaj globalnego stanu zmiennego lub chroń go za pomocą synchronizacji.
+
+3. Użyj unikalnych zasobów tymczasowych (`t.TempDir`, pojedyncze urządzenia).
+
+4. W przypadku testów DB — izolacja transakcyjna lub osobna przestrzeń
+   nazw/schemat na test.
+
+5. Uruchom zestaw z `-race`, aby wcześnie wykryć problemy z konkurencją.
+
+#### Wniosek:
+
+`t.Parallel()` to potężny akcelerator testów, ale tylko przy ścisłej izolacji
+przypadków. Jeśli testy mają wspólny stan lub ukryte zależności, współbieżność
+ujawni te defekty i sprawi, że przebieg będzie niestabilny.
+
+</details>

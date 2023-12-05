@@ -7003,3 +7003,50 @@ przypadków. Jeśli testy mają wspólny stan lub ukryte zależności, współbi
 ujawni te defekty i sprawi, że przebieg będzie niestabilny.
 
 </details>
+
+
+<details>
+<summary>116. Jak zmierzyć pokrycie kodu? </summary>
+
+#### Go
+
+W Go pokrycie kodu jest mierzone za pomocą wbudowanych narzędzi `go test` za
+pomocą oprzyrządowania do wykonywania testów. Zapewnia to metryki pokazujące,
+jaka część linii/bloków kodu została wykonana podczas przebiegu testu.
+
+#### Podstawowe polecenia:
+
+1. Całkowity zakres ubezpieczenia na paczkę: `go test -cover ./...`
+
+2. Zbiór profili ubezpieczenia: `go test -coverprofile=coverage.out ./...`
+
+3. Wyświetl statystyki podsumowujące: `go tool cover -func=coverage.out`
+
+4. Wyróżniony raport HTML: `go tool cover -html=coverage.out`
+
+#### Co należy zrozumieć:
+
+1. Pokrycie pokazuje fakt, że kontrole niezmienne są przeprowadzane, a nie
+   kompletne.
+
+2. Wysoki procent nie gwarantuje braku błędów.
+
+3. Niski procent jest sygnałem ślepych obszarów testowych.
+
+#### Praktyczne wskazówki:
+
+1. Analizuj pokrycie wraz z krytycznością kodu, zamiast gonić za „100%”.
+
+2. Oddzielnie omów scenariusze negatywne i skrajne.
+
+3. Używaj zasięgu jako wskaźnika luk, a nie celu samego w sobie.
+
+4. W CI zapisz profil i śledź dynamikę zasięgu między PR.
+
+#### Wniosek:
+
+Pokrycie kodu w Go mierzy się za pomocą standardowych narzędzi (`go test` + `go
+tool cover`) i jest użyteczną miarą jakości recenzji testów. Zapewnia największą
+wartość w połączeniu z kontrolami semantycznymi i sensownym projektem testów.
+
+</details>

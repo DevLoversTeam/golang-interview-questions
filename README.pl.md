@@ -7050,3 +7050,70 @@ tool cover`) i jest użyteczną miarą jakości recenzji testów. Zapewnia najwi
 wartość w połączeniu z kontrolami semantycznymi i sensownym projektem testów.
 
 </details>
+
+
+<details>
+<summary>117. Co to jest benchmarking i jak go przeprowadzić? W jaki sposób `testing.B` wdraża test porównawczy i co resetuje `b.ResetTimer`?</summary>
+
+#### Go
+
+`Benchmarking` w Go to pomiar wydajności kodu (czas, alokacje, przepustowość) w
+kontrolowanych warunkach w celu porównania implementacji i sprawdzenia efektu
+optymalizacji.
+
+#### Jak uruchomić test porównawczy:
+
+1. Funkcje mają postać: `func BenchmarkXxx(b *testing.B)`.
+
+2. Uruchomienie bazy: `go test -bench=.`
+
+3. Tylko konkretny punkt odniesienia: `go test -bench=BenchmarkParse`
+
+4. Miara alokacji: `go test -bench=. -benchmem`
+
+#### Jak działa `testing.B`:
+
+1. Runner sam wybiera `b.N` (liczbę iteracji), aby uzyskać stabilny wymiar.
+
+2. Twój kod w funkcji testowej jest wykonywany w pętli `for i := 0; i < b.N;
+   i++`.
+
+3. W rezultacie test ocenia wydajność w `ns/op`, a w przypadku `-benchmem`
+   również `B/op`, `allocs/op`.
+
+#### Co robi `b.ResetTimer`:
+
+1. Zresetuj licznik skumulowanych pomiarów.
+
+2. Nie liczy kodu przygotowawczego wykonanego przed ostatecznym wywołaniem
+   `ResetTimer`.
+
+3. Używany po fazie konfiguracji do pomiaru tylko „czystej” części roboczej.
+
+#### Powiązane przydatne metody:
+
+1. `b.StopTimer()` / `b.StartTimer()` — tymczasowo wyłącz/włącz pomiar czasu.
+
+2. `b.ReportAllocs()` — statystyki przydziału sił.
+
+#### Wniosek praktyczny:
+
+Benchmark w Go nie jest jednorazowym uruchomieniem, ale narzędziem porównawczym
+na tych samych warunkach. `testing.B` automatycznie skaluje iteracje, a
+`b.ResetTimer` oddziela szkolenie od rzeczywistego pomiaru wydajności.
+
+#### Przykład:
+
+```go
+func BenchmarkParse(b *testing.B) {
+	input := []byte(`{"x":1}`)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		var v map[string]int
+		_ = json.Unmarshal(input, &v)
+	}
+}
+```
+
+</details>

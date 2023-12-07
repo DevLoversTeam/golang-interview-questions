@@ -7117,3 +7117,66 @@ func BenchmarkParse(b *testing.B) {
 ```
 
 </details>
+
+
+<details>
+<summary>118. Jak uruchamiać testy porównawcze z kontrolą czasu i liczby iteracji?</summary>
+
+#### Go
+
+W Go można uruchamiać testy porównawcze z kontrolą czasu trwania pomiaru i stałą
+liczbą iteracji za pomocą parametrów `go test`. Jest to ważne dla powtarzalności
+i prawidłowego porównania wyników.
+
+#### Główne flagi:
+
+1. **`-benchtime`**
+
+- ustawia czas trwania testu porównawczego (na przykład `-benchtime=5s`);
+
+- biegacz sam wybiera `b.N`, który będzie biegał w tym oknie czasowym.
+
+2. **`-benchtime=Nx`**
+
+- poprawia dokładną liczbę iteracji (na przykład `-benchtime=100000x`);
+
+- przydatny do powtarzalnych porównań A/B tego samego `N`.
+
+3. **`-count`**
+
+- liczba powtórzeń (np. `-count=10`);
+
+- pomaga ocenić stabilność i rozproszenie wyników.
+
+4. **`-bench`**
+
+- wybór określonych funkcji wzorcowych według wzorca.
+
+5. **`-benchmem`**
+
+- dodatkowo wyprowadza alokacje (`B/op`, `allocs/op`).
+
+#### Praktyczne przykłady scenariuszy:
+
+1. Dłuższa stabilna praca: `go test -bench=. -benchtime=5s -benchmem`
+
+2. Naprawiono `N`: `go test -bench=BenchmarkFoo -benchtime=200000x -benchmem`
+
+3. Wiele powtórek dla statystyk: `go test -bench=BenchmarkFoo -benchtime=2s
+   -count=10`
+
+#### Dlaczego jest to konieczne:
+
+1. Zmniejsz hałas podczas krótkich serii.
+
+2. Porównaj optymalizacje w tych samych warunkach.
+
+3. Otrzymaj istotne statystycznie dane do analizy `benchstat`.
+
+#### Wniosek:
+
+Kontrola czasu i iteracji w testach porównawczych Go jest warunkiem wstępnym
+wysokiej jakości analizy wydajności. `-benchtime` i `-count` zapewniają
+stabilność pomiaru, a tryb `Nx` zapewnia ścisłą kontrolę nad liczbą wykonań.
+
+</details>

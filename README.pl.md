@@ -7180,3 +7180,62 @@ wysokiej jakości analizy wydajności. `-benchtime` i `-count` zapewniają
 stabilność pomiaru, a tryb `Nx` zapewnia ścisłą kontrolę nad liczbą wykonań.
 
 </details>
+
+
+<details>
+<summary>119. W jaki sposób narzędzie `benchstat` porównuje dwa zestawy wyników testów porównawczych i jak określa znaczenie zmian?</summary>
+
+#### Go
+
+`benchstat` porównuje dwa (lub więcej) zestawy wyników testów porównawczych i
+pokazuje, czy zmiany w metrykach (`ns/op`, `B/op`, `allocs/op`) są statystycznie
+istotne, a nie losowym szumem przebiegu.
+
+#### Jak działa porównanie:
+
+1. Zbierz wiele przebiegów „przed” i „po” (zwykle za pośrednictwem `-count`).
+
+2. `benchstat` grupuje wyniki według tych samych nazw testów porównawczych.
+
+3. Oblicza wartości centralne (zwykle szacunki podobne do mediany/solidne) i
+   różnicę procentową.
+
+4. Wykonuje test statystyczny i generuje wynik `p-value`.
+
+#### Jak określa się istotność:
+
+1. Jeśli `p-value` jest poniżej poziomu progowego (zwykle 0,05), zmianę uznaje
+   się za istotną statystycznie.
+
+2. Jeśli `p-value` przekracza próg, różnicą może być hałas otoczenia.
+
+3. Dlatego ważne jest, aby jednocześnie przyjrzeć się **zarówno delcie, jak i
+   wartości p**.
+
+#### Co jest potrzebne do prawidłowej analizy:
+
+1. Te same warunki uruchamiania (maszyna, obciążenie, konfiguracja).
+
+2. Wystarczająca liczba powtórzeń (`-count`), w przeciwnym razie wnioski będą
+   kruche.
+
+3. Brak zewnętrznych szumów (procesy w tle, dławienie termiczne, niestabilne
+   środowisko CI).
+
+#### Ogólna zasada:
+
+1. Nie ufaj jednorazowym `go test -bench`.
+
+2. Zbierz serię wyników przed/po.
+
+3. Przeanalizuj `benchstat`, a następnie sprawdź, czy zmiana jest istotna dla
+   wskaźników biznesowych (opóźnienie/przepustowość/SLA), a nie tylko „ładna” w
+   tabeli.
+
+#### Wniosek:
+
+`benchstat` przekształca surowe liczby porównawcze w statystycznie rzetelne
+porównanie. Pomaga odróżnić rzeczywisty efekt wydajności od losowego
+rozproszenia i podejmować decyzje inżynieryjne na podstawie danych.
+
+</details>

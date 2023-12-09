@@ -7239,3 +7239,60 @@ porównanie. Pomaga odróżnić rzeczywisty efekt wydajności od losowego
 rozproszenia i podejmować decyzje inżynieryjne na podstawie danych.
 
 </details>
+
+
+<details>
+<summary>120. Co to jest testowanie rozmyte?</summary>
+
+#### Go
+
+`Fuzz testing` to zautomatyzowana metoda testowania, w której system otrzymuje
+dużą ilość półlosowych lub zmutowanych danych wejściowych w celu wykrycia
+awarii, paniki, nieprawidłowej obsługi przypadków brzegowych i niezmiennych
+naruszeń.
+
+#### Jak to działa w Go:
+
+1. Ustaw funkcję fuzz (`func FuzzXxx(f *testing.F)`).
+
+2. Dodaj wpisy początkowe (przykłady początkowe).
+
+3. Fuzzer mutuje te wejścia i generuje nowe kombinacje.
+
+4. Jeśli wykryje awarię lub naruszenie zasad sprawdzania, zachowaj „minimalną”
+   liczbę możliwych do odtworzenia przypadków.
+
+#### Co testy fuzz sprawdzają najlepiej:
+
+1. Nieoczekiwane przypadki brzegowe parserów/dekoderów.
+
+2. Panika z powodu nieprawidłowych lub „uszkodzonych” danych wejściowych.
+
+3. Błędy logiczne w przetwarzaniu linii, bajtów, formatów, protokołów.
+
+#### Dlaczego jest to cenne:
+
+1. Zajmuje przestrzeń wejściową znacznie szerszą niż obudowy jednostek ręcznych.
+
+2. Dobrze wykrywa luki w zabezpieczeniach w kodzie podobnym do parsera.
+
+3. Dodaje odporność API na „toksyczne” ładunki ze świata zewnętrznego.
+
+#### Zalecenia praktyczne:
+
+1. Sformułuj jawne niezmienniki (które muszą być prawdziwe dla każdego wejścia).
+
+2. Zacznij od powierzchni krytycznych: parsowanie, deserializacja, normalizacja.
+
+3. Po znalezieniu przypadku dodaj go jako test regresji.
+
+4. Połącz fuzzing z `-race` i zwykłymi testami jednostkowymi/integracyjnymi.
+
+#### Wniosek:
+
+Testowanie fuzz w Go to systematyczny sposób na „łamanie” kodu danymi
+wejściowymi w celu znalezienia defektów, których prawie nie da się przewidzieć
+ręcznie. Jest to jedno z najpotężniejszych narzędzi zwiększających niezawodność
+i bezpieczeństwo przetwarzania danych.
+
+</details>

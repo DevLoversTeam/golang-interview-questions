@@ -7296,3 +7296,77 @@ ręcznie. Jest to jedno z najpotężniejszych narzędzi zwiększających niezawo
 i bezpieczeństwo przetwarzania danych.
 
 </details>
+
+
+<details>
+<summary>121. Jakie są sposoby uruchamiania testów z bazy danych w CI (kontenery testowe, tworzenie doków, usługi GitHub Actions)? Jakie są zalety każdego podejścia?</summary>
+
+#### Go
+
+Do testów integracyjnych z DB w CI najczęściej stosuje się trzy podejścia:
+`Testcontainers`, `docker-compose` i `GitHub Actions services`. Wybór zależy od
+pożądanego poziomu izolacji, złożoności stosu i szybkości potoku.
+
+#### 1) Kontenery testowe
+
+**Podstawa:** kontenery są tworzone programowo na podstawie testów i uruchamiane
+w trakcie przebiegu testowego.
+
+**Zalety:**
+
+1. Maksymalna bliskość kodu testowego (opisane poniżej obok testów).
+
+2. Wysoka izolacja przypadków i przewidywalne środowisko.
+
+3. Elastyczne zarządzanie cyklem życia bazy danych, wersjami, skryptami
+   inicjującymi.
+
+4. Wygodny do lokalnego odtwarzania skryptów CI.
+
+#### 2) tworzenie dokera
+
+**Esencja:** usługi (DB + zależności) opisane w `docker-compose.yml`, powstają
+przed testami jako pojedyncza kompozycja.
+
+**Zalety:**
+
+1. Prosty i wizualny opis środowiska obejmującego wiele usług.
+
+2. Łatwo jest dodawać pamięci podręczne, brokerów i kilka baz danych
+   jednocześnie.
+
+3. Ten sam model dla lokalnych programistów i CI.
+
+4. Dobry wybór do zestawów integracyjnych/e2e.
+
+#### 3) Usługi GitHub Actions
+
+**Podstawa:** kontener DB jest deklarowany bezpośrednio w zadaniu przepływu
+pracy jako kontener usług.
+
+**Zalety:**
+
+1. Najprostszy skrypt natywny CI dla podstawowych potrzeb.
+
+2. Minimalny kod w testach i oddzielna aranżacja.
+
+3. Szybki start dla jednej lub dwóch usług (Postgres, Redis itp.).
+
+#### Porównanie praktyczne:
+
+1. **Elastyczność i izolacja**: Kontenery testowe > tworzenie dokerów > usługi.
+
+2. **Łatwy start**: usługi > tworzenie dokerów > Kontenery testowe.
+
+3. **Wielousługowe stojaki kompozytowe**: docker-compose / kontenery testowe.
+
+4. **Lakoniczny CI dla prostej bazy danych**: usługi GitHub Actions.
+
+#### Wniosek:
+
+Nie ma uniwersalnie „najlepszego” podejścia. W przypadku prostego CI wystarczą
+usługi; docker-compose jest odpowiedni dla złożonego środowiska integracyjnego;
+w przypadku najłatwiejszych w zarządzaniu i powtarzalnych testów na poziomie
+kodu najsilniejszym podejściem są kontenery testowe.
+
+</details>

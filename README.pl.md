@@ -7370,3 +7370,53 @@ w przypadku najłatwiejszych w zarządzaniu i powtarzalnych testów na poziomie
 kodu najsilniejszym podejściem są kontenery testowe.
 
 </details>
+
+
+<details>
+<summary>122. Co to jest `go vet`?</summary>
+
+#### Go
+
+`go vet` to analizator statyczny ze standardowego zestawu narzędzi Go, który
+wyszukuje podejrzane konstrukcje kodu, które często są błędami logicznymi, ale
+mogą nie zostać wyłapane przez kompilator.
+
+#### Co sprawdza `go vet`:
+
+1. Niezgodność ciągów formatu i argumentów (wywołania podobne do `Printf`).
+
+2. Podejrzane błędy przy kopiowaniu obiektów blokady.
+
+3. Problematyczne wzorce pracy z `testing`, `atomic`, `struct tags` itp.
+
+4. Inne typowe defekty, które mogą się kompilować, ale zakłócają działanie.
+
+#### Czym `go vet` różni się od kompilatora:
+
+1. Kompilator sprawdza poprawność składni i typów.
+
+2. `vet` sprawdza „podejrzane zamiary” i anty-wzorce.
+
+3. To znaczy nie zastępuje testów, ale stanowi dodatkowy poziom jakości.
+
+#### Jak uruchomić:
+
+1. Dla bieżącego pakietu: `go vet`
+
+2. Dla całego modułu: `go vet ./...`
+
+#### Praktyczna rola w projekcie:
+
+1. Regularnie uruchamiaj lokalnie przed zatwierdzeniem.
+
+2. Dodaj do CI jako obowiązkową bramkę jakości.
+
+3. Potraktuj ostrzeżenie `vet` jako sygnał do dokładnego przejrzenia kodu.
+
+#### Wniosek:
+
+`go vet` to narzędzie do wczesnego wykrywania podstępnych błędów. Poprawia
+niezawodność kodu poprzez uzupełnienie kompilatora i testów, szczególnie w
+dużych zespołowych bazach kodu Go.
+
+</details>

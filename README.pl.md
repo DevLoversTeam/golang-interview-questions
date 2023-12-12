@@ -7420,3 +7420,71 @@ niezawodność kodu poprzez uzupełnienie kompilatora i testów, szczególnie w
 dużych zespołowych bazach kodu Go.
 
 </details>
+
+
+<details>
+<summary>123. Jak profilować aplikację Go (`pprof`)?</summary>
+
+#### Go
+
+`pprof` to standardowe narzędzie do profilowania Go, które pokazuje, gdzie idą
+procesor, pamięć, alokacje, blokady i przekroczenia limitu czasu. Jest to
+podstawowy sposób na znalezienie rzeczywistych wąskich gardeł przed
+optymalizacjami.
+
+#### Co można profilować:
+
+1. **Profil procesora** — gdzie wykorzystywany jest czas procesora.
+
+2. **Heap / allocs** — kto przydziela pamięć, a co pozostaje „żywe”.
+
+3. **Profil goroutine** — stan i liczba goroutin.
+
+4. **Blokuj / profil mutex** — rywalizacja, blokowanie, opóźnienia
+   synchronizacji.
+
+#### Jak połączyć się w serwisie:
+
+1. Import `net/http/pprof` (zwykle poprzez import z efektem ubocznym).
+
+2. Otwarty punkt końcowy debugowania (często oddzielny port lub trasa
+   chroniona).
+
+3. Usuń profil pod obciążeniem rzeczywistym/reprezentatywnym.
+
+#### Typowy przebieg analizy:
+
+1. Zbierz profil procesora/sterty.
+
+2. Otwórz przez `go tool pprof` (góra/lista/internet).
+
+3. Znajdź aktywne ścieżki/węzły alokacji.
+
+4. Zmień punkt.
+
+5. Powtórz profilowanie i porównaj przed i po.
+
+#### Zespoły praktyczne (pomysł ogólny):
+
+1. Zbieranie profili z punktu końcowego.
+
+2. Analiza lokalna: `go tool pprof <profile>`
+
+3. Wykres/wizualizacja przypominająca płomień w trybie sieciowym.
+
+#### Ważne zasady:
+
+1. Nie optymalizuj „na wyczucie” – tylko według danych profilowych.
+
+2. Profil w warunkach zbliżonych do produkcyjnych.
+
+3. Sprawdź, czy optymalizacja nie pogorszyła innych wskaźników (opóźnienie
+   ogona, pamięć).
+
+#### Wniosek:
+
+`pprof` to główne narzędzie do optymalizacji koncepcji aplikacji Go: pokazuje
+rzeczywisty obraz kosztów i pozwala podejmować decyzje inżynierskie w oparciu o
+pomiary, a nie intuicję.
+
+</details>

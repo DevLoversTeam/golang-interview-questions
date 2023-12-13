@@ -7488,3 +7488,63 @@ rzeczywisty obraz kosztów i pozwala podejmować decyzje inżynierskie w oparciu
 pomiary, a nie intuicję.
 
 </details>
+
+
+<details>
+<summary>124. Jak działa `go build` i kompilacja krzyżowa?</summary>
+
+#### Go
+
+`go build` kompiluje pakiety/programy Go do postaci binarnej (lub weryfikuje
+asemblację) przy użyciu zależności modułów, pamięci podręcznej kompilacji i
+bieżących ustawień platformy docelowej.
+
+#### Jak działa `go build`:
+
+1. Odczytuje `go.mod` i rozwiązuje zależności.
+
+2. Kompiluje wymagane pakiety (biorąc pod uwagę znaczniki kompilacji i pliki
+   warunkowe).
+
+3. Wykorzystuje pamięć podręczną kompilacji, aby przyspieszyć ponowne
+   kompilacje.
+
+4. Łączy ostateczny plik wykonywalny dla docelowego systemu
+   operacyjnego/architektury.
+
+#### Co to jest kompilacja krzyżowa:
+
+Kompilacja krzyżowa polega na budowaniu pliku binarnego dla innej platformy niż
+ta, na której uruchamiasz kompilator.
+
+#### Główne parametry:
+
+1. `GOOS` to docelowy system operacyjny (np. `linux`, `darwin`, `windows`).
+
+2. `GOARCH` to architektura docelowa (`amd64`, `arm64` itd.).
+
+#### Przykład:
+
+1. Praca na systemie macOS.
+
+2. Chcesz wersję binarną Linux/amd64.
+
+3. Skompilowany z odpowiednim `GOOS/GOARCH`, otrzymasz artefakt do wdrożenia
+   Linuksa.
+
+#### Praktyczne niuanse:
+
+1. W przypadku kodu pure-Go kompilacja krzyżowa jest zwykle prosta.
+
+2. Zależności `cgo` wymagają kompatybilnego łańcucha narzędzi (kompilator C dla
+   platformy docelowej).
+
+3. CI często tworzą macierz dla zbioru `GOOS/GOARCH`.
+
+#### Wniosek:
+
+`go build` to standardowa wersja z buforowaniem i rozdzielczością modułową.
+Kompilacja krzyżowa w Go jest natywnie obsługiwana przez `GOOS/GOARCH`, co czyni
+ten język bardzo wygodnym w przypadku wydań wieloplatformowych.
+
+</details>

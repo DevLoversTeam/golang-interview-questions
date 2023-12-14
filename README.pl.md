@@ -7548,3 +7548,73 @@ Kompilacja krzyżowa w Go jest natywnie obsługiwana przez `GOOS/GOARCH`, co czy
 ten język bardzo wygodnym w przypadku wydań wieloplatformowych.
 
 </details>
+
+
+<details>
+<summary>125. Jak konteneryzować aplikację Go w Dockerze? </summary>
+
+#### Go
+
+Konteneryzacja aplikacji Go polega na budowaniu pliku binarnego i pakowaniu go w
+obraz platformy Docker w celu przewidywalnego uruchomienia w dowolnym środowisku
+(lokalnie, CI, Kubernetes, chmura).
+
+#### Podejście kanoniczne:
+
+1. Użyj wieloetapowego pliku Dockerfile:
+
+- kompilacja etapowa: przejdź do kompilacji binarnej;
+
+- czas działania etapu: Minimalny obraz do uruchomienia.
+
+2. Na etapie kompilacji:
+
+- copy `go.mod/go.sum`, załaduj zależności;
+
+- skopiuj kod;
+
+- skompiluj plik binarny (`go build`).
+
+3. Na etapie wykonywania:
+
+- umieść tylko końcowe pliki binarne i niezbędne pliki wykonawcze;
+
+- zestaw `ENTRYPOINT/CMD`.
+
+#### Dlaczego to prawda:
+
+1. Mniejszy ostateczny rozmiar obrazu.
+
+2. Większe bezpieczeństwo (mniej zbędnych pakietów w czasie wykonywania).
+
+3. Powtarzalne kompilacje w CI/CD.
+
+4. Szybsze wdrażanie i zimny start.
+
+#### Zalecenia praktyczne:
+
+1. Dodaj `.dockerignore`, aby uniknąć pobierania dodatkowych plików do kontekstu
+   kompilacji.
+
+2. Uruchom proces jako użytkownik inny niż root w obrazie wykonawczym.
+
+3. Jawnie ustaw `EXPOSE`, kontrolę stanu (jeśli to konieczne) i zmienne
+   środowiskowe.
+
+4. Użyj przypiętego obrazu/tagu podstawowego, aby zapewnić przewidywalność.
+
+#### Typical life cycle:
+
+1. `docker build` → otrzymałem obraz.
+
+2. `docker run` → sprawdzane lokalnie.
+
+3. Wypchnij do rejestru → wdróż w środowisku docelowym.
+
+#### Wniosek:
+
+Konteneryzacja aplikacji Go w Dockerze najlepiej sprawdza się w podejściu
+wieloetapowym: kompiluj osobno, uruchamiaj osobno. Daje to kompaktowy,
+bezpieczny i wygodny w obsłudze obraz produkcyjny.
+
+</details>

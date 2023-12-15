@@ -7618,3 +7618,72 @@ wieloetapowym: kompiluj osobno, uruchamiaj osobno. Daje to kompaktowy,
 bezpieczny i wygodny w obsłudze obraz produkcyjny.
 
 </details>
+
+
+<details>
+<summary>126. Jak zmniejszyć rozmiar obrazu Dockera dla aplikacji Go (kompilacja wieloetapowa)?</summary>
+
+#### Go
+
+Najbardziej efektywnym sposobem na zmniejszenie obrazu aplikacji Go jest
+kompilacja wieloetapowa: skompiluj w „ciężkim” obrazie kompilacji i uruchom w
+najbardziej minimalnym obrazie wykonawczym z tylko końcowym plikiem binarnym.
+
+#### Kluczowe kroki optymalizacji:
+
+1. **Wieloetapowy plik Dockerfile**
+
+- etap 1: `golang` do montażu;
+
+- etap 2: krótki czas działania (`distroless`/`scratch`/minimum podstawowy).
+
+2. **Konieczne tylko do kopiowania w czasie wykonywania**
+
+- binarny;
+
+- w razie potrzeby certyfikaty CA / dane strefy czasowej / konfiguracja.
+
+3. **Statyczny plik binarny (w stosownych przypadkach)**
+
+- zmniejsza zależności środowiska wykonawczego;
+
+- jest dobry do minimalistycznego wyglądu.
+
+4. **Optymalizuj sam plik binarny**
+
+- flagi linkera (`-ldflags="-s -w"`) w celu ograniczenia informacji o usłudze.
+
+5. **Piśmienne `.dockerignore`**
+
+- usuń testy, `.git`, artefakty, lokalne pamięci podręczne z kontekstu
+  kompilacji.
+
+6. **Buforowanie zależności na etapie kompilacji**
+
+- skopiuj `go.mod/go.sum` osobno przed skopiowaniem całego kodu.
+
+#### Dodatkowe praktyki:
+
+1. Piankowe obrazy bazowe według skrótu/oznaczenia w celu zapewnienia
+   powtarzalności.
+
+2. Praca na koncie użytkownika innego niż root.
+
+3. Regularnie sprawdzaj rozmiar obrazu i luki w zabezpieczeniach CI.
+
+#### Czego unikać:
+
+1. Środowisko wykonawcze pełnego obrazu `golang` jest niepotrzebne.
+
+2. Kopiowanie kodu źródłowego do ostatniej warstwy.
+
+3. Nadmiarowe narzędzia do debugowania w obrazie produkcyjnym.
+
+#### Wniosek:
+
+Kompaktowy obraz Go jest wynikiem odpowiedniej segregacji warstw
+kompilacji/wykonania. Wieloetapowy + minimalny czas działania + przejrzysty
+kontekst kompilacji zapewniają najlepszą równowagę między rozmiarem,
+bezpieczeństwem i szybkością wdrażania.
+
+</details>

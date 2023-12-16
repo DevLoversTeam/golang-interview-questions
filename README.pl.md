@@ -7687,3 +7687,74 @@ kontekst kompilacji zapewniają najlepszą równowagę między rozmiarem,
 bezpieczeństwem i szybkością wdrażania.
 
 </details>
+
+
+<details>
+<summary>127. Jakie narzędzia są powszechnie używane do gromadzenia metryk i dzienników? Jak działa Prometheus?</summary>
+
+#### Go
+
+Nowoczesne systemy zwykle łączą kilka klas narzędzi: metryki, dzienniki,
+śledzenie, wizualizację i ostrzeganie. Daje to pełny obraz zachowania serwisu i
+przyspiesza diagnozę incydentów.
+
+#### Typowy stos narzędzi:
+
+1. **Dane**
+
+- Prometheus, VictoriaMetrics, Graphite (mniej powszechne w nowszych systemach).
+
+2. **Wizualizacja**
+
+- Grafana (pulpity nawigacyjne, SLO, korelacja metryk).
+
+3. **Dzienniki**
+
+- Loki, Elasticsearch/OpenSearch + Kibana, Fluent Bit/Fluentd, Vector.
+
+4. **Śledzenie**
+
+- OpenTelemetry + Jaeger/Tempo/Zipkin.
+
+5. **Alarm**
+
+- Alertmanager (często kojarzony z Prometheusem).
+
+#### Jak działa Prometeusz:
+
+1. **Model gromadzenia danych typu pull:** Prometheus okresowo „czyści” punkty
+   końcowe HTTP usług (zwykle `/metrics`) i pobiera bieżące wartości metryk.
+
+2. **Przechowywanie szeregów czasowych:** każda metryka z zestawem etykiet jest
+   przechowywana jako szereg czasowy.
+
+3. **Zapytania PromQL:** agregacja, funkcje stopy, analityka percentylowa,
+   korelacje.
+
+4. **Silnik reguł:**
+
+- zasady zapisywania do obliczeń wstępnych;
+
+- reguły alertów służące do generowania alertów.
+
+5. **Integracja z Alertmanagerem:** deduplikacja, routing, grupowanie i
+   powiadomienia (Slack, e-mail, PagerDuty).
+
+#### Dlaczego Prometeusz jest popularny:
+
+1. Prosty model operacyjny (ściągnięcie + pliki konfiguracyjne).
+
+2. Potężny PromQL.
+
+3. Duży ekosystem eksporterów.
+
+4. Dobra integracja z Kubernetesem i środowiskiem natywnym w chmurze.
+
+#### Wniosek:
+
+W przypadku metryk i dzienników produkcja zwykle używa połączonego stosu:
+Prometheus + Grafana dla metryk, oddzielnej platformy dzienników dla dzienników
+i śledzenia na potrzeby diagnostyki międzyusługowej. Prometheus na tym stosie
+pełni rolę rdzenia monitorującego i ostrzegającego szeregi czasowe.
+
+</details>

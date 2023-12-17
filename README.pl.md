@@ -7758,3 +7758,66 @@ i śledzenia na potrzeby diagnostyki międzyusługowej. Prometheus na tym stosie
 pełni rolę rdzenia monitorującego i ostrzegającego szeregi czasowe.
 
 </details>
+
+
+<details>
+<summary>128. Jaka jest różnica między mikroserwisami a monolitem? Jakie są zalety i wady?</summary>
+
+#### Go
+
+Monolit i mikroserwisy to nie „moda”, ale różne strategie dekompozycji systemu.
+Wybór między nimi zależy od wielkości zespołu, złożoności domeny, wymagań
+dotyczących autonomii wersji i dojrzałości operacyjnej.
+
+#### Monolit:
+
+**Podstawa:** jedna aplikacja, jedna baza kodu (lub ściśle powiązane środowisko
+wykonawcze), zwykle jeden punkt wdrożenia.
+
+**Zalety:**
+
+1. Łatwy start i mniejsza złożoność operacyjna.
+
+2. Łatwiejsze lokalne debugowanie i integralność transakcyjna w procesie.
+
+3. Szybszy rozwój małych zespołów/produktów na wczesnym etapie.
+
+**Wady:**
+
+1. Niezależne skalowanie poszczególnych „gorących” modułów jest trudniejsze.
+
+2. W miarę rozwoju kodu rośnie także łączność i ryzyko powolnych wydań.
+
+3. Jedno duże wdrożenie utrudnia częste niezależne zmiany.
+
+#### Mikrousługi:
+
+**Podstawa:** system jest podzielony na usługi autonomiczne z własnymi limitami
+odpowiedzialności, umowami API i niezależnym cyklem życia.
+
+**Zalety:**
+
+1. Niezależne wydania zespołów i usług.
+
+2. Skalowanie punktowe poszczególnych komponentów.
+
+3. Elastyczność technologiczna na poziomie usług (wraz z zarządzaniem).
+
+**Wady:**
+
+1. Wysoka złożoność operacyjna (sieć, wykrywanie, obserwowalność,
+   bezpieczeństwo).
+
+2. Rozproszona spójność i złożone transakcje między usługami.
+
+3. Debugowanie droższe ze względu na interakcję sieciową i większą liczbę
+   ruchomych części.
+
+#### Wniosek praktyczny:
+
+Monolit jest często najlepszym początkiem i może być dość skuteczny przez długi
+czas. Mikrousługi mają swoje uzasadnienie, gdy skala domeny i organizacji
+rzeczywiście wymaga autonomii zespołów, niezależnego skalowania i jasnej
+dekompozycji usług.
+
+</details>

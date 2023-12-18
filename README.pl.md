@@ -7821,3 +7821,91 @@ rzeczywiście wymaga autonomii zespołów, niezależnego skalowania i jasnej
 dekompozycji usług.
 
 </details>
+
+
+<details>
+<summary>129. Jak wdrożyć uwierzytelnianie w architekturze mikroserwisowej?</summary>
+
+#### Go
+
+W mikrousługach uwierzytelnianie jest zwykle budowane wokół scentralizowanego
+dostawcy tożsamości (IdP) i modelu zorientowanego na token (najczęściej
+OAuth2/OIDC + JWT). Pozwala to skalować dostęp bez powielania logiki logowania w
+każdej usłudze.
+
+#### Diagram kanoniczny:
+
+1. Klient loguje się do dostawcy tożsamości (lub usługi uwierzytelniania).
+
+2. Otrzymuje token dostępu (oraz, jeśli to konieczne, token odświeżania).
+
+3. Przekazuje token dostępu w żądaniach do bramy/usług API.
+
+4. Usługi weryfikują token (podpis, okres ważności, wydawca, odbiorcy, zakresy).
+
+#### Gdzie sprawdzić:
+
+1. **W bramce API**
+
+- wstępna weryfikacja tokena i blokowanie nieautoryzowanego ruchu.
+
+2. **W każdym serwisie (głęboka obrona)**
+
+- ponowna weryfikacja krytycznych roszczeń/praw dostępu;
+
+- nie polegaj wyłącznie na obwodzie.
+
+#### Co powinno znajdować się w tokenie:
+
+1. Identyfikator użytkownika/podmiotu (`sub`).
+
+2. Role/zakresy/uprawnienia (wymagane minimum).
+
+3. `iss`, `aud`, `exp`, `iat` w celu sprawdzenia bezpiecznego kontekstu.
+
+#### Kluczowe praktyki bezpieczeństwa:
+
+1. Krótki TTL dla tokenu dostępu.
+
+2. Regularna rotacja kluczy podpisujących (JWKS).
+
+3. TLS wszędzie (ruch północ-południe i wschód-zachód).
+
+4. Zasada najmniejszych uprawnień dla zakresów/ról.
+
+5. Wyraźne oddzielenie uwierzytelniania (kim jesteś) i autoryzacji (co możesz
+   zrobić).
+
+#### W przypadku usług typu „service-to-service”:
+
+1. Użyj oddzielnych danych logowania komputera (poświadczenia klienta, mTLS,
+   tożsamość usługi).
+
+2. Nie umieszczaj niepotrzebnie tokenów użytkownika głęboko w systemie.
+
+#### Wniosek:
+
+Niezawodne uwierzytelnianie w mikrousługach to scentralizowany dostawca
+tożsamości, tokeny z poprawną walidacją na wszystkich krytycznych granicach i
+dyscyplina bezpieczeństwa (TTL, rotacja kluczy, najmniejsze uprawnienia, TLS,
+dogłębna obrona).
+
+#### Przykład:
+
+```go
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tok := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+		claims, err := verifyJWT(tok)
+		if err != nil {
+			http.Error(w, "unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), userClaimsKey{}, claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+```
+
+</details>

@@ -7909,3 +7909,89 @@ func AuthMiddleware(next http.Handler) http.Handler {
 ```
 
 </details>
+
+
+<details>
+<summary>130. Jak zaprojektować i wdrożyć API Gateway w architekturze mikroserwisowej i jakie zadania ma rozwiązywać?</summary>
+
+#### Go
+
+Brama API to pojedynczy zewnętrzny punkt wejścia do systemu mikrousług. Jego
+zadaniem jest standaryzacja obwodu: bezpieczeństwa, routingu, zasad ruchu,
+obserwowalności i częściowej orkiestracji żądań.
+
+#### Jakie zadania powinien rozwiązywać Gateway:
+
+1. **Routing** do wymaganych usług (reguły ścieżki/hosta/metody).
+
+2. **Uwierzytelnianie i autoryzacja podstawowa** na obwodzie.
+
+3. **Ograniczenie/dławienie** i zabezpieczenie przed przeciążeniem.
+
+4. **Zakończenie TLS**, CORS, podstawowe nagłówki zabezpieczeń.
+
+5. **Przekształcenia żądań/odpowiedzi** (w razie potrzeby) i wersjonowanie
+   interfejsu API.
+
+6. **Obserwowalność**: scentralizowane logi, metryki, kontekst śledzenia.
+
+7. **Zasady odporności**: przekroczenie limitu czasu, ponowna próba (ostrożnie),
+   wyłącznik automatyczny.
+
+#### Kluczowe zasady projektowania:
+
+1. ** Cienka brama:** nie przenoś do niej ciężkiej logiki biznesowej.
+
+2. **Wyraźna własność umów:** kto jest odpowiedzialny za punkty końcowe i
+   zasady.
+
+3. **Domyślne bezpieczeństwo:** domyślnie odmowa, najniższe uprawnienia.
+
+4. **Kontrola idempotencji i ponownych prób:** aby uniknąć podwójnych skutków
+   ubocznych.
+
+5. **Plan degradacji:** awaria/błędy powinny być przewidywalne dla klienta.
+
+#### Model wdrożenia:
+
+1. Wybierz technologię (brama ingresowa/API lub własna usługa brzegowa).
+
+2. Zdefiniuj politykę jako kod (limity szybkości, reguły autoryzacji, tablice
+   routingu).
+
+3. Skonfiguruj integrację z wykrywaniem usług i certyfikatami.
+
+4. Zaimplementuj kompleksowe śledzenie (identyfikatory korelacji).
+
+5. Dodaj docelowe poziomy usług/alerty na poziomie bramy (opóźnienie, poziom
+   błędów, nasycenie).
+
+#### Typowe błędy:
+
+1. „Gruba” brama jako nowy monolit.
+
+2. Brak spójnego modelu błędu.
+
+3. Nadmierne transformacje na obwodzie, utrudniające debugowanie.
+
+4. Pojedynczy punkt awarii bez konfiguracji HA.
+
+#### Wniosek:
+
+Silna brama API to nie „miejsce na wszystko”, ale zdyscyplinowana warstwa
+obwodowa: bezpieczeństwo, zasady ruchu, obserwowalność i zarządzany routing.
+Jednocześnie logika biznesowa powinna pozostać w usługach domenowych.
+
+#### Przykład:
+
+```yaml
+routes:
+  - path: /api/orders/*
+    upstream: orders-service
+    auth: required
+    rateLimit:
+      requestsPerMinute: 600
+    timeoutMs: 2000
+```
+
+</details>

@@ -7995,3 +7995,78 @@ routes:
 ```
 
 </details>
+
+
+<details>
+<summary>131. Jak działa wykrywanie usług w architekturze mikrousług i jak usługi odnajdują się nawzajem bez statycznych adresów IP/hostów?</summary>
+
+#### Go
+
+`Service discovery` to mechanizm dynamicznego wyszukiwania dostępnych instancji
+usług w warunkach ciągłych zmian adresów IP/podów (autoskalowanie, aktualizacja
+krocząca, restarty).
+
+#### Podstawowa zasada:
+
+1. Instancja usługi jest zarejestrowana w rejestrze odnajdywania (lub
+   automatycznie publikowana przez koordynatora).
+
+2. Klient lub pośredni serwer proxy żąda bieżących punktów końcowych usługi.
+
+3. Żądanie jest kierowane do aktywnej instancji zgodnie z regułami równoważenia.
+
+#### Jak usługi „odnajdują się”:
+
+1. **Wykrywanie w oparciu o DNS**
+
+- usługa odnosi się do stabilnej nazwy (`service-name.namespace`), a DNS zwraca
+  bieżące adresy IP.
+
+2. **Wykrywanie na podstawie rejestru**
+
+- oddzielny rejestr usług (lub interfejs API platformy) zawiera listę sprawnych
+  instancji.
+
+3. **Siatka serwisowa / wózek boczny**
+
+- aplikacja jest dostępna lokalnie, a przyczepka obsługuje wykrywanie,
+  ponawianie prób, równoważenie obciążenia i TLS.
+
+#### Wykrywanie po stronie klienta a wykrywanie po stronie serwera:
+
+1. **Po stronie klienta**
+
+- klient sam otrzymuje listę instancji i wybiera cel.
+
+2. **Po stronie serwera**
+
+- klient uzyskuje dostęp do stabilnego punktu końcowego (LB/proxy), a wyboru
+  instancji dokonuje warstwa infrastruktury.
+
+#### Krytyczne elementy niezawodności:
+
+1. Kontrola stanu i szybkie wykluczanie „martwych” instancji.
+
+2. TTL/buforowanie z kontrolą starzenia się rekordów.
+
+3. Obserwowalność warstwy wykrywania (opóźnienie, wskaźnik awaryjności,
+   rezygnacja).
+
+#### Wniosek:
+
+Wykrywanie usług eliminuje potrzebę statycznych adresów IP/hostów, zapewniając
+dynamiczne adresowanie usług za pośrednictwem rejestru, DNS lub siatki. Jest to
+podstawowy warunek skalowalności i elastyczności systemu mikrousług.
+
+#### Przykład:
+
+```go
+// У Kubernetes сервіс звертається за DNS-іменем, а не за статичним IP.
+resp, err := http.Get("http://orders-service.default.svc.cluster.local/health")
+if err != nil {
+	return err
+}
+defer resp.Body.Close()
+```
+
+</details>

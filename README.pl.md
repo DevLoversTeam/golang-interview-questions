@@ -8070,3 +8070,72 @@ defer resp.Body.Close()
 ```
 
 </details>
+
+
+<details>
+<summary>132. Jak uniknąć ścisłego powiązania w architekturze mikroserwisowej, aby system pozostał skalowalny i łatwy w zmianach?</summary>
+
+#### Go
+
+`Tight coupling` w mikrousługach ma miejsce, gdy zmiana jednej usługi wymusza
+zmianę na innych. Aby system zachował skalowalność i możliwość rozwoju,
+potrzebne są jasne kontrakty, autonomiczne granice domen i kontrola zależności.
+
+#### Główne praktyki oddzielania:
+
+1. **Ograniczone konteksty i jasna własność usługi**
+
+- każdy serwis odpowiada za swoją domenę i swoje dane;
+
+- unikaj „wspólnej” bazy jako kanału integracji.
+
+2. **Interakcja zorientowana na umowę**
+
+- wersjonowane interfejsy API/schematy;
+
+- kompatybilność wsteczna jako polityka obowiązkowa.
+
+3. **Integracja wydarzeń tam, gdzie to możliwe**
+
+- publish/subscribe zmniejsza synchroniczną zależność żądanie-odpowiedź.
+
+4. **Warstwa antykorupcyjna**
+
+- adaptery między domenami, aby modele innych osób nie „przeciekały” do Twojej
+  usługi.
+
+5. **Stabilne interfejsy, niestabilna implementacja**
+
+- wewnętrzne zmiany w usługach nie powinny zakłócać spokoju konsumentów.
+
+6. **Idempotencja i retroopór**
+
+- w przypadku skryptów asynchronicznych jest kluczem do luźniejszego wiązania.
+
+#### Zabezpieczenia organizacyjne i techniczne:
+
+1. Testowanie umów pod kątem konsumentów.
+
+2. Zarządzanie interfejsem API (zasady ewolucji umowy).
+
+3. Wyraźna obserwowalność pomiędzy usługami (identyfikator śledzenia, metryki
+   zależności).
+
+4. Ograniczenia dotyczące rozwinięcia i głębokości łańcuchów synchronicznych.
+
+#### Czego unikać:
+
+1. Współdzielone tabele/schematy między zespołami.
+
+2. „Inteligentna” bramka API, która zawiera logikę biznesową wielu usług.
+
+3. Niezdefiniowane kontrakty i ukryte zależności poprzez wewnętrzne pola
+   ładunku.
+
+#### Wniosek:
+
+Unikanie ścisłego powiązania jest dyscypliną granic, kontraktów i ewolucji.
+Usługi muszą być autonomiczne pod względem danych i wydań, integrować się
+poprzez stabilne umowy i wytrzymywać zmiany sąsiadów bez kaskadowych awarii.
+
+</details>

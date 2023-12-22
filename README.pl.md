@@ -8139,3 +8139,60 @@ Usługi muszą być autonomiczne pod względem danych i wydań, integrować się
 poprzez stabilne umowy i wytrzymywać zmiany sąsiadów bez kaskadowych awarii.
 
 </details>
+
+
+<details>
+<summary>133. Jak zapewnić kompatybilność wsteczną?</summary>
+
+#### Go
+
+`Backward compatibility` oznacza, że nowa wersja usługi/API nie psuje
+istniejących klientów. W systemach rozproszonych ma to kluczowe znaczenie,
+ponieważ konsumenci nie są aktualizowani jednocześnie.
+
+#### Podstawowe zasady kompatybilności:
+
+1. **Nigdy nie zrywaj nagle istniejącej umowy.**
+
+2. **Zmiany addytywne w stosunku do istotnych zmian:** dodaj nowe pola/punkty
+   końcowe bez usuwania starych.
+
+3. **Stabilna semantyka istniejących pól:** nie zmieniaj wartości/typu pola o
+   tej samej nazwie.
+
+4. **Jasne zasady dotyczące wersji:** Adres URL/nagłówek wersji/wersja schematu.
+
+#### Techniki praktyczne:
+
+1. Dodatkowe pola powinny być opcjonalne i mieć bezpieczne wartości domyślne.
+
+2. Wykorzystaj okres wycofania, aby usunąć starą funkcjonalność.
+
+3. Utrzymuj równolegle stare i nowe umowy podczas migracji.
+
+4. Użyj flag funkcji do kontrolowanego wdrażania.
+
+#### W przypadku wydarzeń i schematów:
+
+1. Schematy muszą ewoluować addytywnie.
+
+2. Konsumenci powinni ignorować nieznane pola.
+
+3. Zabroń ponownego użycia „starych” identyfikatorów pól (dotyczy protokołów
+   opartych na schemacie).
+
+#### Kontrola jakości zgodności:
+
+1. Testy umów zorientowane na konsumentów.
+
+2. Kontrola zgodności schematu w CI.
+
+3. Wersje Canary i monitorowanie błędów klienta.
+
+#### Wniosek:
+
+Organizacja kompatybilności wstecznej to połączenie zasad technicznych i
+dyscypliny wydawniczej: addytywna ewolucja umów, zarządzane wycofywanie,
+automatyczne sprawdzanie zgodności i etapowe wdrażanie.
+
+</details>

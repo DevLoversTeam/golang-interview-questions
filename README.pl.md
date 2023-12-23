@@ -8196,3 +8196,81 @@ dyscypliny wydawniczej: addytywna ewolucja umów, zarządzane wycofywanie,
 automatyczne sprawdzanie zgodności i etapowe wdrażanie.
 
 </details>
+
+
+<details>
+<summary>134. W jaki sposób aplikacje Go wdrażają aktualizacje konfiguracji „w locie” bez ponownego uruchamiania usługi?</summary>
+
+#### Go
+
+Aktualizacje konfiguracji ponownego ładowania na gorąco w Go są zwykle tworzone
+jako kontrolowany proces: wykrywają zmianę źródła, sprawdzają poprawność nowego
+ładowania konfiguracji, atomowo przełączają aktywną migawkę i bezpiecznie
+propagują ją do działających komponentów.
+
+#### Typowy schemat architektoniczny:
+
+1. **Źródło konfiguracji**
+
+- plik (obserwator), dostawca środowiska, usługa konfiguracyjna, sklep KV.
+
+2. **Ładowarka + walidator**
+
+- czyta nową wersję;
+
+- sprawdza schemat, granice wartości i niezmienniki międzyparametrowe.
+
+3. **Publikacja atomowa**
+
+- nowa migawka konfiguracji jest publikowana za pośrednictwem `atomic.Value` lub
+  innego mechanizmu bezpiecznego dla wątków.
+
+4. **Konsumenci konfiguracji**
+
+- odczytuje bieżący zrzut ekranu bez blokowania wyścigów.
+
+#### Kluczowe wymagania inżynieryjne:
+
+1. **Przełącz atomowość**
+
+- albo cała nowa konfiguracja, albo stara; bez „półstanów”.
+
+2. **Ważność przed użyciem**
+
+- Nie można aktywować nieprawidłowej wersji.
+
+3. **Gotowość do wycofania**
+
+- w przypadku błędu aplikacji usługa powinna pozostać w dotychczasowej
+  działającej konfiguracji.
+
+4. **Obserwowalność**
+
+- reload dziennik zdarzeń, wersja konfiguracji, wskaźniki pomyślnych/nieudanych
+  aktualizacji.
+
+#### Co zwykle można zmienić „w locie”:
+
+1. Limity, limity czasu, flagi funkcji, parametry ponawiania/wycofywania.
+
+2. Poziomy rejestrowania.
+
+3. Niekrytyczne zasady routingu.
+
+#### Czego NIE należy często zmieniać bez ponownego uruchamiania:
+
+1. Podstawowe parametry powiązania sieciowego.
+
+2. Krytyczne zależności inicjujące, które nie obsługują ponownej konfiguracji na
+   żywo.
+
+3. Parametry, których zmiana powoduje przerwanie niezmienników stanu bieżącego.
+
+#### Wniosek:
+
+Gorące przeładowanie w Go to nie „magia obserwatora”, ale dyscyplina bezpiecznej
+publikacji konfiguracji: sprawdzanie poprawności → atomowa zamiana → obserwacja
+→ wycofanie w przypadku niepowodzenia. Takie podejście pozwala na zmianę
+zachowania usługi bez przestojów i bez utraty sterowalności.
+
+</details>

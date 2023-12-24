@@ -8274,3 +8274,83 @@ publikacji konfiguracji: sprawdzanie poprawności → atomowa zamiana → obserw
 zachowania usługi bez przestojów i bez utraty sterowalności.
 
 </details>
+
+
+<details>
+<summary>135. Jak wdrożyć throttling (ograniczanie częstotliwości żądań) w usłudze Go, aby zabezpieczyć system przed przeciążeniem?</summary>
+
+#### Go
+
+`Throttling` w usłudze Go to zarządzany limit intensywności żądań w celu ochrony
+procesora, bazy danych, zewnętrznych interfejsów API i zasobów krytycznych przed
+przeciążeniem i kaskadową degradacją.
+
+#### Główne modele dławienia:
+
+1. **Pojemnik na tokeny / Nieszczelny pojemnik**
+
+- umożliwia krótkie impulsy w ramach pojemności;
+
+- stabilizuje średnią stawkę.
+
+2. **Okno stałe/przesuwne**
+
+- limity okien czasowych (na sekundę/minutę).
+
+3. **Limit współbieżności**
+
+- ograniczenie liczby jednocześnie przetwarzanych żądań (pula semaforów/procesów
+  roboczych).
+
+#### Gdzie złożyć wniosek:
+
+1. Na obwodzie (bramka/wejście) — ochrona globalna.
+
+2. Wewnątrz usługi — ochrona kosztownych operacji/operacji.
+
+3. W przypadku wywołań zależności — limit lokalny dla baz danych/zewnętrznych
+   interfejsów API.
+
+#### Ograniczające sekcje:
+
+1. Globalnie na usługę.
+
+2. Na trasę / na punkt końcowy.
+
+3. Na klienta / na klucz API / na dzierżawcę / na użytkownika.
+
+#### Praktyczne rozwiązania w Go:
+
+1. Middleware z ogranicznikiem (często zasobnik tokenów).
+
+2. W środowisku z wieloma instancjami — limit scentralizowany lub rozproszony
+   (na przykład za pośrednictwem Redis).
+
+3. Jasna odpowiedź dla klienta:
+
+- HTTP `429 Too Many Requests`;
+
+- `Retry-After` i wyraźny ładunek błędu.
+
+#### Ważne niuanse:
+
+1. Limit musi być zgodny z rzeczywistymi możliwościami backendu.
+
+2. Wymagane dane:
+
+- procent odrzuconych żądań;
+
+- głębokość kolejki;
+
+- opóźnienie przed/po ograniczaniu przepustowości.
+
+3. Warto mieć politykę dla ruchu priorytetowego (np. klientów systemowych).
+
+#### Wniosek:
+
+Ograniczanie przepustowości w Go to nie tylko przełącznik 429, ale część
+strategii odporności: limity prędkości i rywalizacji, przejrzyste zasady
+przełączania awaryjnego oraz metryki umożliwiające dostosowanie parametrów do
+rzeczywistego obciążenia.
+
+</details>

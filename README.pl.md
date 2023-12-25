@@ -8354,3 +8354,67 @@ przełączania awaryjnego oraz metryki umożliwiające dostosowanie parametrów 
 rzeczywistego obciążenia.
 
 </details>
+
+
+<details>
+<summary>136. Jak działa warstwa buforowania w Go i jaki problem rozwiązuje `singleflight.Group` przy równoczesnych żądaniach?</summary>
+
+#### Go
+
+`Caching layer` w Go stanowi warstwę pośrednią pomiędzy logiką biznesową a
+„drogim” źródłem danych (DB, zewnętrzne API, obliczenia), które zwraca wstępnie
+zapisany wynik dla powtarzających się zapytań i zmniejsza obciążenie backendu.
+
+#### Jak działa typowy przepływ pamięci podręcznej:
+
+1. Otrzymano żądanie z kluczem `K`.
+
+2. Sprawdź pamięć podręczną:
+
+- **uderzenie w pamięć podręczną** → szybko zwracamy wartość;
+
+- **Brak pamięci podręcznej** → odczytaj ze źródła, umieść w pamięci podręcznej,
+  zwróć wynik.
+
+3. TTL/unieważnienie kontroli aktualności danych.
+
+#### Jaki problem pojawia się w przypadku konkurencji:
+
+Podczas `cache miss` popularny klucz może otrzymać wiele żądań jednocześnie. Bez
+dodatkowej kontroli wszystkie pójdą równolegle do backendu — jest to `cache
+stampede` (grzmiące stado).
+
+#### Co robi `singleflight.Group`:
+
+1. Deduplikuje jednoczesne identyczne zapytania według klucza.
+
+2. Tylko pierwsze żądanie wykonuje „drogą” funkcję.
+
+3. Inne konkurencyjne żądania oczekują i otrzymują ten sam wynik.
+
+#### Jaki problem to rozwiązuje:
+
+1. Drastycznie zmniejsza liczbę zduplikowanych żądań do DB/API w przypadku
+   braku.
+
+2. Stabilizuje opóźnienia przy obciążeniu szczytowym.
+
+3. Chroni backend przed skokami podczas masowych jednoczesnych dostępów.
+
+#### Ważne praktyki:
+
+1. Użyj `singleflight` z pamięcią podręczną, a nie zamiast pamięci podręcznej.
+
+2. Ogranicz limit czasu poprzez `context`/timeout.
+
+3. Ostrożnie pracuj z błędami (aby nie powtórzyć awarii przejściowej).
+
+4. Dodaj jitter do TTL, aby uniknąć synchronicznego migania wielu klawiszy.
+
+#### Wniosek:
+
+Warstwa buforowania przyspiesza odczyt i zmniejsza obciążenie źródeł danych, a
+`singleflight.Group` eliminuje efekt paniki w przypadku konkurencji `cache
+miss`. Razem zapewniają znacznie bardziej stabilne i wydajne działanie usług.
+
+</details>

@@ -8418,3 +8418,81 @@ Warstwa buforowania przyspiesza odczyt i zmniejsza obciążenie źródeł danych
 miss`. Razem zapewniają znacznie bardziej stabilne i wydajne działanie usług.
 
 </details>
+
+
+<details>
+<summary>137. Jak zaprojektować architekturę wielodostępną z izolacją danych pomiędzy klientami w usłudze Go?</summary>
+
+#### Go
+
+Architektura multitenant oznacza, że jedna platforma obsługuje wielu klientów
+(najemców), ale gwarantuje izolację ich danych, dostępu i zasobów. Kluczem do
+sukcesu jest uczynienie kontekstu dzierżawy obowiązkową częścią całej ścieżki
+zapytania.
+
+#### Podstawowe modele izolacji danych:
+
+1. **Udostępniona baza danych, udostępniony schemat + identyfikator_dzierżawcy**
+
+- najtańszy start;
+
+- obowiązkowe twarde filtry na żądanie.
+
+2. **Współdzielona baza danych, oddzielny schemat dla każdego dzierżawcy**
+
+- silniejsza izolacja logiczna;
+
+- bardziej złożone wsparcie operacyjne.
+
+3. **Baza danych na dzierżawcę**
+
+- maksymalna izolacja i zgodność;
+
+- najwyższa wartość infrastruktury.
+
+#### Co musisz umieścić w usłudze Go:
+
+1. **Kontekst najemcy**
+
+- wyodrębnij dzierżawcę z tokenu uwierzytelniania/nagłówka;
+
+- przejdź przez `context.Context` do wszystkich warstw.
+
+2. **Egzekwowanie domyślne**
+
+- warstwa repozytorium nie powinna wykonywać żądań bez filtra dzierżawcy;
+
+- „brak najemcy, brak zapytania” jako niezmiennik.
+
+3. **Autoryzacja**
+
+- sprawdź, czy użytkownik/klucz ma uprawnienia do konkretnego najemcy.
+
+4. **Izolacja pamięci podręcznej**
+
+- klucze pamięci podręcznej muszą zawierać identyfikator dzierżawy.
+
+5. **Izolacja kolejek/zdarzeń**
+
+- tagi dzierżawy w zdarzeniach, filtrowanie konsumentów, kontrola routingu.
+
+#### Aspekty operacyjne:
+
+1. Przydziały i limity stawek na dzierżawcę.
+
+2. Metryki/dzienniki/ślady z atrybutem dzierżawy.
+
+3. Strategia tworzenia kopii zapasowych/przywracania z uwzględnieniem limitów
+   dzierżawy.
+
+4. Mechanizmy migracji pomiędzy modelami izolacji w trakcie rozwoju (na przykład
+   z współdzielonych do dedykowanych dla klientów korporacyjnych).
+
+#### Wniosek praktyczny:
+
+Obsługa wielu dzierżawców w Go to nie tylko schemat bazy danych, ale kompleksowa
+dyscyplina: tożsamość dzierżawcy, zasady dostępu, izolacja pamięci
+podręcznej/zdarzeń i kontrola operacyjna. Im wcześniej zostanie to wbudowane w
+architekturę, tym łatwiej będzie skalować produkt bez wycieków między klientami.
+
+</details>

@@ -8496,3 +8496,94 @@ podręcznej/zdarzeń i kontrola operacyjna. Im wcześniej zostanie to wbudowane 
 architekturę, tym łatwiej będzie skalować produkt bez wycieków między klientami.
 
 </details>
+
+
+<details>
+<summary>138. Jak poprawnie zorganizować przetwarzanie zadań długotrwałych (zadań długotrwałych), aby nie blokować żądań HTTP?</summary>
+
+#### Go
+
+Zadań długoterminowych nie należy wykonywać synchronicznie w procedurze obsługi
+HTTP, ponieważ zwiększa to opóźnienia, zmniejsza przepustowość i zwiększa ryzyko
+przekroczenia limitu czasu/przerw w działaniu klienta. Prawidłowym podejściem
+jest wykonanie asynchroniczne za pośrednictwem kolejki/procesów roboczych.
+
+#### Architektura kanoniczna:
+
+1. Punkt końcowy HTTP akceptuje żądanie, sprawdza ładunek.
+
+2. Tworzy zadanie (z `job_id`, statusem, metadanymi).
+
+3. Umieszcza zadanie w kolejce (tabela brokera/zadań).
+
+4. Zwraca szybką odpowiedź (`202 Accepted` + `job_id`) do klienta.
+
+5. Pracownicy działający w tle przetwarzają zadanie poza kontekstem HTTP.
+
+#### Co jest potrzebne do zapewnienia niezawodności produkcji:
+
+1. **Idempotencja**
+
+- ponowne dostarczenie zadania nie powinno powodować przerwania stanu.
+
+2. **Zasady ponawiania prób**
+
+- backoff, maksymalna liczba prób, klasyfikacja błędów, które można
+  powtórzyć/nie można powtórzyć.
+
+3. **Statusy zadań**
+
+- `queued`, `running`, `succeeded`, `failed`, `canceled`.
+
+4. **Obserwowalność**
+
+- metryki kolejki, czas wykonania, poziom błędów, opóźnienie robocze.
+
+5. **Anulowanie / przekroczenie limitu czasu**
+
+- kontrola terminów realizacji i poprawność anulowania.
+
+6. ** Przeciwciśnienie**
+
+- ograniczenie konkurencji pracowników, aby uniknąć przeciążenia bazy
+  danych/zależności.
+
+#### Jak klient otrzymuje wynik:
+
+1. Punkt końcowy odpytywania dla `job_id`.
+
+2. Webhook/wywołanie zwrotne.
+
+3. Kanał Push (SSE/WebSocket) — w razie potrzeby UX w czasie niemal
+   rzeczywistym.
+
+#### Typowe błędy:
+
+1. Wykonuj ciężkie operacje biznesowe bezpośrednio w programie obsługi.
+
+2. Nie masz stałego statusu pracy.
+
+3. Brak ponownej próby i skryptu utraconych wiadomości.
+
+4. Brak limitu pracowników i kontroli kolejki.
+
+#### Wniosek:
+
+Aby nie blokować żądań HTTP, zadania długotrwałe należy rozłożyć na model
+`accept -> enqueue -> async process -> observe result`. Zapewnia to stabilny
+interfejs API, zarządzalną przepustowość i przewidywalną wydajność pod
+obciążeniem.
+
+#### Przykład:
+
+```go
+func (h *Handler) StartReport(w http.ResponseWriter, r *http.Request) {
+	jobID := uuid.NewString()
+	_ = h.queue.Publish(r.Context(), Job{ID: jobID, Type: "build_report"})
+
+	w.WriteHeader(http.StatusAccepted)
+	_ = json.NewEncoder(w).Encode(map[string]string{"job_id": jobID})
+}
+```
+
+</details>

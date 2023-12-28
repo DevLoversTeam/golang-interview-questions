@@ -8587,3 +8587,86 @@ func (h *Handler) StartReport(w http.ResponseWriter, r *http.Request) {
 ```
 
 </details>
+
+
+<details>
+<summary>139. Jak zbudować transakcję międzyusługową?</summary>
+
+#### Go
+
+W mikrousługach klasyczna transakcja ACID pomiędzy wieloma bazami
+danych/usługami jest zwykle niepraktyczna. Dlatego też „transakcja” między
+usługami jest budowana w oparciu o uzgodnioną procedurę biznesową obejmującą
+rekompensaty i ostateczną spójność.
+
+#### Główne podejścia:
+
+1. **Saga (najczęściej)**
+
+- sekwencja lokalnych transakcji w usługach;
+
+- w przypadku awarii uruchamiane są działania kompensacyjne.
+
+2. **Saga o orkiestracji**
+
+- centralny koordynator zarządza krokami i wycofywaniem.
+
+3. **Saga choreograficzna**
+
+- usługi reagują wzajemnie na zdarzenia bez centralnego przewodnika.
+
+4. **2 szt./XA**
+
+- jest teoretycznie możliwe, ale zwykle należy go unikać w mikrousługach ze
+  względu na złożoność i pogorszenie dostępności.
+
+#### Konstrukcja kanoniczna transakcji międzyusługowej:
+
+1. Podziel proces na lokalne, niepodzielne kroki.
+
+2. Dla każdego kroku zdefiniuj wynagrodzenie.
+
+3. Zapewnij idempotencję poleceń i zdarzeń.
+
+4. Wdrażaj niezawodne dostarczanie za pomocą wzorców skrzynek
+   nadawczych/odbiorczych.
+
+5. Dodaj korelację `transaction/saga id` do śledzenia.
+
+#### Wymagania krytyczne:
+
+1. **Idempotencja** na wszystkich granicach.
+
+2. **Ponów próbę/wycofaj** w przypadku tymczasowych błędów.
+
+3. **Deduplikacja** ponownie dostarczonych zdarzeń.
+
+4. **Zasady dotyczące limitów czasu i niedostarczonych wiadomości** dla
+   „zawieszonych” kroków.
+
+5. **Obserwowalność**: statusy saga, metryki, audyt.
+
+#### Wniosek:
+
+Transakcja międzyusługowa w mikrousługach nie jest globalnym ACID, ale
+zarządzanym procesem spójności: transakcje lokalne + zdarzenia + rekompensaty.
+Najbardziej praktycznym modelem jest Saga, z wyraźnymi niezmiennikami i solidną
+obsługą awarii.
+
+#### Przykład:
+
+```go
+// Спрощений оркестратор Saga
+func (s *Saga) Run(ctx context.Context, cmd CreateOrder) error {
+	if err := s.reserveInventory(ctx, cmd); err != nil {
+		return err
+	}
+	if err := s.chargePayment(ctx, cmd); err != nil {
+		_ = s.compensateInventory(ctx, cmd)
+		return err
+	}
+	return s.confirmOrder(ctx, cmd)
+}
+```
+
+</details>

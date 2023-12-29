@@ -8670,3 +8670,62 @@ func (s *Saga) Run(ctx context.Context, cmd CreateOrder) error {
 ```
 
 </details>
+
+
+<details>
+<summary>140. Jakie problemy rozwiązuje wzór Saga?</summary>
+
+#### Go
+
+Wzorzec `Saga` rozwiązuje problem spójnej operacji biznesowej obejmującej wiele
+mikrousług z oddzielnymi bazami danych, gdzie nie jest możliwe lub praktyczne
+zastosowanie pojedynczej globalnej transakcji ACID.
+
+#### Jakie problemy obejmuje Saga:
+
+1. **Brak rozproszonego ACID pomiędzy usługami**
+
+- zastępuje transakcję globalną sekwencją transakcji lokalnych.
+
+2. **Wymóg częściowej kompensacji awarii**
+
+- jeśli jeden z kroków się nie powiódł, wykonywane są działania kompensujące.
+
+3. **Ewentualne zarządzanie spójnością**
+
+- umożliwia asynchroniczne osiągnięcie uzgodnionego stanu biznesowego.
+
+4. **Ograniczona łączność między usługami**
+
+- kroki mogą wchodzić w interakcję za pomocą zdarzeń/poleceń bez konieczności
+  używania twardych 2PC.
+
+5. **Odporność na chwilowe awarie**
+
+- retry/backoff i idempotencja sprawiają, że proces jest bardziej niezawodny.
+
+#### What Saga nie „leczy” się automatycznie:
+
+1. Nie eliminuje potrzeby wyraźnego modelowania dziedzinowego wynagrodzeń.
+
+2. Nie eliminuje złożoności obserwowalności i monitorowania stanu procesu.
+
+3. Nie gwarantuje natychmiastowej spójności — jedynie zarządzaną spójność w
+   czasie.
+
+#### Gdzie Saga jest szczególnie istotna:
+
+1. Przebieg realizacji transakcji/zamawiania (rezerwa produktu, płatność,
+   dostawa).
+
+2. Zarezerwuj/anuluj zasoby w wielu systemach.
+
+3. Wszelkie wieloetapowe procesy biznesowe mające wpływ na wiele usług.
+
+#### Wniosek:
+
+Saga rozwiązuje główny problem spójności mikrousług: jak wykonać złożoną
+operację między usługami bez globalnego koordynatora blokady, z kontrolowanym
+odzyskiwaniem poprzez przesunięcia i akceptowalną odpornością operacyjną.
+
+</details>

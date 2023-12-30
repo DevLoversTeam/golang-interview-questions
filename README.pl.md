@@ -8729,3 +8729,71 @@ operację między usługami bez globalnego koordynatora blokady, z kontrolowanym
 odzyskiwaniem poprzez przesunięcia i akceptowalną odpornością operacyjną.
 
 </details>
+
+
+<details>
+<summary>141. Co to jest pozyskiwanie zdarzeń?</summary>
+
+#### Go
+
+`Event Sourcing` to podejście, w którym system zapisuje nie „bieżący stan”
+obiektu, ale sekwencję zdarzeń, które zmieniły ten stan. Aktualny stan jest
+odtwarzany poprzez powtarzanie zdarzeń.
+
+#### Kluczowa idea:
+
+1. Źródłem prawdy jest niezmienny dziennik zdarzeń domeny.
+
+2. Stan agregatu jest pochodnym wynikiem redukcji tych zdarzeń w kolejności
+   czasowej.
+
+3. Zmiana stanu następuje poprzez dodanie nowego zdarzenia, a nie poprzez
+   „nadpisanie”.
+
+#### Co zapewnia usługa Event Sourcing:
+
+1. **Pełna ścieżka audytu**: możesz zobaczyć, kto/kiedy/dlaczego zmienił status
+   domeny.
+
+2. **Stan odtwarzalności** w dowolnym momencie.
+
+3. **Elastyczne projekcje** (modele do czytania) dla różnych scenariuszy
+   czytania.
+
+4. **Naturalna integracja z architekturą sterowaną zdarzeniami**.
+
+#### Typowe komponenty:
+
+1. Magazyn zdarzeń (tylko do dołączenia).
+
+2. Agregacja z regułami sprawdzania poprawności poleceń.
+
+3. Twórcy modeli projekcyjnych/odczytujących.
+
+4. Mechanizmy wersjonowania zdarzeń i moduły upcastingu.
+
+#### Ważne wyzwania:
+
+1. Złożoność ewolucji wzorców zdarzeń.
+
+2. Potrzeba migawek w celu szybkiego przywracania długich strumieni.
+
+3. Złożoność operacyjna spójności między modelami zapisu/odczytu (często CQRS).
+
+#### W stosownych przypadkach:
+
+1. Domeny z wysokimi wymaganiami dotyczącymi audytu i historii zmian.
+
+2. Złożone procesy biznesowe, w których ważna jest przejrzystość
+   przyczynowo-skutkowa.
+
+3. Systemy, w których zdarzenia stanowią naturalny kontrakt integracyjny.
+
+#### Wniosek:
+
+Event Sourcing to model „przechowując fakty dotyczące zdarzeń, a nie stan
+końcowy”. Zapewnia dużą przejrzystość historyczną i elastyczność architektury,
+ale wymaga dojrzałej dyscypliny w zakresie modelowania zdarzeń, wersjonowania i
+wsparcia operacyjnego.
+
+</details>

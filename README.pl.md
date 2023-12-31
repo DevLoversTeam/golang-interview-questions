@@ -8797,3 +8797,44 @@ ale wymaga dojrzałej dyscypliny w zakresie modelowania zdarzeń, wersjonowania 
 wsparcia operacyjnego.
 
 </details>
+
+
+<details>
+<summary>142. Sformułuj twierdzenie CAP.</summary>
+
+#### Go
+
+Twierdzenie CAP stwierdza: w systemie rozproszonym podczas separacji sieci
+(`Partition`) nie jest możliwe jednoczesne zagwarantowanie zarówno silnej
+spójności (`Consistency`), jak i pełnej dostępności (`Availability`) dla
+wszystkich żądań.
+
+#### Trzy właściwości WPR:
+
+1. **Spójność (C)** wszystkie węzły widzą ten sam bieżący stan danych po
+   operacji zapisu.
+
+2. **Dostępność (A)** każde żądanie otrzymuje odpowiedź (sukces/porażka bez
+   nieskończonego oczekiwania).
+
+3. **System tolerancji partycji (P)** kontynuuje pracę nawet w przypadku awarii
+   sieci lub opóźnień w komunikacji pomiędzy węzłami.
+
+#### Kluczowy nacisk praktyczny:
+
+1. W rzeczywistych systemach rozproszonych prawie zawsze wymagane jest `P` (sieć
+   jest z natury zawodna).
+
+2. Dlatego w momencie podziału musisz wybrać priorytet:
+
+- **CP**: zachowaj spójność, poświęcając część dostępności;
+
+- **AP**: Zachowaj dostępność, akceptując tymczasową niezgodność.
+
+#### Wniosek:
+
+CAP nie mówi „wybierz na zawsze tylko dwie nieruchomości”. Mówi: **kiedy
+następuje podział, maksimum C i A są jednocześnie nieosiągalne**; architekt musi
+świadomie określić, co system poświęca w trybie awaryjnym.
+
+</details>

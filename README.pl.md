@@ -8838,3 +8838,72 @@ następuje podział, maksimum C i A są jednocześnie nieosiągalne**; architekt
 świadomie określić, co system poświęca w trybie awaryjnym.
 
 </details>
+
+
+<details>
+<summary>143. Opowiedz nam o algorytmie konsensusu Raft.</summary>
+
+#### Go
+
+Raft to algorytm konsensusu dla zreplikowanego dziennika (replikowanego
+dziennika), który umożliwia grupie węzłów spójne przechowywanie tej samej
+sekwencji poleceń nawet w obliczu częściowych awarii sieci lub węzła.
+
+#### Główna idea Rafta:
+
+1. Klaster ma **jednego lidera** i kilku zwolenników.
+
+2. Rekordy klientów są akceptowane przez lidera.
+
+3. Leader replikuje wpisy dziennika do obserwujących.
+
+4. Rekord uznaje się za zatwierdzony po zatwierdzeniu przez większość (kworum).
+
+5. Wszystkie węzły stosują zatwierdzone rekordy w tej samej kolejności.
+
+#### Role węzła:
+
+1. **Lider** — zarządza replikacją i obsługuje polecenia klienta.
+
+2. **Obserwator** — pasywnie akceptuje replikację od lidera.
+
+3. **Kandydat** — rola podczas wyboru nowego lidera.
+
+#### Wybory przywódców:
+
+1. Czas jest podzielony na terminy (`term`).
+
+2. Jeśli obserwujący nie otrzyma sygnału pulsu, staje się kandydatem i inicjuje
+   wybory.
+
+3. Węzeł z największą liczbą głosów zostaje liderem bieżącej kadencji.
+
+#### Gwarancje bezpieczeństwa:
+
+1. **Dopasowanie dziennika** – ten sam indeks/termin oznacza tę samą historię do
+   tego momentu.
+
+2. **Kompletność lidera** — zatwierdzone zapisy są przechowywane w dziennikach
+   przyszłych liderów.
+
+3. **Stan bezpieczeństwa komputera** — polecenia są stosowane w spójnej
+   kolejności na wszystkich węzłach.
+
+#### Aspekty praktyczne:
+
+1. Zależność kworum oznacza: bez większości klaster nie może zatwierdzać nowych
+   wpisów.
+
+2. Zagęszczanie zrzutów/dzienników służy do ograniczania wzrostu dzienników.
+
+3. Prawidłowe przekroczenie limitu czasu pracy/wyborów ma kluczowe znaczenie dla
+   stabilności.
+
+#### Wniosek:
+
+Raft zapewnia jasny i niezawodny model konsensusu: replikacja oparta na
+liderach, wybory kworum i silne gwarancje spójności dziennika. Dlatego jest
+szeroko stosowany w systemach konfiguracji, koordynacji i rozproszonych usług
+stanowych.
+
+</details>

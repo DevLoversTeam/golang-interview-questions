@@ -8907,3 +8907,74 @@ szeroko stosowany w systemach konfiguracji, koordynacji i rozproszonych usług
 stanowych.
 
 </details>
+
+
+<details>
+<summary>144. Jak zorganizować CI/CD dla Go?</summary>
+
+#### Go
+
+Efektywna CI/CD dla Go to spójny potok: szybka weryfikacja kodu, powtarzalna
+kompilacja, automatyczne testy, bezpieczne wdrażanie i kontrolowane wycofywanie
+zmian.
+
+#### Typowa struktura rurociągu CI:
+
+1. **Lint + kontrola statyczna**
+
+- `go vet`, linters, podstawowe kontrole bezpieczeństwa.
+
+2. **Testy jednostkowe**
+
+- `go test ./...` (w razie potrzeby `-race` dla gałęzi krytycznych).
+
+3. **Testy integracyjne**
+
+- services/DB w kontenerach lub środowisku testowym.
+
+4. **Etap tworzenia**
+
+- odtwarzalna kompilacja artefaktów (binarna/kontener).
+
+5. **Publikowanie artefaktów**
+
+- wyślij obraz do rejestru, zaznaczając wersję/zatwierdzenie.
+
+#### Typowa struktura płyty CD:
+
+1. Wdrożenie w fazie tymczasowej.
+
+2. Automatyczne dymienie/kontrola.
+
+3. Awansuj do produkcji (bramka ręczna lub w oparciu o zasady).
+
+4. Monitorowanie SLO/poziomu błędów/opóźnień po wdrożeniu.
+
+#### Kluczowe praktyki dotyczące niezawodności:
+
+1. **Niezmienne artefakty** (nie kompiluj dwukrotnie tej samej wersji).
+
+2. **Przypinanie wersji łańcucha narzędzi/zależności**.
+
+3. **Zarządzanie sekretami** poprzez skarbiec CI/magazyn sekretów.
+
+4. **Parytet środowiska** pomiędzy stagingiem i prod.
+
+5. **Wdrożenie Canary/niebiesko-zielone** w celu zmniejszenia ryzyka uwolnienia.
+
+#### Co jest ważne specjalnie dla Go:
+
+1. Szybkie testy i kompilacje umożliwiają krótką pętlę informacji zwrotnej.
+
+2. Kompilacja macierzy dla wielu `GOOS/GOARCH` w razie potrzeby.
+
+3. Wczesne wykrywanie wad konkurencyjnych (`-race`) na odpowiednich stanowiskach
+   pracy.
+
+#### Wniosek:
+
+CI/CD dla Go powinno być szybkie, powtarzalne i zarządzane ryzykiem: sprawdzać,
+kompilować, testować, wdrażać przyrostowo i mieć gwarantowaną ścieżkę wycofania.
+To właśnie ta dyscyplina tworzy stabilne wydania bez utraty szybkości rozwoju.
+
+</details>

@@ -8978,3 +8978,72 @@ kompilować, testować, wdrażać przyrostowo i mieć gwarantowaną ścieżkę w
 To właśnie ta dyscyplina tworzy stabilne wydania bez utraty szybkości rozwoju.
 
 </details>
+
+
+<details>
+<summary>145. Jak zorganizować wycofanie w CI/CD dla usługi Go, aby szybko i bezpiecznie przywrócić nieudane wydanie?</summary>
+
+#### Go
+
+Niezawodne wycofanie zmian nie jest „planem B”, ale częścią projektu procesu
+wydawania wersji. Aby szybko i bezpiecznie wycofać usługę Go, musisz mieć
+powtarzalne artefakty, kontrolowane wdrożenie i z wyprzedzeniem jasne wyzwalacze
+wycofywania.
+
+#### Podstawowe zasady procesu gotowości do wycofania zmian:
+
+1. **Niezmienne artefakty**
+
+- każde wydanie ma unikalny tag/sha;
+
+- rollback = ponowne wydanie wcześniej sprawdzonego artefaktu.
+
+2. **Wdrażaj bez destrukcyjnych kroków**
+
+- zmiany muszą być odwracalne;
+
+- Migracje bazy danych są kompatybilne wstecz lub objęte oddzielnym planem
+  przywracania.
+
+3. **Szybkie przełączanie ruchu**
+
+- canary/blue-green/rolling z możliwością natychmiastowego zmniejszenia lub
+  zresetowania udziału nowej wersji.
+
+#### Co powinno znajdować się w CI/CD:
+
+1. Automatyczna kontrola dymu/kontroli po rozmieszczeniu.
+
+2. Bramy SLO (stopa błędów, opóźnienie p95/p99, nasycenie).
+
+3. Wyczyść jednoetapowe polecenie/procedurę wycofywania zmian.
+
+4. Alerty uruchamiane wcześniej, a nie po zdarzeniu masowym.
+
+#### Strategia wycofania w środowisku produkcyjnym:
+
+1. Wykryto pogorszenie wskaźników.
+
+2. Automatycznie lub ręcznie zatrzymano wdrażanie.
+
+3. Przełączono ruch do poprzedniej stabilnej wersji.
+
+4. Sprawdzone odzyskiwanie SLO.
+
+5. Zapisano sekcję zwłok i przyczynę regresji.
+
+#### Krytycznym aspektem jest baza danych:
+
+1. Zmieniaj schematy zgodnie z zasadą rozszerzania/kontraktowania.
+
+2. Unikaj migracji, które natychmiast uszkadzają stary kod.
+
+3. Oddzielne wdrażanie kodu i niebezpieczne kroki DDL.
+
+#### Wniosek:
+
+Szybkie i bezpieczne wycofanie w Go CI/CD jest możliwe tylko wtedy, gdy zostało
+zaprojektowane z wyprzedzeniem: niezmienne wydania, zarządzane wdrożenie, bramki
+metryk, zmiany odwracalne i sprawdzona procedura wycofywania operacyjnego.
+
+</details>

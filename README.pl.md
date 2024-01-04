@@ -9047,3 +9047,67 @@ zaprojektowane z wyprzedzeniem: niezmienne wydania, zarządzane wdrożenie, bram
 metryk, zmiany odwracalne i sprawdzona procedura wycofywania operacyjnego.
 
 </details>
+
+
+<details>
+<summary>146. Jak działa wdrożenie niebiesko-zielone?</summary>
+
+#### Go
+
+`Blue-green deployment` to strategia wydawnicza, w której istnieją jednocześnie
+dwa identyczne środowiska produkcyjne:
+
+1. **Niebieski** to aktualna wersja bojowa.
+
+2. **Green** to nowa wersja przygotowana do odbioru ruchu.
+
+#### Jak to działa krok po kroku:
+
+1. Nowa wersja została wdrożona w `green` bez wpływu na `blue`.
+
+2. W `green` przeprowadzają kontrole stanu zdrowia, testy dymu i podstawową
+   weryfikację.
+
+3. Po pomyślnej weryfikacji ruch jest przełączany z `blue` na `green` (przez
+   LB/ingres/router).
+
+4. Stara wersja (`blue`) pozostaje dostępna jako „gorąca” opcja przywracania.
+
+#### Zalety:
+
+1. **Minimalny czas przestoju** po wydaniu.
+
+2. **Szybki powrót** — wystarczy przywrócić ruch do poprzedniego środowiska.
+
+3. **Bezpieczna walidacja przed przełączeniem** bez ryzyka dla wszystkich
+   użytkowników.
+
+4. **Przejrzysty model operacyjny** do zarządzania wersjami.
+
+#### Zagrożenia i ograniczenia:
+
+1. Wymaga podwójnych zasobów (dwóch środowisk jednocześnie).
+
+2. Komplikacje związane z komponentami stanowymi i migracją baz danych.
+
+3. Wymaga dokładnej synchronizacji konfiguracji, kluczy tajnych i zależności
+   zewnętrznych.
+
+#### Zalecenia praktyczne:
+
+1. Połącz kolor niebiesko-zielony z automatyczną kontrolą SLO przed
+   przełączeniem.
+
+2. W przypadku bazy danych użyj migracji kompatybilnych wstecz
+   (rozwiń/zmniejsz).
+
+3. Zastosuj sformalizowaną procedurę wycofywania zmian i weryfikacji po zmianie.
+
+#### Wniosek:
+
+Wdrożenie niebiesko-zielone zapewnia kontrolowane i szybkie wydanie z niemal
+natychmiastowym wycofywaniem. Jest to jedna z najbardziej niezawodnych strategii
+produkcyjnych, o ile system jest gotowy na dualne środowisko i zdyscyplinowane
+zarządzanie stanem.
+
+</details>

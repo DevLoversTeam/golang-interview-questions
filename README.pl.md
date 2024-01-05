@@ -206,7 +206,7 @@ obserwowalność, niezawodność i prostota obsługi.
 
 #### Dlaczego Go działa skutecznie w środowisku Cloud Native:
 
-1. **Lekkie, konkurencyjne obliczenia:** `goroutine` i `channel` upraszczają
+1. **Lekkie obliczenia współbieżne:** `goroutine` i `channel` upraszczają
    konstrukcję usług obsługujących jednocześnie dużą liczbę żądań.
 
 2. **Wysoka wydajność i przewidywalny czas działania:** Kompilator Go i
@@ -1225,7 +1225,7 @@ danych.
    zmiennego).
 
 3. Wskaźnik zwiększa ryzyko aliasingu i potrzebę dokładniejszej synchronizacji w
-   konkurencyjnym kodzie.
+   kodzie współbieżnym.
 
 #### Wniosek praktyczny:
 
@@ -1924,7 +1924,7 @@ opóźnienia i skomplikować środowisko wykonawcze.
 #### Kiedy goroutines mogą spowolnić system:
 
 1. **Nadmierna liczba goroutines (eksplozja goroutine):** tysiące lub setki
-   tysięcy zadań bez ograniczania konkurencji wywierają presję na program
+   tysięcy zadań bez ograniczania współbieżności wywierają presję na program
    planujący i pamięć.
 
 2. **Zadania szczegółowe:** jeśli praca jest bardzo mała, narzut związany z
@@ -1946,7 +1946,7 @@ opóźnienia i skomplikować środowisko wykonawcze.
 
 #### Jak uniknąć degradacji:
 
-1. Konkurencja graniczna (pula procesów roboczych, semafor, ograniczone
+1. Ograniczona współbieżność (worker pool, semafor, ograniczone
    kolejki).
 
 2. Profil (`pprof`, ślad) zamiast polegać na intuicji.
@@ -2043,7 +2043,7 @@ buf <- 2
 
 Kanał `nil` w Go to kanał bez zainicjowanego wewnętrznego bufora i mechanizmów
 synchronizacji. Jego zachowanie jest ściśle określone i bardzo ważne dla logiki
-konkurencji.
+współbieżności.
 
 #### Zachowanie kanału `nil`:
 
@@ -2239,7 +2239,7 @@ pierwszej gałęzi i ograniczenie systematycznego „głodu” poszczególnych k
 2. **Nie można zakodować priorytetu biznesowego** tylko w zamówieniu `case` w
    `select`.
 
-3. **Zachowanie jest poprawne pod względem konkurencyjnym, ale
+3. **Zachowanie jest poprawne przy współbieżnym wykonaniu, ale
    niedeterministyczne**, co jest normalne w przypadku logiki sterowanej
    zdarzeniami.
 
@@ -2367,7 +2367,7 @@ jednoczesnych operacji (równoległość).
 2. **Przejrzysta synchronizacja:** Środowisko wykonawcze Go wykonuje
    blokadę/wzbudzenie bez ręcznego sterowania zmiennymi warunkowymi.
 
-3. **Dobrze odczytany z kodu:** zamiar „ograniczenia konkurencji” jest
+3. **Czytelność kodu:** zamiar „ograniczenia współbieżności” jest
    natychmiast widoczny.
 
 #### Praktyczne środki ostrożności:
@@ -2384,7 +2384,7 @@ jednoczesnych operacji (równoległość).
 
 Buforowany kanał w Go to kanoniczna implementacja semafora zliczającego: prosta,
 niezawodna i dobrze zintegrowana z modelem goroutine. To jeden z najlepszych
-sposobów kontrolowania poziomu konkurencji w usługach produkcyjnych.
+sposobów kontrolowania poziomu współbieżności w usługach produkcyjnych.
 
 #### Przykład:
 
@@ -2481,7 +2481,7 @@ obciążenie.
    działania.
 
 4. **Degradacja lokalizacji pamięci podręcznej:** duże obiekty przechodzą przez
-   konkurencyjny rurociąg gorzej niż sygnały kompaktowe + dostęp do
+   współbieżny potok gorzej niż sygnały kompaktowe + dostęp do
    współdzielonej pamięci.
 
 #### Lepsze alternatywy:
@@ -2540,7 +2540,7 @@ kanałem błędu lub poprzez `errgroup`, który hermetyzuje ten wzorzec.
 3. W przypadku pierwszego błędu krytycznego inne zadania należy zatrzymać za
    pomocą `context` (aby uniknąć bezużytecznej pracy i wycieków goroutine).
 
-4. Błędów w konkurencyjnych gałęziach nie można zignorować - powoduje to „ciche”
+4. Błędów we współbieżnych gałęziach nie można zignorować - powoduje to „ciche”
    defekty.
 
 #### Typowa strategia przetwarzania:
@@ -2622,14 +2622,14 @@ wywołań.
 #### Wniosek:
 
 `recover` w Go ma zasięg lokalny — pojedynczą procedurę gor. Dlatego
-przechwytywanie paniki w konkurencyjnym kodzie musi być zaprojektowane osobno na
+przechwytywanie paniki w kodzie współbieżnym musi być zaprojektowane osobno na
 poziomie każdej procedury podrzędnej.
 
 </details>
 
 
 <details>
-<summary>46. Porozmawiaj o wzorcach konkurencji w Go.</summary>
+<summary>46. Omów wzorce współbieżności w Go.</summary>
 
 #### Go
 
@@ -2656,7 +2656,7 @@ zakleszczeń.
 
 - dane przechodzą przez kolejne etapy przetwarzania;
 
-- każdy etap może mieć własną konkurencję i przeciwciśnienie.
+- każdy etap może mieć własną współbieżność i mechanizm backpressure.
 
 4. **Semafor poprzez kanał buforowany**
 
@@ -2716,7 +2716,7 @@ niezawodność produkcji systemów.
 #### Go
 
 `sync.Mutex` i `sync.RWMutex` rozwiązują ten sam problem — chronią stan
-współdzielony, ale przy użyciu innego modelu konkurencji. Właściwy wybór zależy
+współdzielony, ale przy użyciu innego modelu współbieżności. Właściwy wybór zależy
 od profilu dostępu do danych: proporcji odczytów i zapisów, czasu trwania sekcji
 krytycznych oraz poziomu rywalizacji.
 
@@ -2742,7 +2742,7 @@ krytycznych oraz poziomu rywalizacji.
 2. **Odczyty są stosunkowo długie:** równoległy dostęp do odczytu zapewnia
    rzeczywisty wzrost przepustowości.
 
-3. **Konkurencja w zakresie odczytu jest duża:** i istnieją dowody empiryczne na
+3. **Współbieżność odczytu jest duża:** istnieją też dowody empiryczne na
    to, że wąskim gardłem staje się blokada odczytu.
 
 #### Ważne uwagi:
@@ -2894,9 +2894,9 @@ synchronizacji.
 1. Klasyczne wyścigi odczytu/zapisu i zapisu/zapisu na zmiennych
    współdzielonych.
 
-2. Nieodebrane zablokowanie/odblokowanie w obszarach konkurencyjnych.
+2. Pominięte blokowanie/odblokowanie w sekcjach współbieżnych.
 
-3. Część błędów koordynacji w scenariuszach testowych z prawdziwą konkurencją.
+3. Część błędów koordynacji w scenariuszach testowych z rzeczywistą współbieżnością.
 
 #### Czego `-race` nie gwarantuje:
 
@@ -2904,7 +2904,7 @@ synchronizacji.
    nieprawidłowy protokół interakcji bez bezpośredniego wyścigu danych.
 
 2. **Nie widzi niezrealizowanego kodu:** jeśli testy nie obejmują ścieżki
-   konkurencyjnej, wyścig może pozostać niezauważony.
+   współbieżnej, wyścig może pozostać niezauważony.
 
 3. **Nie jest wolny od błędów:** „Czysty” przebieg oznacza jedynie, że narzędzie
    nie wykrył w jego trakcie żadnych naruszeń.
@@ -2914,7 +2914,7 @@ synchronizacji.
 
 #### Wniosek praktyczny:
 
-`-race` jest obowiązkowym narzędziem zapewniającym konkurencyjną higienę kodu,
+`-race` jest obowiązkowym narzędziem zapewniającym higienę kodu współbieżnego,
 ale nie jest absolutną wyrocznią poprawności. Jego moc ujawnia się w połączeniu
 z testami jakości, niezmiennikami projektowymi i dyscypliną synchronizacji.
 
@@ -2922,12 +2922,12 @@ z testami jakości, niezmiennikami projektowymi i dyscypliną synchronizacji.
 
 
 <details>
-<summary>51. Jakie są zalety operacji atomowych w porównaniu z mutexem w przypadku prostych operacji konkurencyjnych?</summary>
+<summary>51. Jakie są zalety operacji atomowych w porównaniu z mutexem przy prostych operacjach współbieżnych?</summary>
 
 #### Go
 
 Operacje `atomic` w Go są odpowiednie w bardzo prostych scenariuszach
-konkurencyjnych, w których trzeba bezpiecznie wykonać elementarną operację na
+współbieżnych, w których trzeba bezpiecznie wykonać elementarną operację na
 pojedynczej wartości (inkrementacja, odczytanie flagi, CAS). W takich
 przypadkach mogą być lżejsze niż `mutex`.
 
@@ -2981,7 +2981,7 @@ biznesowego `mutex` jest zwykle bardziej niezawodnym narzędziem.
 
 #### Go
 
-`sync.WaitGroup` to licznik aktywnych zadań konkurencyjnych. Jego celem jest
+`sync.WaitGroup` to licznik aktywnych zadań współbieżnych. Jego celem jest
 umożliwienie jednej goroutine (`Wait`) poczekania, aż inne zakończą swoją pracę.
 
 #### Jak to działa:
@@ -3091,7 +3091,7 @@ dodatkowo obsługuje błędy i anulowanie poprzez `context`.
 1. Potrzebuje jasnego modelu „niepowodzenie w jednym zadaniu → zatrzymaj
    resztę”.
 
-2. Musisz szybko i sprawnie wdrożyć konkurencyjną orkiestrację.
+2. Trzeba szybko i sprawnie wdrożyć orkiestrację współbieżności.
 
 3. Ważna jest czytelność i krótki, łatwy w utrzymaniu kod.
 
@@ -3233,7 +3233,7 @@ logiki stanowi sam stan i jego niezmienniki, a nie transport danych.
 
 #### Go
 
-`sync.Map` to wyspecjalizowana mapa konkurencji z pakietu `sync`,
+`sync.Map` to wyspecjalizowana mapa współbieżna z pakietu `sync`,
 zoptymalizowana przede wszystkim pod kątem obciążeń wymagających dużej liczby
 odczytów i scenariuszy, w których klucze są często odczytywane i rzadko
 zmieniane.
@@ -3258,7 +3258,7 @@ zmieniane.
 
 2. **Klucze w większości stabilne**, bez agresywnej rezygnacji.
 
-3. **Wysoce konkurencyjny dostęp do odczytu** z wielu goroutines.
+3. **Wysoce współbieżny dostęp do odczytu** z wielu goroutines.
 
 #### Kiedy więcej znaczy lepiej `map + mutex`:
 
@@ -3284,7 +3284,7 @@ zminimalizować blokowanie odczytów masowych.
 
 `sync.Map` nie jest „najlepszą mapą ogólnie”, ale narzędziem punktowym dla
 określonego profilu obciążenia. Jeśli masz scenariusz obejmujący głównie
-czytanie i dużą konkurencję, może to zapewnić wygraną; w innych przypadkach
+czytanie i dużą współbieżność, może to zapewnić przewagę; w innych przypadkach
 proste `map + mutex` jest często bardziej przejrzyste i wydajne.
 
 </details>
@@ -3296,7 +3296,7 @@ proste `map + mutex` jest często bardziej przejrzyste i wydajne.
 #### Go
 
 Testy współbieżności w Go to testy testujące zachowanie kodu w warunkach
-równoległego wykonywania goroutines, współdzielenia stanu i konkurencji zasobów.
+równoległego wykonywania goroutines, współdzielenia stanu i rywalizacji o zasoby.
 Ich celem jest wykrycie defektów, które nie pojawiają się w scenariuszu
 liniowym.
 
@@ -3310,11 +3310,11 @@ liniowym.
 
 4. Prawidłowe wykonanie goroutines (brak wycieków).
 
-5. Przestrzeganie niezmienników pod obciążeniem konkurencyjnym.
+5. Przestrzeganie niezmienników pod obciążeniem współbieżnym.
 
 #### Dlaczego są potrzebne:
 
-1. **Wczesne wykrywanie błędów konkurencyjnych:** wiele z nich pojawia się tylko
+1. **Wczesne wykrywanie błędów współbieżności:** wiele z nich pojawia się tylko
    pod presją równoległości.
 
 2. **Ograniczenie niestabilności w środowisku produkcyjnym:** testy przechwytują
@@ -3323,7 +3323,7 @@ liniowym.
 3. **Zapewnienie gwarancji architektonicznych:** takich jak to, że system nie
    traci zdarzeń i nie narusza spójności stanu.
 
-4. **Bezpieczniejsza refaktoryzacja:** konkurencyjne niezmienniki pozostają
+4. **Bezpieczniejsza refaktoryzacja:** niezmienniki współbieżności pozostają
    chronione przez zestaw regresji.
 
 #### Narzędzia i praktyki w Go:
@@ -3339,7 +3339,7 @@ liniowym.
 
 #### Wniosek:
 
-Konkurencyjne testy nie są „dodatkowym luksusem”, ale niezbędnym elementem
+Testy współbieżności nie są „dodatkowym luksusem”, ale niezbędnym elementem
 jakości usług Go. Sprawdzają nie tylko funkcjonalność, ale także poprawność
 współdziałania goroutin w rzeczywistych warunkach równoległości.
 
@@ -3402,7 +3402,7 @@ sygnał „stop”.
 #### Wniosek:
 
 `context.Context` to zapytanie „układ nerwowy” w Go. Rozprzestrzenia kontrolę
-czasu i anulowania w całym drzewie wywołań, dzięki czemu konkurencyjny kod jest
+czasu i anulowania w całym drzewie wywołań, dzięki czemu kod współbieżny jest
 łatwy w zarządzaniu, ekonomiczny i przewidywalny w środowisku produkcyjnym.
 
 #### Przykład:
@@ -3994,7 +3994,7 @@ lub zbliżonym do rzeczywistego obciążeniem.
 
 - stałe wejście;
 
-- znany profil konkurencyjny;
+- znany profil współbieżności;
 
 - stabilne środowisko startowe.
 
@@ -4744,7 +4744,7 @@ użytku.
 1. **Ukryty współdzielony stan zmienny:** Konsument biblioteki może nie
    wiedzieć, że istnieje stan globalny, który wpływa na zachowanie.
 
-2. **Kwestie związane z konkurencyjnością:** globalne firmy łatwo stają się
+2. **Problemy ze współbieżnością:** zmienne globalne łatwo stają się
    źródłem ras/konfliktów.
 
 3. **Testowanie złożone:** testy zaczynają zależeć od kolejności wykonywania i
@@ -5711,7 +5711,7 @@ REFRESH MATERIALIZED VIEW CONCURRENTLY mv_daily_sales;
 #### Go
 
 `ACID` to cztery podstawowe właściwości systemów transakcyjnych gwarantujące
-poprawność danych nawet w przypadku awarii, konkurencji i dużego obciążenia:
+poprawność danych nawet w przypadku awarii, współbieżności i dużego obciążenia:
 Atomowość, Spójność, Izolacja, Trwałość.
 
 #### Odszyfrowanie ACID:
@@ -5845,7 +5845,7 @@ dostępność i skalowalność za cenę ostatecznej spójności.
 
 Poziomy izolacji określają, jak „widoczne” są dla siebie zmiany transakcji
 równoległych. Im wyższy poziom izolacji, tym mniej anomalii, ale zwykle wiąże
-się to z wyższym kosztem wydajności i konkurencyjności.
+się to z wyższym kosztem wydajności i współbieżności.
 
 #### Klasyczne poziomy izolacji (SQL):
 
@@ -5877,7 +5877,7 @@ się to z wyższym kosztem wydajności i konkurencyjności.
 
 - gwarantuje wynik równoważny sekwencyjnej realizacji transakcji;
 
-- maksymalna ochrona przed anomaliami, ale droższa od konkurencji.
+- maksymalna ochrona przed anomaliami, ale droższa pod względem współbieżności.
 
 #### Wniosek praktyczny:
 
@@ -6097,7 +6097,7 @@ i przepustowości.
 2. Zwiększ przepustowość zapisu/odczytu dzięki równoległemu działaniu
    fragmentów.
 
-3. Lokalizuj gorące zestawy danych i ograniczaj konkurencję o zasoby.
+3. Lokalizuj gorące zestawy danych i ograniczaj rywalizację o zasoby.
 
 #### Główne typy shardingu:
 
@@ -6360,7 +6360,7 @@ podejścia leży w determinizmie, szybkości i przejrzystości przyczyn upadku.
 
 2. `go test ./...` do regularnego biegania.
 
-3. `-race` dla witryn konkurencyjnych.
+3. `-race` dla współbieżnych ścieżek kodu.
 
 4. W razie potrzeby - `testify` (twierdzenie/wymaganie), ale bez nadmiernej
    magii.
@@ -6743,7 +6743,7 @@ skalować i które pozostaje przejrzyste.
 
 2. Mot na granicy modułu, a nie wewnątrz logiki domeny.
 
-3. W scenariuszach konkurencyjnych należy chronić podwójny test stanu (`mutex`,
+3. W scenariuszach współbieżnych należy chronić stan obiektu testowego (`mutex`,
    atomy).
 
 4. Nie powielaj nadmiernie logiki produkcji w fałszywych - w przeciwnym razie
@@ -6994,7 +6994,7 @@ współbieżność bez izolacji łatwo zamienia stabilne testy w niestabilne.
 4. W przypadku testów DB — izolacja transakcyjna lub osobna przestrzeń
    nazw/schemat na test.
 
-5. Uruchom zestaw z `-race`, aby wcześnie wykryć problemy z konkurencją.
+5. Uruchom zestaw testów z `-race`, aby wcześnie wykryć problemy ze współbieżnością.
 
 #### Wniosek:
 
@@ -7360,7 +7360,7 @@ pracy jako kontener usług.
 
 3. **Wielousługowe stojaki kompozytowe**: docker-compose / kontenery testowe.
 
-4. **Lakoniczny CI dla prostej bazy danych**: usługi GitHub Actions.
+4. **Minimalna konfiguracja CI dla prostej bazy danych:** usługi GitHub Actions.
 
 #### Wniosek:
 
@@ -8378,7 +8378,7 @@ zapisany wynik dla powtarzających się zapytań i zmniejsza obciążenie backen
 
 3. TTL/unieważnienie kontroli aktualności danych.
 
-#### Jaki problem pojawia się w przypadku konkurencji:
+#### Jaki problem pojawia się przy współbieżności:
 
 Podczas `cache miss` popularny klucz może otrzymać wiele żądań jednocześnie. Bez
 dodatkowej kontroli wszystkie pójdą równolegle do backendu — jest to `cache
@@ -8390,7 +8390,7 @@ stampede` (grzmiące stado).
 
 2. Tylko pierwsze żądanie wykonuje „drogą” funkcję.
 
-3. Inne konkurencyjne żądania oczekują i otrzymują ten sam wynik.
+3. Inne współbieżne żądania czekają i otrzymują ten sam wynik.
 
 #### Jaki problem to rozwiązuje:
 
@@ -8414,7 +8414,7 @@ stampede` (grzmiące stado).
 #### Wniosek:
 
 Warstwa buforowania przyspiesza odczyt i zmniejsza obciążenie źródeł danych, a
-`singleflight.Group` eliminuje efekt paniki w przypadku konkurencji `cache
+`singleflight.Group` eliminuje efekt stampede przy współbieżnym `cache
 miss`. Razem zapewniają znacznie bardziej stabilne i wydajne działanie usług.
 
 </details>
@@ -8545,7 +8545,7 @@ jest wykonanie asynchroniczne za pośrednictwem kolejki/procesów roboczych.
 
 6. ** Przeciwciśnienie**
 
-- ograniczenie konkurencji pracowników, aby uniknąć przeciążenia bazy
+- ograniczenie współbieżności workerów, aby uniknąć przeciążenia bazy
   danych/zależności.
 
 #### Jak klient otrzymuje wynik:
@@ -8968,7 +8968,7 @@ zmian.
 
 2. Kompilacja macierzy dla wielu `GOOS/GOARCH` w razie potrzeby.
 
-3. Wczesne wykrywanie wad konkurencyjnych (`-race`) na odpowiednich stanowiskach
+3. Wczesne wykrywanie wad współbieżności (`-race`) w odpowiednich zadaniach
    pracy.
 
 #### Wniosek:

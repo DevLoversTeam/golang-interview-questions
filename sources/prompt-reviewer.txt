@@ -1,0 +1,23 @@
+Проаналізуй списки запитань із файлів:
+chatgpt-questions.txt
+claude-questions.txt
+devloversteam-original-questions.txt
+dou-interview-questions-go-developer.html
+gemini-questions.txt
+yaroslav-questions.txt
+
+І на основі цих запитань створи два списки: "Готовий" і "Зайвий".
+
+Вимоги до "Готового":
+- Покрий понад 95% ключових знань (core language, concurrency, memory model, standard library, testing, performance, architecture).
+- Уникай тривіальних або суто теоретичних запитань.
+- Запитання мають бути максимально наближені до реальних робочих ситуацій.
+
+Структура:
+- Згрупуй за категоріями.
+- Відсортуй від простих до складних.
+
+Обмеження:
+- Максимальна довжина запитання — 20 слів.
+
+У "Зайвий" додай ті, які не увійшли в "Готовий".

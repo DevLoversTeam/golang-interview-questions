@@ -1,0 +1,388 @@
+# Go Interview Questions
+
+## ГОТОВИЙ
+
+---
+
+### 1. Core Language — Типи та змінні
+
+1. Яка різниця між `var x int` та `x := 0` і коли що обирати?
+2. Що таке zero value і для яких типів воно `nil`?
+3. Яка різниця між `rune` і `byte` при ітерації рядка?
+4. Коли `type MyInt int` відрізняється від `type MyInt = int`?
+5. Як `iota` використовується для бітових масок?
+6. Чому string в Go immutable і що це означає на практиці?
+7. Як конвертувати `[]byte` ↔ `string` без зайвих алокацій?
+8. Як shadowing змінних у вкладених блоках призводить до багів?
+
+### 2. Core Language — Слайси та мапи
+
+9. Яка різниця між `len` і `cap` у слайсі?
+10. Чим `nil` slice відрізняється від порожнього (`[]T{}`)?
+11. Що відбувається з оригінальним слайсом після `append` за межі `cap`?
+12. Що відбувається при `append` до shared underlying array двох слайсів?
+13. Як `a[low:high:max]` контролює `cap` нового слайса?
+14. Як безпечно видалити елемент зі слайса без збереження порядку?
+15. Чому `map` не є потокобезпечною і що станеться при write в `nil` map?
+16. Який порядок ітерації `map` і чи можна на нього покладатися?
+17. Як невизначений порядок map впливає на тести та серіалізацію?
+18. Чи може struct бути ключем у `map` і які обмеження?
+
+### 3. Core Language — Структури та методи
+
+19. Яка різниця між value receiver і pointer receiver у методах?
+20. Коли Go автоматично бере адресу для виклику pointer receiver?
+21. Що таке promoted fields і методи в embedded struct?
+22. Як вирішити конфлікти методів при embedding?
+23. Що таке memory alignment і як упорядкувати поля struct для мінімізації розміру?
+24. Як порівнювати дві struct — коли компілюється, коли ні?
+25. Що станеться, якщо викликати метод на nil receiver?
+
+### 4. Core Language — Інтерфейси
+
+26. Чому interface може бути `not nil` із `nil` pointer всередині?
+27. Як безпечно перевірити interface на nil?
+28. Що таке type assertion і коли він панікує?
+29. Як обробити type assertion без паніки (`v, ok := x.(T)`)?
+30. Що таке empty interface і чому варто уникати його в сигнатурах?
+31. Що таке "accept interfaces, return structs" і чому це ідіоматично?
+32. Що таке interface segregation в idiomatic Go?
+33. Як перевірити на етапі компіляції, що тип реалізує інтерфейс?
+
+### 5. Core Language — Функції та defer
+
+34. Що означає `...T` у сигнатурі і як передати slice у variadic?
+35. В якому порядку виконуються `defer`-виклики?
+36. Чому named return values небезпечні разом із `defer`?
+37. Як замикання захоплює змінну циклу і чи актуально після Go 1.22?
+38. Як реалізувати функцію з опціональними параметрами без overloading?
+39. Що таке function type і як його використати як стратегію?
+
+### 6. Core Language — Generics
+
+40. Що таке type constraint і як `comparable` відрізняється від `any`?
+41. Як `~T` у constraint дозволяє приймати типи з underlying type T?
+42. Коли generics покращують код, а коли ускладнюють без потреби?
+43. Чому type inference не завжди спрацьовує і коли вказувати тип явно?
+44. Як generics взаємодіють з interface satisfaction у Go?
+
+---
+
+### 7. Concurrency — Goroutines та планувальник
+
+45. Чим goroutine відрізняється від OS thread за пам'яттю і витратами?
+46. Що таке G-P-M модель планувальника Go?
+47. Що таке work stealing і як він балансує навантаження між потоками?
+48. Що таке preemption і як він змінився в Go 1.14+?
+49. Як відбувається goroutine leak і як його виявити?
+50. Як `context.WithCancel` запобігає витоку горутин?
+51. Як горутинний scheduler взаємодіє з OS при блокуючих syscalls?
+
+### 8. Concurrency — Channels
+
+52. Яка різниця між buffered і unbuffered channel?
+53. Що станеться при читанні, записі або закритті `nil` channel?
+54. Що станеться при записі в закритий channel?
+55. Як коректно закрити channel з кількома writers?
+56. Як `range` по channel знає, коли зупинитися?
+57. Чи має `select` гарантований порядок виконання кейсів?
+58. Як і навіщо використовувати `nil`-канал у `select`?
+59. Як реалізувати semaphore через buffered channel?
+60. Як реалізувати fan-in та fan-out патерни?
+61. Чому channel of channels корисний для multiplexing?
+
+### 9. Concurrency — Sync primitives
+
+62. Коли використовувати `sync.Mutex` vs channel?
+63. Яка різниця між `sync.Mutex` і `sync.RWMutex`?
+64. Коли `RWMutex` може бути гіршим за `Mutex`?
+65. Що таке `sync.Once` і як він гарантує одноразову ініціалізацію?
+66. Що таке `sync.Pool` і що відбувається з пулом під час GC?
+67. Чим `sync.Map` відрізняється від `map + mutex` і коли що обрати?
+68. Що таке `sync.Cond` і коли він переважає channel?
+69. Коли `sync/atomic` краще за mutex і які є обмеження?
+70. У чому різниця між `sync.WaitGroup` і `errgroup.Group`?
+71. Як `sync.WaitGroup` запобігає race при `Add` після `Wait`?
+
+### 10. Concurrency — Patterns та context
+
+72. Як реалізувати worker pool з обмеженням кількості горутин?
+73. Як реалізувати pipeline з кількох stage через channels?
+74. Як `context.WithCancel` відрізняється від `context.WithTimeout`?
+75. Чому не можна зберігати context у struct?
+76. Як реалізувати graceful shutdown HTTP-сервера через context і `os.Signal`?
+77. Як реалізувати rate limiter через `time.Ticker` і channel?
+78. Як реалізувати circuit breaker без зовнішніх бібліотек?
+79. Як structured concurrency (errgroup + context) замінює ad-hoc goroutine management?
+80. Як реалізувати rolling window rate limiter через ring buffer?
+
+---
+
+### 11. Memory Model
+
+81. Як Go вирішує, розмістити змінну на стеку чи в heap?
+82. Що таке escape analysis і як переглянути результати компілятора?
+83. Як працює GC tri-color mark-and-sweep і що таке STW?
+84. Що таке write barrier і навіщо він потрібен під час GC?
+85. Як `GOGC` і `GOMEMLIMIT` впливають на поведінку GC?
+86. Як `sync.Pool` знижує GC pressure і що відбувається з пулом під GC?
+87. Як використання вказівників у map впливає на навантаження GC?
+88. Чому slice великого масиву може призвести до memory leak?
+89. Як уникнути зайвих алокацій при конкатенації рядків у циклі?
+90. Чому `make([]T, 0, n)` краще ніж `var s []T` при відомому розмірі?
+91. Що таке false sharing і як його уникнути в Go?
+92. Що гарантує Go Memory Model щодо видимості між горутинами?
+93. Що таке happens-before і як channel забезпечує цю гарантію?
+94. Як `-race` detector виявляє data races і що він не може виявити?
+
+---
+
+### 12. Error Handling
+
+95. Яка різниця між `errors.New` і `fmt.Errorf` з `%w`?
+96. Як `errors.Is` і `errors.As` обходять wrapped errors?
+97. Коли custom error type, а коли sentinel error?
+98. Чому `panic` і `recover` — не заміна нормального error handling?
+99. Коли `panic` є виправданим рішенням?
+100. Як коректно повернути помилку з горутини в основний потік?
+101. Як реалізувати retry з exponential backoff та jitter?
+102. Як організувати error wrapping для збереження stack trace без lib?
+
+---
+
+### 13. Standard Library — io та файли
+
+103. Яка різниця між `io.Reader` і `io.ReadCloser`?
+104. Навіщо `bufio.Reader` і яка його роль при читанні по рядках?
+105. Як `io.LimitReader` захищає від великих вхідних даних?
+106. Як `io.TeeReader` дозволяє читати потік двічі?
+107. Як безпечно читати великий файл без завантаження в пам'ять?
+108. Як атомарно замінити файл (write → rename pattern)?
+
+### 14. Standard Library — net/http
+
+109. Як реалізувати middleware chain для HTTP-сервера?
+110. Чому `http.Client` варто перевикористовувати замість створювати новий?
+111. Як правильно читати і закривати `resp.Body` щоб уникнути conn leak?
+112. Як налаштувати таймаути для HTTP-сервера (read, write, idle)?
+113. Що таке Keep-Alive і як Go управляє connection pool у HTTP client?
+114. Як передати context у HTTP-запит і скасувати його?
+115. Чому важливо виставляти `MaxHeaderBytes` і `ReadHeaderTimeout`?
+
+### 15. Standard Library — encoding/json
+
+116. Яка різниця між `json.Marshal` і `json.Encoder` (streaming)?
+117. Як реалізувати custom `json.Marshaler` / `json.Unmarshaler`?
+118. Що таке `json.RawMessage` і коли воно корисне?
+119. Як парсити JSON, якщо структура може бути або `[]` або `{}`?
+120. Як обробляти динамічні JSON-структури з різних мов (напр. PHP)?
+
+### 16. Standard Library — database/sql та time
+
+121. Чому `sql.DB` є пулом з'єднань, а не single connection?
+122. Як налаштувати `SetMaxOpenConns`, `SetMaxIdleConns`, `SetConnMaxLifetime`?
+123. Як `sql.Tx` гарантує атомарність і коли потрібен `SAVEPOINT`?
+124. Як `database/sql` захищає від SQL injection через prepared statements?
+125. Як коректно передати `*sql.Tx` через шари без витоку абстракції?
+126. Як `time.Timer` відрізняється від `time.Ticker` і як уникнути leak?
+127. Як коректно обробляти `SIGTERM`/`SIGINT` у Go-сервісі?
+
+---
+
+### 17. Testing
+
+128. Яка різниця між `t.Error` і `t.Fatal` у тестах?
+129. Що таке table-driven tests і як організувати з subtests через `t.Run`?
+130. Як `t.Parallel()` прискорює suite і де може зламати тести?
+131. Як мокати залежності без фреймворків через interface?
+132. Як `httptest.NewServer` і `httptest.NewRecorder` допомагають тестувати HTTP?
+133. Що таке fuzz testing у Go 1.18+ і як написати fuzz target?
+134. Як `testing.B` реалізує benchmark і що скидає `b.ResetTimer`?
+135. Що таке `TestMain` і коли він потрібен?
+136. Як `goleak` виявляє goroutine leak у тестах?
+137. Як тестувати код з `time.Now()` через dependency injection?
+138. Як організувати integration tests з build tags?
+139. Які є способи запуску тестів із БД у CI (testcontainers, docker-compose)?
+140. Які переваги та недоліки `testcontainers` порівняно з `docker-compose`?
+
+---
+
+### 18. Performance
+
+141. Як `pprof` профілювати CPU та memory в production?
+142. Що показує `go tool trace` на відміну від `pprof`?
+143. Як `benchstat` порівнює два набори benchmark результатів?
+144. Чому `interface{}` у hot path може спричиняти алокації?
+145. Як inline функцій впливає на перформанс і як перевірити inlining?
+146. Як виявити lock contention через `pprof` mutex профіль?
+147. Як `encoding/json` сповільнює high-throughput API і які альтернативи?
+148. Що таке CPU cache locality і як layout struct впливає на неї?
+149. Чому `map` повільніший за `slice` при sequential access?
+150. Як `strings.Contains` vs regexp важливо враховувати в hot loop?
+
+---
+
+### 19. Architecture та Design
+
+151. Як організувати пакети у великому Go-проєкті (flat vs layered)?
+152. Навіщо `internal` package і як він обмежує видимість?
+153. Як dependency injection реалізується без DI-фреймворків?
+154. Що таке "functional options" патерн і коли він кращий за config struct?
+155. Як організувати error handling у multi-layer архітектурі (handler → service → repo)?
+156. Як реалізувати repository pattern без over-engineering?
+157. Як організувати конфігурацію сервісу (env, flags, config file)?
+158. Чому глобальні змінні (logger, db) є проблемою в Go?
+159. Як уникнути циклічних залежностей між пакетами?
+160. Як реалізувати graceful shutdown з drain активних запитів?
+
+### 20. Observability та Security
+
+161. Як structured logging відрізняється від `log` і коли обрати `slog` vs `zap`?
+162. Що таке RED metrics і як expose через Prometheus?
+163. Як інтегрувати OpenTelemetry без vendor lock-in?
+164. Як `crypto/rand` відрізняється від `math/rand` і коли обов'язковий?
+165. Як безпечно зберігати паролі в Go (bcrypt, argon2)?
+166. Що таке constant-time comparison і навіщо `subtle.ConstantTimeCompare`?
+167. Як `html/template` захищає від XSS на відміну від `text/template`?
+
+### 21. Modules та Tooling
+
+168. Яка роль `go.sum` поряд із `go.mod`?
+169. Як `replace` directive у `go.mod` допомагає при локальній розробці?
+170. Що перевіряє `go mod tidy` і коли запускати в CI?
+171. Як `go vet` відрізняється від `staticcheck` і `golangci-lint`?
+172. Як `go build -ldflags` дозволяє вбудувати версію в бінарник?
+173. Що таке `//go:build` constraint і як замінити старий `// +build`?
+174. Як `go work` вирішує проблему multi-module розробки?
+175. Як зменшити розмір Docker-образу для Go-застосунку (multi-stage build)?
+
+### 22. Системний дизайн та Advanced
+
+176. Як реалізувати distributed lock у Go через Redis без race condition?
+177. Як спроєктувати in-memory cache з TTL та eviction без витоків горутин?
+178. Як реалізувати backpressure у streaming pipeline щоб уникнути OOM?
+179. Як реалізувати hot reload конфігурації без перезапуску сервісу?
+180. Як реалізувати idempotent HTTP handler для retry-safe API?
+181. Як реалізувати saga pattern для distributed transactions у Go?
+182. Як виявити та усунути thundering herd problem під навантаженням?
+183. Як `cgo` впливає на GC та горутинний scheduler?
+184. Як реалізувати job queue з exactly-once semantics?
+185. Як спроєктувати multi-tenant сервіс з ізоляцією через context values?
+
+---
+---
+
+## ЗАЙВИЙ
+
+### Дублікати / покриті кращими версіями
+
+- Що таке goroutine і навіщо вона? *(занадто junior, covered by #45)*
+- Що таке channel і які типи каналів? *(covered by #52)*
+- Що таке struct і як його використовувати? *(covered by #23-25)*
+- Що таке interfaces і як вони працюють? *(covered by #26-33)*
+- Як оголосити відкладений виклик? *(covered by #35)*
+- Що таке map і як з ним працювати? *(covered by #15-18)*
+- Що таке blank identifier `_`? *(тривіально)*
+- Що таке iota? *(covered by #5)*
+- Чи може змінна типу string приймати nil? *(тривіально)*
+- Що поверне `fmt.Println(1/2)` і чому? *(тривіально)*
+- Як записати в файл? *(тривіально)*
+- Як отримати теперішній час? *(тривіально)*
+- Що буде, якщо викликати `log.Fatal`? *(тривіально)*
+- Як оголосити змінну в Go? *(занадто junior)*
+- Що таке GOROOT і GOPATH? *(не актуально)*
+- Що таке Go modules і як вони замінили GOPATH? *(covered by tooling section)*
+- Як оголосити функцію в Go? *(занадто junior)*
+- Що таке variadic-параметри? *(covered by #34)*
+- Яка різниця між масивами та slices? *(covered by #9-14)*
+- Що таке вказівники і коли їх використовувати? *(covered by #19-20)*
+- Як працює приведення типів? *(тривіально)*
+- Що таке init() і коли він виконується? *(мало практичної цінності)*
+- Як працює go build і крос-компіляція? *(не специфічно для інтерв'ю)*
+- Як Go працює з WebAssembly? *(занадто нішево)*
+- Що таке `cgo` і коли його використовувати? *(covered by #183)*
+- Яка роль файлів go.mod і go.sum? *(covered by #168)*
+- Що таке underlying type і type identity? *(занадто теоретично)*
+- Що таке method set? *(covered by #19-20)*
+- Чи підтримує Go перевантаження функцій? *(тривіально)*
+- Що таке finalizer і як він працює? *(covered by memory section)*
+- Як вручну запустити GC? *(антипатерн)*
+- Що таке SSA-представлення? *(занадто internal)*
+- Що таке lvalue і rvalue? *(не Go-специфічно)*
+- Як працює Go з плагінами і обмеження? *(нішево, застаріло)*
+- Як працює `goto` у Go? *(антипатерн, не варто обговорювати на інтерв'ю)*
+- Як в Go реалізована арифметика вказівників? *(через unsafe, нішево)*
+- Як в Go реалізується спадкування? *(невірне питання)*
+- Що таке map-reduce і як реалізувати в Go? *(занадто generic)*
+
+### Занадто загальні CS/DevOps питання (не Go-специфічні)
+
+- Що таке Big-O notation?
+- Які алгоритми сортування ви знаєте?
+- Що таке SOLID?
+- Що таке MVC?
+- Що таке DBMS і типи баз даних?
+- Що таке Docker і Kubernetes?
+- Що таке процеси та потоки в ОС?
+- Як працює TLS handshake?
+- Яка різниця між TCP і UDP?
+- Що таке ACID і нормальні форми БД?
+- Що таке реплікація, шардинг, CAP-теорема?
+- Що таке CQRS, Event Sourcing?
+- Що таке Raft Consensus Algorithm?
+- Як працює load balancer під капотом?
+- Що таке Kubernetes Pod?
+- Які *nix-команди для аналізу логів?
+- Розкажіть про структури даних: stack, queue, linked list, trie?
+- Що таке SDLC?
+- Що таке 12-factor app?
+- Що таке Materialized View?
+
+### Занадто деталізовані або рідкісні
+
+- Що таке `encoding/gob` і різниця з `encoding/json` щодо схем?
+- Як `unsafe.Sizeof` і `unsafe.Offsetof` допомагають аналізувати layout?
+- Що таке small object optimization у Go allocator?
+- Що таке bounds checking elimination (BCE)?
+- Як `http2` push і server-sent events реалізуються в Go?
+- Як gRPC streaming відрізняється від REST за моделлю горутин?
+- Як `pgx` відрізняється від `lib/pq` щодо продуктивності?
+- Як реалізувати optimistic locking у Go з PostgreSQL?
+- Що таке `expvar` і як expose runtime metrics?
+- Як `reflect.DeepEqual` відрізняється від `==` для слайсів і мап?
+- Як `struct tag` парситься через reflection?
+- Що таке monotonic clock і чому `time.Since` точніший?
+- Як `time.Time` порівнювати через `Equal`, а не `==`?
+- Як `filepath.Walk` відрізняється від `filepath.WalkDir` по перформансу?
+- Що таке `io.Pipe` з'єднує producer і consumer?
+- Як `http.DefaultServeMux` відрізняється від кастомного `ServeMux`?
+- Як реалізувати JWT validation без популярних бібліотек?
+- Як реалізувати spinlock через atomic operations?
+- Що таке Memory Ballast і чи актуальний він у сучасних версіях Go?
+- Як GO обробляє дедуплікацію рядків у пам'яті?
+- Що таке AST і як його використовують lint-інструменти?
+- Як `linker` і dead code elimination працюють в Go?
+- Коли `uint` замість `int` і навіщо?
+- Як Go використовує статичну лінковку за замовчуванням?
+- Як відрізняється логування в stdout vs stderr у контексті Go?
+- Як різниця між `internal` та `pkg` директоріями?
+- Як `go generate` з `mockery` чи `stringer` використовується?
+- Як `GONOSUMCHECK` і `GONOSUMDB` впливають на private modules?
+- Як реалізувати generic `Map`, `Filter`, `Reduce`?
+- Що таке `constraints` пакет (golang.org/x)?
+- Як generics відрізняються від Java/C++ templates?
+- Як generics впливають на час компіляції та розмір бінарника?
+- Як мономорфізація (або аналог) при компіляції generics?
+- Що таке `reflect.Type` vs `reflect.Value` і як отримати?
+- Коли code generation краще ніж reflection?
+
+### Coding tasks (окремий формат, не питання)
+
+- Реалізувати алгоритм двійкового пошуку у слайсі
+- Реалізувати Stack (LIFO)
+- Реалізувати linked list
+- Реалізувати перевірку на анаграму із тестом і бенчмарком
+- Реалізувати бінарне дерево пошуку
+- Перемістити всі zero values у кінець масиву
+- Поміняти місцями два значення без допоміжної змінної
+- Побудувати архітектуру бекенду для оренди самокатів

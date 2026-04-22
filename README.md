@@ -660,7 +660,7 @@ func removeUnordered[T any](s []T, i int) []T {
 #### Канонічний підхід (Go 1.23+):
 
 1. Використати `maps.Keys` для отримання ітератора ключів.
-2. За допомогою `slices.Sorted` отримати відсортований слайс ключів.
+2. За допомогою `slices.Sorted` (`slices.SortedFunc`) отримати відсортований слайс ключів.
 3. Ітерувати по відсортованому слайсу.
 
 #### Чому це правильно:
@@ -693,7 +693,7 @@ func removeUnordered[T any](s []T, i int) []T {
 ```go
 keys := slices.Sorted(maps.Keys(m))
 for _, k := range keys {
-	fmt.Printf("%s=%v\n", k, m[k])
+	fmt.Printf("%v=%v\n", k, m[k])
 }
 ```
 

@@ -2220,7 +2220,7 @@ payload-и — через більш придатні структури пам'
 `context`. У продакшні найчастіше оптимальним вибором є саме `errgroup`.
 
 
-#### Приклад:
+#### Приклад (Go 1.22+):
 
 ```go
 g, ctx := errgroup.WithContext(context.Background())

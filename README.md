@@ -2226,9 +2226,8 @@ payload-и — через більш придатні структури пам'
 g, ctx := errgroup.WithContext(context.Background())
 
 for _, task := range tasks {
-	t := task
 	g.Go(func() error {
-		return t.Run(ctx)
+		return task.Run(ctx)
 	})
 }
 

@@ -2213,15 +2213,14 @@ payload-и — через більш придатні структури пам'
 `context`. У продакшні найчастіше оптимальним вибором є саме `errgroup`.
 
 
-#### Приклад:
+#### Приклад (Go 1.22+):
 
 ```go
 g, ctx := errgroup.WithContext(context.Background())
 
 for _, task := range tasks {
-	t := task
 	g.Go(func() error {
-		return t.Run(ctx)
+		return task.Run(ctx)
 	})
 }
 

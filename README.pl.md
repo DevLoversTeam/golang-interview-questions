@@ -6,7 +6,7 @@
   Go <img src="./assets/go.svg" width="40" height="40" />
 </h1>
 
-<h2>Most Popular Go Interview Questions and Answers</h2>
+<h2>Najpopularniejsze pytania i odpowiedzi na rozmowę kwalifikacyjną z Go</h2>
 
 
 <details>

@@ -6,6 +6,7 @@
   Go <img src="./assets/go.svg" width="40" height="40" />
 </h1>
 
+<h2>Die beliebtesten Go-Interviewfragen und -antworten</h2>
 
 <details>
 <summary>1. Was ist Go und für welche Aufgaben wurde es entwickelt?</summary>
